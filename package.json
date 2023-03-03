@@ -1,0 +1,165 @@
+{
+  "name": "image-viewer",
+  "publisher": "vscode-infra",
+  "displayName": "Image Viewer",
+  "description": "View all images of the current project",
+  "icon": "assets/logo.png",
+  "version": "1.3.3",
+  "engines": {
+    "vscode": "^1.60.0"
+  },
+  "categories": [
+    "Visualization",
+    "Other"
+  ],
+  "keywords": [
+    "image",
+    "base64",
+    "svg",
+    "img",
+    "pic",
+    "png"
+  ],
+  "activationEvents": [
+    "*"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "vscode-infra.webviewImageViewer",
+        "title": "View Images 🌄"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "when": "editorFocus",
+          "command": "vscode-infra.webviewImageViewer",
+          "group": "z_commands"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "vscode-infra.webviewImageViewer",
+          "group": "z_commands"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "yarn run package",
+    "compile": "webpack --config webpack.extension.js",
+    "watch": "webpack --config webpack.extension.js --watch",
+    "package": "yarn ui-build && webpack --config webpack.extension.js --mode production --devtool hidden-source-map",
+    "test-compile": "tsc -p ./",
+    "test-watch": "tsc -watch -p ./",
+    "pretest": "yarn run test-compile && yarn run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js",
+    "ui-dev": "webpack serve --config easyVscodeConfig/webview.webpack.js --color --progress --mode development",
+    "ui-watch": "webpack --config easyVscodeConfig/webview.webpack.js --watch --mode development",
+    "ui-build": "webpack --config easyVscodeConfig/webview.webpack.js --color --mode production",
+    "lint-staged": "lint-staged",
+    "check-type": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.14.8",
+    "@babel/plugin-proposal-class-properties": "^7.14.5",
+    "@babel/plugin-proposal-decorators": "^7.14.5",
+    "@babel/plugin-proposal-private-methods": "^7.14.5",
+    "@babel/plugin-proposal-private-property-in-object": "^7.14.5",
+    "@babel/plugin-syntax-dynamic-import": "^7.8.3",
+    "@babel/plugin-transform-runtime": "^7.14.5",
+    "@babel/preset-env": "^7.14.8",
+    "@babel/preset-react": "^7.14.5",
+    "@babel/preset-typescript": "^7.14.5",
+    "@babel/register": "^7.14.5",
+    "@babel/runtime": "^7.14.8",
+    "@commitlint/cli": "^12.1.4",
+    "@svgr/webpack": "^5.5.0",
+    "@testing-library/react-hooks": "^7.0.1",
+    "@types/fs-extra": "^9.0.13",
+    "@types/glob": "^7.1.3",
+    "@types/jest": "^26.0.24",
+    "@types/mocha": "^8.2.2",
+    "@types/node": "14.x",
+    "@types/react-router-dom": "^5.1.8",
+    "@types/styled-components": "^5.1.11",
+    "@types/vscode": "^1.60.0",
+    "@typescript-eslint/eslint-plugin": "^4.4.0",
+    "@typescript-eslint/parser": "^4.4.0",
+    "awesome-typescript-loader": "^5.2.1",
+    "babel-loader": "^8.2.2",
+    "babel-plugin-import": "^1.13.3",
+    "babel-plugin-styled-components": "^1.13.2",
+    "child_process": "^1.0.2",
+    "clean-webpack-plugin": "^4.0.0-alpha.0",
+    "connect-history-api-fallback": "^1.6.0",
+    "conventional-changelog-conventionalcommits": "^4.6.0",
+    "css-loader": "^6.2.0",
+    "eslint": "^7.31.0",
+    "eslint-config-standard": "^16.0.3",
+    "eslint-import-resolver-typescript": "^2.4.0",
+    "eslint-plugin-cypress": "^2.11.3",
+    "eslint-plugin-import": "^2.23.4",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^5.1.0",
+    "eslint-plugin-react": "^7.24.0",
+    "eslint-plugin-react-hooks": "^4.2.0",
+    "eslint-plugin-standard": "^5.0.0",
+    "fork-ts-checker-webpack-plugin": "4.1.6",
+    "glob": "^7.1.7",
+    "html-webpack-plugin": "^5.3.2",
+    "husky": "4.2.3",
+    "jest": "^27.0.6",
+    "less": "^4.1.1",
+    "less-loader": "^10.0.1",
+    "lint-staged": "^11.0.1",
+    "mini-css-extract-plugin": "^2.1.0",
+    "mocha": "^8.4.0",
+    "prettier": "^2.3.2",
+    "prettier-eslint-cli": "^5.0.1",
+    "progress-bar-webpack-plugin": "^2.1.0",
+    "react-docgen-typescript-loader": "^3.7.2",
+    "react-hot-loader": "^4.13.0",
+    "source-map-loader": "^3.0.0",
+    "speed-measure-webpack-plugin": "^1.5.0",
+    "style-loader": "^3.2.1",
+    "terser-webpack-plugin": "^5.1.4",
+    "ts-jest": "^27.0.4",
+    "ts-loader": "^9.2.3",
+    "typedoc": "^0.21.4",
+    "typedoc-chd-theme": "^1.0.0",
+    "typedoc-plugin-external-module-name": "^4.0.6",
+    "typedoc-plugin-markdown": "^3.10.4",
+    "typedoc-plugin-sourcefile-url": "^1.0.6",
+    "typedoc-webpack-plugin": "^1.1.4",
+    "typescript": "^4.3.5",
+    "vscode-test": "^1.5.2",
+    "webpack": "^5.45.1",
+    "webpack-bundle-analyzer": "^4.4.2",
+    "webpack-cli": "^4.7.2",
+    "webpack-dev-server": "^3.11.2",
+    "webpack-resolve-config-plugin": "^1.0.0"
+  },
+  "dependencies": {
+    "@ant-design/icons": "^4.7.13",
+    "@easy_vscode/core": "^1.5.6",
+    "@easy_vscode/webview": "^1.6.6",
+    "ahooks": "^3.7.5",
+    "antd": "^4.16.8",
+    "axios": "^0.24.0",
+    "clipboard": "^2.0.8",
+    "fs-extra": "^10.0.0",
+    "i18next": "^21.9.0",
+    "lodash": "^4.17.21",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-i18next": "^11.18.3",
+    "styled-components": "^5.3.0"
+  },
+  "resolutions": {
+    "webpack": "5.73.0"
+  }
+}

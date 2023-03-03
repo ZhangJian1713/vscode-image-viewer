@@ -1,0 +1,60 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Watch Webview",
+			"type": "shell",
+            "command": "yarn ui-watch",
+			"isBackground": true,
+			"presentation": {
+			  "reveal": "always",
+			  "panel": "shared"
+			},
+			"problemMatcher": {
+			  "owner": "typescript",
+			  "fileLocation": "relative",
+			  "pattern": {
+				"regexp": "^([^\\s].*)\\((\\d+|\\,\\d+|\\d+,\\d+,\\d+,\\d+)\\):\\s+(error|warning|info)\\s+(TS\\d+)\\s*:\\s*(.*)$",
+				"file": 1,
+				"location": 2,
+				"severity": 3,
+				"code": 4,
+				"message": 5
+			  },
+			  "background": {
+				"activeOnStart": true,
+				"beginsPattern": "^.*Please run.*",
+				"endsPattern": "^.*compiled successfully.*"
+			  }
+			}
+		},
+		{
+			"label": "Watch Extension",
+			"type": "shell",
+            "command": "yarn watch",
+			"dependsOn": "Watch Webview",
+			"isBackground": true,
+			"presentation": {
+			  "reveal": "always",
+			  "panel": "shared"
+			},
+			"problemMatcher": {
+			  "owner": "typescript",
+			  "fileLocation": "relative",
+			  "pattern": {
+				"regexp": "^([^\\s].*)\\((\\d+|\\,\\d+|\\d+,\\d+,\\d+,\\d+)\\):\\s+(error|warning|info)\\s+(TS\\d+)\\s*:\\s*(.*)$",
+				"file": 1,
+				"location": 2,
+				"severity": 3,
+				"code": 4,
+				"message": 5
+			  },
+			  "background": {
+				"activeOnStart": true,
+				"beginsPattern": "^.*asset.*",
+				"endsPattern": "^.*compiled successfully.*"
+			  }
+			}
+		}
+	]
+}
