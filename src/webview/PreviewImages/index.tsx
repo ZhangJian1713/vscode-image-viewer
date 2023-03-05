@@ -13,7 +13,7 @@ import {
   Tooltip
 } from 'antd'
 import { FolderOpenTwoTone, InfoCircleOutlined } from '@ant-design/icons'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { MESSAGE_CMD } from '../../constants'
 import { callVscode } from '@easy_vscode/webview'
 import mockData from './data'
@@ -31,6 +31,7 @@ import {
   StyleTopRows
 } from './style'
 import ImageInfo from './ImageInfo'
+import { useDebounceFn, useScroll } from 'ahooks'
 
 const { Search } = Input
 const mockImgs = [...mockData]
@@ -71,12 +72,14 @@ const DEFAULT_IMAGE_SIZE = 100
 const THRESHOLD_LAZY_LOADING = 100
 const THRESHOLD_DELAY_CHANGE_SIZE = 200
 
-interface IImage {
+export interface IImage {
   // origin properties
   path: string
   fullPath: string
   vscodePath: string
+  size: number
   // extend properties
+  fileName: string
   fileType: string
   dirPath: string
 }
@@ -93,6 +96,25 @@ const PreviewImages: React.FC = () => {
   const [beforeFetch, setBeforeFetch] = useState(true)
   const [loading, setLoading] = useState(false)
   const [size, setSize] = useState<number>(DEFAULT_IMAGE_SIZE)
+  const [isScrolling, setIsScrolling] = useState(false)
+
+  const { run: onDebounceScroll } = useDebounceFn(
+    () => {
+      setIsScrolling(false)
+    },
+    {
+      wait: 300
+    }
+  )
+  const ref = useRef(null)
+  const scroll = useScroll(ref)
+
+  useEffect(() => {
+    if (!isScrolling) {
+      setIsScrolling(true)
+    }
+    onDebounceScroll(scroll)
+  }, [scroll])
 
   const refreshImgs = () => {
     if (isInbrowser) {
@@ -266,7 +288,7 @@ const PreviewImages: React.FC = () => {
             {allPaths.length === 0 ? (
               customizeRenderEmpty()
             ) : (
-              <StyledImgsContainer>
+              <StyledImgsContainer ref={ref}>
                 <Collapse activeKey={activeKey} onChange={handleChangeActiveKey}>
                   {allPaths.map((path) => (
                     <Collapse.Panel
@@ -288,8 +310,9 @@ const PreviewImages: React.FC = () => {
                             .map((img) => (
                               <StyleImage key={img.path}>
                                 <ImageLazyLoad
+                                  isScrolling={isScrolling}
                                   enableLazyLoad={enableLazyLoad}
-                                  src={img.vscodePath}
+                                  img={img}
                                   size={size}
                                   backgroundColor={backgroundColor}
                                 />

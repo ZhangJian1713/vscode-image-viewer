@@ -2,6 +2,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { Webview, Uri } from 'vscode'
 import { utils } from '@easy_vscode/core'
+import imageSize from 'image-size'
 
 export const SUPPORT_IMG_TYPES = ['.svg', '.png', '.jpeg', '.jpg', '.ico', '.gif', '.webp', '.bmp', '.tif', '.apng']
 const { getProjectPath } = utils
@@ -23,13 +24,15 @@ function mapDir(pathname: string, callback: any) {
 function searchImgs(dir: string, webview: Webview) {
   const imgs: any = []
   mapDir(dir, (filePath: string) => {
+    const size = fs.statSync(filePath)?.size
     const relativePath = filePath.replace(getProjectPath() + '/', '')
     // vscodePath e.g. https://file%2B.vscode-resource.vscode-cdn.net/Users/user_name/project_dir/src/favicon.ico
     const vscodePath = webview.asWebviewUri(Uri.file(filePath)).toString()
     const img = {
       path: relativePath,
       fullPath: filePath,
-      vscodePath
+      vscodePath,
+      size
     }
     imgs.push(img)
   })
@@ -41,7 +44,11 @@ function searchImgs(dir: string, webview: Webview) {
  */
 export const getAllImgs = (webview: Webview) => {
   const basePath = getProjectPath()
+  console.log(`Search for images in ${basePath}`)
+  const beginTime = new Date()
   const imgs = searchImgs(basePath, webview)
+  const endTime = new Date()
+  console.log(`${imgs.length} images found in ${(endTime.getTime() - beginTime.getTime())}ms`)
   return imgs
 }
 
@@ -53,4 +60,14 @@ export const getImageBase64 = (filePath: string): string => {
   }
   const imgBase64 = `data: image/${imgType};base64,` + Buffer.from(bitmap).toString('base64')
   return imgBase64
+}
+
+export const getImageSize = (filePath: string): { width: number, height: number } => {
+  let dimensions = { width: 0, height: 0 }
+  try {
+    dimensions = imageSize(filePath)
+  } catch (err) {
+    console.log(err)
+  }
+  return dimensions
 }

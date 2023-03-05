@@ -1,9 +1,9 @@
 import { exec } from 'child_process'
 import { ViewColumn, Webview } from 'vscode'
-import { utils, webviewUtils  } from '@easy_vscode/core'
+import { utils, webviewUtils } from '@easy_vscode/core'
 import { IWebview, IWebviewProps, IMessage } from '@easy_vscode/core/lib/types'
 import { DIST_WEBVIEW_INDEX_HTML, EXTENSION_COMMANDS, MESSAGE_CMD, WEBVIEW_NAMES } from '../../constants'
-import { getAllImgs, getImageBase64 } from './utils'
+import { getAllImgs, getImageBase64, getImageSize } from './utils'
 
 const { deleteFile, getProjectPath, renameFile } = utils
 const { invokeCallback, successResp } = webviewUtils
@@ -59,7 +59,14 @@ const messageHandlers = new Map([
       const strBase64 = getImageBase64(message.data.filePath)
       invokeCallback(viewType, message, strBase64)
     }
-  ]
+  ],
+  [
+    MESSAGE_CMD.GET_IMAGE_SIZE,
+    (message: IMessage) => {
+      const dimensions = getImageSize(message.data.filePath)
+      invokeCallback(viewType, message, dimensions)
+    }
+  ],
 ])
 
 const webview: IWebview = { webviewProps, messageHandlers }

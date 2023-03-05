@@ -15,9 +15,7 @@ export const MESSAGE_CMD = {
   DELETE_FILE: 'deleteFile',
   OPEN_IMAGE_DIRECTORY: 'openImageDirectory',
   GET_IMAGE_BASE64: 'getImageBase64',
-
-  // hello world
-  LIST_FILES: 'listFiles'
+  GET_IMAGE_SIZE: 'getImageSize',
 }
 
 export const EXTENSION_NAME = 'vscode-infra'
