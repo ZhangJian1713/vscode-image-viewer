@@ -5,6 +5,9 @@
   "description": "View all images of the current project",
   "icon": "assets/logo.png",
   "version": "1.3.3",
+  "author": "Zhang Jian <zhangjian1713@gmail.com>",
+  "homepage": "https://github.com/ZhangJian1713/vscode-image-viewer",
+  "license": "MIT",
   "engines": {
     "vscode": "^1.60.0"
   },
@@ -62,6 +65,13 @@
     "ui-build": "webpack --config easyVscodeConfig/webview.webpack.js --color --mode production",
     "lint-staged": "lint-staged",
     "check-type": "tsc --noEmit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ZhangJian1713/vscode-image-viewer.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ZhangJian1713/vscode-image-viewer/issues"
   },
   "devDependencies": {
     "@babel/core": "^7.14.8",
