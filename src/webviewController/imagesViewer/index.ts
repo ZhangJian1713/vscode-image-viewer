@@ -29,8 +29,8 @@ const messageHandlers = new Map([
   [
     MESSAGE_CMD.GET_ALL_IMGS,
     (message: IMessage, webview: Webview) => {
-      const allImgs = getAllImgs(webview)
-      invokeCallback(viewType, message, allImgs)
+      const imgs = getAllImgs(webview)
+      invokeCallback(viewType, message, { imgs, projectPath: getProjectPath() })
     }
   ],
   [

@@ -12,7 +12,7 @@ import {
   Spin,
   Tooltip
 } from 'antd'
-import { FolderOpenTwoTone, InfoCircleOutlined } from '@ant-design/icons'
+import { FolderOpenTwoTone, InfoCircleOutlined, SearchOutlined } from '@ant-design/icons'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { MESSAGE_CMD } from '../../constants'
 import { callVscode } from '@easy_vscode/webview'
@@ -36,10 +36,7 @@ import { useDebounceFn, useScroll } from 'ahooks'
 const { Search } = Input
 const mockImgs = [...mockData]
 
-// true: in browser，false: in webview of vscode extension
-const isInbrowser = location.protocol === 'http:' && location.hostname === 'localhost'
-
-const completeImgs = (imgs) => {
+const completeImgs = (imgs, projectPath) => {
   return imgs.map((img) => {
     const filePath = img.path
     const dirPath = filePath.substring(0, filePath.lastIndexOf('/') + 1)
@@ -47,6 +44,7 @@ const completeImgs = (imgs) => {
     const fileType = filePath.substring(filePath.lastIndexOf('.') + 1)
     const newImg = {
       ...img,
+      fullPath: projectPath + '/' + img.path,
       dirPath,
       fileName,
       fileType
@@ -117,21 +115,21 @@ const PreviewImages: React.FC = () => {
   }, [scroll])
 
   const refreshImgs = () => {
-    if (isInbrowser) {
-      updateImgs(completeImgs(mockImgs))
-    } else {
-      setLoading(true)
-      callVscode({ cmd: MESSAGE_CMD.GET_ALL_IMGS }, (imgs) => {
-        setLoading(false)
-        setBeforeFetch(false)
-        updateImgs(imgs)
-      })
-    }
+    setLoading(true)
+    callVscode({ cmd: MESSAGE_CMD.GET_ALL_IMGS }, ({ imgs, projectPath }) => {
+      const { commandArgs } = window as any
+      if (commandArgs?.[0]?.path) {
+        setKeyword(commandArgs?.[0]?.path?.replace(projectPath + '/', ''))
+      }
+      setLoading(false)
+      setBeforeFetch(false)
+      updateImgs(imgs, projectPath)
+    })
   }
   useEffect(refreshImgs, [])
 
-  const updateImgs = (newImgs) => {
-    const imgs = completeImgs(newImgs)
+  const updateImgs = (newImgs, projectPath) => {
+    const imgs = completeImgs(newImgs, projectPath)
     setImgs(imgs)
     let allFileTypes: string[] = imgs.map((img) => img.fileType)
     allFileTypes = Array.from(new Set(allFileTypes)).sort()
@@ -216,11 +214,12 @@ const PreviewImages: React.FC = () => {
         <StyledPreviewImages style={{ padding: '20px' }}>
           {/* Search */}
           <StyleTopRows>
-            <Search
+            <Input
+              addonBefore={<SearchOutlined />}
               allowClear
               size='middle'
               placeholder='image path/name'
-              style={{ width: '280px', marginRight: '16px' }}
+              style={{ width: '100%', marginRight: '16px' }}
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
             />

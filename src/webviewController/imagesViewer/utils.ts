@@ -30,7 +30,6 @@ function searchImgs(dir: string, webview: Webview) {
     const vscodePath = webview.asWebviewUri(Uri.file(filePath)).toString()
     const img = {
       path: relativePath,
-      fullPath: filePath,
       vscodePath,
       size
     }

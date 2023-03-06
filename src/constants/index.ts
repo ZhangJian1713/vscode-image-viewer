@@ -5,7 +5,6 @@ export const DIST_WEBVIEW_INDEX_HTML = `${DIST_WEBVIEW_PATH}/index.html`
 
 export const WEBVIEW_NAMES = {
   PreviewImages: 'PreviewImages',
-  HelloWorld: 'HelloWorld',
 }
 
 export const MESSAGE_CMD = {
@@ -22,5 +21,4 @@ export const EXTENSION_NAME = 'vscode-infra'
 
 export const EXTENSION_COMMANDS = {
   OPEN_WEBVIEW_IMAGE_VIEWER: `${EXTENSION_NAME}.webviewImageViewer`,
-  OPEN_WEBVIEW_HELLO_WORLD: `${EXTENSION_NAME}.webviewHelloWorld`,
 }
