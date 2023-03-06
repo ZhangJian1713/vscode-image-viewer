@@ -1,3 +1,4 @@
+import { ReloadOutlined } from '@ant-design/icons';
 import styled from 'styled-components'
 
 export const StyledFolderOpenTwoTone = styled.span`
@@ -32,6 +33,7 @@ export const StyledPreviewImages = styled.div`
 `
 
 export const StyleTopRows = styled.div`
+  position: relative;
   margin: 0 0 10px 0;
 `
 
@@ -104,4 +106,12 @@ export const StyledBetweenWrapper = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
+`
+
+export const StyledReloadOutlined = styled(ReloadOutlined)`
+  line-height: 32px;
+  color: #2678dd;
+  position: absolute;
+  right: 0;
+  top: 0;
 `

@@ -16,7 +16,6 @@ import { FolderOpenTwoTone, InfoCircleOutlined, SearchOutlined } from '@ant-desi
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { MESSAGE_CMD } from '../../constants'
 import { callVscode } from '@easy_vscode/webview'
-import mockData from './data'
 import ImageLazyLoad from './ImageLazyLoad'
 import {
   StyledBetweenWrapper,
@@ -24,6 +23,7 @@ import {
   StyledImgsContainer,
   StyledPicCount,
   StyledPreviewImages,
+  StyledReloadOutlined,
   StyleImage,
   StyleImageList,
   StyleRowTitle,
@@ -32,9 +32,6 @@ import {
 } from './style'
 import ImageInfo from './ImageInfo'
 import { useDebounceFn, useScroll } from 'ahooks'
-
-const { Search } = Input
-const mockImgs = [...mockData]
 
 const completeImgs = (imgs, projectPath) => {
   return imgs.map((img) => {
@@ -212,18 +209,17 @@ const PreviewImages: React.FC = () => {
     <ConfigProvider renderEmpty={customizeRenderEmpty}>
       <Spin spinning={loading}>
         <StyledPreviewImages style={{ padding: '20px' }}>
-          {/* Search */}
           <StyleTopRows>
             <Input
               addonBefore={<SearchOutlined />}
               allowClear
               size='middle'
               placeholder='image path/name'
-              style={{ width: '100%', marginRight: '16px' }}
+              style={{ width: 'calc(100% - 32px)', marginRight: '8px' }}
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
             />
-            {/* <Button size='middle' onClick={refreshImgs}> Refresh </Button> */}
+            <StyledReloadOutlined onClick={refreshImgs} />
           </StyleTopRows>
           {/* Type */}
           <StyleTopRows style={{ marginBottom: '2px' }}>
