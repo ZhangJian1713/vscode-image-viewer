@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.4.1] - 2023-03-07
+
+### Added
+
+- Only show clicked image or directory
+
 ## [1.4.0] - 2023-03-06
 
 ### Added

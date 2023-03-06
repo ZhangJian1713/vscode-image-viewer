@@ -4,7 +4,7 @@
   "displayName": "Image Viewer",
   "description": "View all images of the current project",
   "icon": "assets/logo.png",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "author": "Zhang Jian <zhangjian1713@gmail.com>",
   "homepage": "https://github.com/ZhangJian1713/vscode-image-viewer",
   "license": "MIT",
