@@ -62,6 +62,7 @@ const ImageLazyLoad: React.FC<IImageLazyLoadProps> = ({ isScrolling, enableLazyL
       style={{ backgroundColor, objectFit: 'contain' }}
       src={img.vscodePath}
       preview={{
+        scaleStep: 3,
         mask: (
           <div className='ant-image-mask-info' onMouseOver={handleMouseOver}>
             <EyeOutlined />
