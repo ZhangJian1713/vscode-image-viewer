@@ -57,7 +57,7 @@ const ImageInfo: React.FC<any> = ({ img, onDeleteImage, size }) => {
           icon: <CopyOutlined style={{ color: THEME_COLOR }} />
         },
         {
-          label: `Copy Base64 encoding of this image`,
+          label: `Copy Base64 string`,
           key: MenuKeys.CopyBase64,
           icon: <CopyOutlined style={{ color: THEME_COLOR }} />
         },
