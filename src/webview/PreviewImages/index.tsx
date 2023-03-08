@@ -116,7 +116,10 @@ const PreviewImages: React.FC = () => {
     callVscode({ cmd: MESSAGE_CMD.GET_ALL_IMGS }, ({ imgs, projectPath }) => {
       const { commandArgs } = window as any
       if (commandArgs?.[0]?.path) {
-        setKeyword(commandArgs?.[0]?.path?.replace(projectPath + '/', ''))
+        const fileClicked = commandArgs?.[0]?.path?.replace(projectPath + '/', '')
+        if (imgs.find((img) => img.path.indexOf(fileClicked) > -1)) {
+          setKeyword(fileClicked)
+        }
       }
       setLoading(false)
       setBeforeFetch(false)
