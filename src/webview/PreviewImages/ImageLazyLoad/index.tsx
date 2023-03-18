@@ -13,6 +13,7 @@ interface IImageLazyLoadProps {
   img: IImage
   size: number
   backgroundColor: string
+  autoPreview: boolean
 }
 
 const StyleImagePlaceHolder = styled.div`
@@ -32,8 +33,9 @@ interface IDimensions {
  * @param props
  * @returns
  */
-const ImageLazyLoad: React.FC<IImageLazyLoadProps> = ({ isScrolling, enableLazyLoad, img, size, backgroundColor }) => {
+const ImageLazyLoad: React.FC<IImageLazyLoadProps> = ({ isScrolling, enableLazyLoad, img, size, backgroundColor, autoPreview = false }) => {
   const ref = useRef(null)
+  const childRef = useRef(null);
   const [inViewport] = useInViewport(ref)
   const [isShow, setIsShow] = useState(!enableLazyLoad || inViewport)
   const [dimensions, setDimensions] = useState<IDimensions>()
@@ -44,6 +46,7 @@ const ImageLazyLoad: React.FC<IImageLazyLoadProps> = ({ isScrolling, enableLazyL
     }
   }, [isScrolling, enableLazyLoad, inViewport])
 
+  // query dimensions of image via nodejs
   const handleMouseOver = () => {
     if (!dimensions) {
       callVscode({ cmd: MESSAGE_CMD.GET_IMAGE_SIZE, data: { filePath: img.fullPath } }, (dimensions) => {
@@ -52,11 +55,35 @@ const ImageLazyLoad: React.FC<IImageLazyLoadProps> = ({ isScrolling, enableLazyL
     }
   }
 
+  /**
+   * open preview of image
+   * Unfortunately, 'visible' and 'onVisibleChange' props doesn't work here. I don't know why but I do it using simulated click event
+   */
+  const openPreview = () => {
+    const image = document.getElementById(img.fullPath)
+    if (!image) {
+      return
+    }
+    const event = new MouseEvent('click', {
+      view: window,
+      bubbles: true,
+      cancelable: true
+    })
+    image.dispatchEvent(event)
+  }
+  useEffect(() => {
+    if (autoPreview && isShow) {
+      openPreview()
+    }
+  }, [autoPreview, isShow])
+
   if (!isShow) {
     return <StyleImagePlaceHolder ref={ref} style={{ width: size, height: size }} />
   }
+
   return (
     <Image
+      id={img.fullPath}
       width={size}
       height={size}
       style={{ backgroundColor, objectFit: 'contain' }}
