@@ -3,15 +3,22 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "declaration": true,
-    "lib": ["es5", "es2015", "es2016", "es2017", "dom"],
+    "lib": [
+      "es5",
+      "es2015",
+      "es2016",
+      "es2017",
+      "dom"
+    ],
     "moduleResolution": "node",
     "noImplicitAny": false,
-    "noUnusedLocals": true,
     "outDir": "./dist",
     "preserveConstEnums": true,
     "removeComments": true,
     "baseUrl": "src",
-    "rootDirs": ["src"],
+    "rootDirs": [
+      "src"
+    ],
     "jsx": "react",
     "sourceMap": true,
     "strictNullChecks": false,
@@ -19,8 +26,15 @@
     "skipLibCheck": true,
     "importHelpers": true,
     "noEmit": false,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false
   },
-  "exclude": ["dist"],
-  "include": ["src/**/*"]
+  "exclude": [
+    "dist"
+  ],
+  "include": [
+    "src/**/*",
+    "index.d.ts"
+  ]
 }

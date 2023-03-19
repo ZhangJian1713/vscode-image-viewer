@@ -14,6 +14,7 @@ interface IImageLazyLoadProps {
   size: number
   backgroundColor: string
   autoPreview: boolean
+  onAutoPreview: () => void
 }
 
 const StyleImagePlaceHolder = styled.div`
@@ -33,12 +34,13 @@ interface IDimensions {
  * @param props
  * @returns
  */
-const ImageLazyLoad: React.FC<IImageLazyLoadProps> = ({ isScrolling, enableLazyLoad, img, size, backgroundColor, autoPreview = false }) => {
+const ImageLazyLoad: React.FC<IImageLazyLoadProps> = ({ isScrolling, enableLazyLoad, img, size, backgroundColor, autoPreview = false, onAutoPreview }) => {
   const ref = useRef(null)
   const childRef = useRef(null);
   const [inViewport] = useInViewport(ref)
   const [isShow, setIsShow] = useState(!enableLazyLoad || inViewport)
   const [dimensions, setDimensions] = useState<IDimensions>()
+  const [everAutoPreview, setEverAutoPreview] = useState(false)
 
   useEffect(() => {
     if (!isScrolling) {
@@ -72,8 +74,10 @@ const ImageLazyLoad: React.FC<IImageLazyLoadProps> = ({ isScrolling, enableLazyL
     image.dispatchEvent(event)
   }
   useEffect(() => {
-    if (autoPreview && isShow) {
+    if (!everAutoPreview && autoPreview && isShow) {
+      setEverAutoPreview(true)
       openPreview()
+      onAutoPreview()
     }
   }, [autoPreview, isShow])
 

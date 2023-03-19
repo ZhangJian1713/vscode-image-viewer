@@ -66,7 +66,7 @@ const messageHandlers = new Map([
       const dimensions = getImageSize(message.data.filePath)
       invokeCallback(viewType, message, dimensions)
     }
-  ],
+  ]
 ])
 
 const webview: IWebview = { webviewProps, messageHandlers }

@@ -10,10 +10,11 @@ import {
   Slider,
   Space,
   Spin,
+  Tag,
   Tooltip
 } from 'antd'
 import { FolderOpenTwoTone, InfoCircleOutlined, SearchOutlined } from '@ant-design/icons'
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { MESSAGE_CMD } from '../../constants'
 import { callVscode } from '@easy_vscode/webview'
 import ImageLazyLoad from './ImageLazyLoad'
@@ -32,6 +33,7 @@ import {
 } from './style'
 import ImageInfo from './ImageInfo'
 import { useDebounceFn, useScroll } from 'ahooks'
+import { BUILTIN_MESSAGE_CMD } from '@easy_vscode/core/lib/constants'
 
 const completeImgs = (imgs, projectPath) => {
   return imgs.map((img) => {
@@ -41,7 +43,7 @@ const completeImgs = (imgs, projectPath) => {
     const fileType = filePath.substring(filePath.lastIndexOf('.') + 1)
     const newImg = {
       ...img,
-      fullPath: projectPath + '/' + img.path,
+      fullPath: projectPath + img.path,
       dirPath,
       fileName,
       fileType
@@ -62,9 +64,9 @@ const backgroundColorOptions = [
   '#8488b6'
 ]
 
-const LIMIT_OF_TOO_MANY = 120
+const THRESHOLD_ALL_COLLAPSED = 1200
 const DEFAULT_IMAGE_SIZE = 100
-const THRESHOLD_LAZY_LOADING = 100
+const THRESHOLD_ENABLE_LAZY_LOADING = 150
 const THRESHOLD_DELAY_CHANGE_SIZE = 200
 
 export interface IImage {
@@ -92,6 +94,11 @@ const PreviewImages: React.FC = () => {
   const [loading, setLoading] = useState(false)
   const [size, setSize] = useState<number>(DEFAULT_IMAGE_SIZE)
   const [isScrolling, setIsScrolling] = useState(false)
+  const [relativeDir, setRelativeDir] = useState('')
+  const initClickFilePath = (window as any).commandArgs?.[0]?.path || ''
+  const [clickFilePath, setClickFilePath] = useState(initClickFilePath)
+  const [everAutoPreview, setEverAutoPreview] = useState(false)
+  const currentProjectPath = useRef('')
 
   const { run: onDebounceScroll } = useDebounceFn(
     () => {
@@ -111,25 +118,61 @@ const PreviewImages: React.FC = () => {
     onDebounceScroll(scroll)
   }, [scroll])
 
+  /**
+   * get file directory of path
+   */
+  const getFileDirectory = (path: string) => {
+    return path.substring(0, path.lastIndexOf('/') + 1)
+  }
+
   const refreshImgs = () => {
     setLoading(true)
     callVscode({ cmd: MESSAGE_CMD.GET_ALL_IMGS }, ({ imgs, projectPath }) => {
-      const { commandArgs } = window as any
-      if (commandArgs?.[0]?.path) {
-        const fileClicked = commandArgs?.[0]?.path?.replace(projectPath + '/', '')
-        if (imgs.find((img) => img.path.indexOf(fileClicked) > -1)) {
-          setKeyword(fileClicked)
+      currentProjectPath.current = projectPath
+      if (clickFilePath) {
+        const fileRelativePath = clickFilePath.replace(currentProjectPath.current, '')
+        const relativeDir = getFileDirectory(fileRelativePath)
+        if (relativeDir === '/') {
+          setRelativeDir('')
+        } else if (imgs.find((img) => img.path.indexOf(relativeDir))) {
+          setRelativeDir(relativeDir)
         }
       }
       setLoading(false)
       setBeforeFetch(false)
-      updateImgs(imgs, projectPath)
+      updateImgs(imgs)
     })
   }
   useEffect(refreshImgs, [])
 
-  const updateImgs = (newImgs, projectPath) => {
-    const imgs = completeImgs(newImgs, projectPath)
+  const onRevealWebview = useCallback((event) => {
+    const message = event?.data
+    if (message?.cmd === BUILTIN_MESSAGE_CMD.REVEAL_WEBVIEW) {
+      const commandArgs = message.data?.commandArgs
+      const clickFilePath = commandArgs?.[0]?.path || ''
+      setClickFilePath(clickFilePath)
+      if (clickFilePath) {
+        const fileRelativePath = clickFilePath.replace(currentProjectPath.current, '')
+        const relativeDir = getFileDirectory(fileRelativePath)
+        if (relativeDir === '/') {
+          setRelativeDir('')
+        } else if (imgs.find((img) => img.path.indexOf(relativeDir) > -1)) {
+          setRelativeDir(relativeDir)
+          setEverAutoPreview(false)
+        }
+      }
+    }
+  }, [imgs])
+
+  useEffect(() => {
+    window.addEventListener('message', onRevealWebview)
+    return () => {
+      window.removeEventListener('message', onRevealWebview)
+    }
+  }, [onRevealWebview])
+
+  const updateImgs = (newImgs) => {
+    const imgs = completeImgs(newImgs, currentProjectPath.current)
     setImgs(imgs)
     let allFileTypes: string[] = imgs.map((img) => img.fileType)
     allFileTypes = Array.from(new Set(allFileTypes)).sort()
@@ -138,16 +181,20 @@ const PreviewImages: React.FC = () => {
   }
 
   useEffect(() => {
-    const showImgs = imgs
+    let showImgs = imgs
+    if (relativeDir) {
+      showImgs = showImgs.filter((img) => img.dirPath.indexOf(relativeDir) > -1)
+    }
+    showImgs = showImgs
       .filter((img) => img.path.indexOf(keyword) > -1)
       .filter((img) => showImageTypes.includes(img.fileType))
     setShowImgs(showImgs)
     let arr: string[] = showImgs.map((img) => img.dirPath)
     arr = Array.from(new Set(arr)).sort()
     setAllPaths(arr)
-    const isVeryMany = showImgs.length > LIMIT_OF_TOO_MANY
+    const isVeryMany = showImgs.length > THRESHOLD_ALL_COLLAPSED
     setActiveKey(isVeryMany ? [] : [...arr])
-  }, [imgs, keyword, showImageTypes])
+  }, [imgs, keyword, showImageTypes, relativeDir])
 
   const onDeleteImage = (filePath) => {
     const index = imgs.findIndex((img) => img.fullPath === filePath)
@@ -206,8 +253,23 @@ const PreviewImages: React.FC = () => {
   }
 
   const enableLazyLoad = useMemo(() => {
-    return imgs.length > THRESHOLD_LAZY_LOADING
-  }, [imgs])
+    return showImgs.length > THRESHOLD_ENABLE_LAZY_LOADING
+  }, [showImgs])
+
+  const sortImageFn = (a: IImage, b: IImage) => {
+    if (clickFilePath && a.fullPath === clickFilePath) {
+      return -1
+    }
+    if (clickFilePath && b.fullPath === clickFilePath) {
+      return 1
+    }
+    return a.fileName < b.fileName ? -1 : 1
+  }
+
+  const onAutoPreview = () => {
+    setEverAutoPreview(true)
+  }
+
   return (
     <ConfigProvider renderEmpty={customizeRenderEmpty}>
       <Spin spinning={loading}>
@@ -270,11 +332,11 @@ const PreviewImages: React.FC = () => {
           <StyleTopRows>
             <Space>
               <span style={{ color: '#bbb' }}>
-                Filtered count: <span style={{ color: '#333' }}>{showImgs.length}</span>
+                Search result: <span style={{ color: '#333' }}>{showImgs.length}</span>
               </span>
               <Tooltip
                 placement='right'
-                title={`When there are more than ${LIMIT_OF_TOO_MANY} images(after being filtered) being displayed, all directories are collapsed by default.`}
+                title={`When there are more than ${THRESHOLD_ALL_COLLAPSED} images(after being filtered) being displayed, all directories are collapsed by default.`}
               >
                 <InfoCircleOutlined style={{ fontSize: '16px', color: '#ccc' }} />
               </Tooltip>
@@ -282,6 +344,11 @@ const PreviewImages: React.FC = () => {
               <Button onClick={() => setActiveKey([])}>Collapse All</Button>
             </Space>
           </StyleTopRows>
+          {relativeDir && (
+            <StyleTopRows>
+              <Tag closable onClose={() => setRelativeDir('')}>Search in: {relativeDir}</Tag>
+            </StyleTopRows>
+          )}
           <div>
             {allPaths.length === 0 ? (
               customizeRenderEmpty()
@@ -305,6 +372,7 @@ const PreviewImages: React.FC = () => {
                         <Image.PreviewGroup>
                           {showImgs
                             .filter((img) => img.dirPath === path)
+                            .sort(sortImageFn)
                             .map((img) => (
                               <StyleImage key={img.path}>
                                 <ImageLazyLoad
@@ -313,6 +381,8 @@ const PreviewImages: React.FC = () => {
                                   img={img}
                                   size={size}
                                   backgroundColor={backgroundColor}
+                                  autoPreview={!everAutoPreview && clickFilePath && clickFilePath === img.fullPath}
+                                  onAutoPreview={onAutoPreview}
                                 />
                                 <ImageInfo size={size} img={img} onDeleteImage={onDeleteImage} />
                               </StyleImage>

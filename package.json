@@ -2,7 +2,7 @@
   "name": "image-viewer",
   "publisher": "vscode-infra",
   "displayName": "Image Viewer",
-  "description": "View all images of the current project",
+  "description": "View and manage all images in current project, copy base64",
   "icon": "assets/logo.png",
   "version": "1.4.1",
   "author": "Zhang Jian <zhangjian1713@gmail.com>",
@@ -155,7 +155,7 @@
   },
   "dependencies": {
     "@ant-design/icons": "^4.7.13",
-    "@easy_vscode/core": "^1.5.8",
+    "@easy_vscode/core": "^1.7.2",
     "@easy_vscode/webview": "^1.6.8",
     "ahooks": "^3.7.5",
     "antd": "^4.16.8",

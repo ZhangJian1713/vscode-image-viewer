@@ -25,7 +25,7 @@ function searchImgs(dir: string, webview: Webview) {
   const imgs: any = []
   mapDir(dir, (filePath: string) => {
     const size = fs.statSync(filePath)?.size
-    const relativePath = filePath.replace(getProjectPath() + '/', '')
+    const relativePath = filePath.replace(getProjectPath(), '')
     // vscodePath e.g. https://file%2B.vscode-resource.vscode-cdn.net/Users/user_name/project_dir/src/favicon.ico
     const vscodePath = webview.asWebviewUri(Uri.file(filePath)).toString()
     const img = {
