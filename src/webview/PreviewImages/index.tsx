@@ -127,14 +127,14 @@ const PreviewImages: React.FC = () => {
 
   const refreshImgs = () => {
     setLoading(true)
-    callVscode({ cmd: MESSAGE_CMD.GET_ALL_IMGS }, ({ imgs, projectPath }) => {
+    callVscode({ cmd: MESSAGE_CMD.GET_ALL_IMGS }, ({ imgs, projectPath }: { imgs: IImage[], projectPath: string }) => {
       currentProjectPath.current = projectPath
       if (clickFilePath) {
         const fileRelativePath = clickFilePath.replace(currentProjectPath.current, '')
         const relativeDir = getFileDirectory(fileRelativePath)
         if (relativeDir === '/') {
           setRelativeDir('')
-        } else if (imgs.find((img) => img.path.indexOf(relativeDir))) {
+        } else if (imgs.find((img) => img.path.includes(relativeDir))) {
           setRelativeDir(relativeDir)
         }
       }
@@ -156,7 +156,7 @@ const PreviewImages: React.FC = () => {
         const relativeDir = getFileDirectory(fileRelativePath)
         if (relativeDir === '/') {
           setRelativeDir('')
-        } else if (imgs.find((img) => img.path.indexOf(relativeDir) > -1)) {
+        } else if (imgs.find((img) => img.path.includes(relativeDir))) {
           setRelativeDir(relativeDir)
           setEverAutoPreview(false)
         }
