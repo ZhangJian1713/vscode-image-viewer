@@ -131,7 +131,9 @@ const PreviewImages: React.FC = () => {
       currentProjectPath.current = projectPath
       if (clickFilePath) {
         const fileRelativePath = clickFilePath.replace(currentProjectPath.current, '')
-        const relativeDir = getFileDirectory(fileRelativePath)
+        // 如果正则验证了fileRelativePath是文件就返回 true  否则返回 false
+        const isFile = /.*\..{3,5}/.test(fileRelativePath)
+        const relativeDir = isFile ? getFileDirectory(fileRelativePath) : fileRelativePath
         if (relativeDir === '/') {
           setRelativeDir('')
         } else if (imgs.find((img) => img.path.includes(relativeDir))) {
@@ -153,7 +155,8 @@ const PreviewImages: React.FC = () => {
       setClickFilePath(clickFilePath)
       if (clickFilePath) {
         const fileRelativePath = clickFilePath.replace(currentProjectPath.current, '')
-        const relativeDir = getFileDirectory(fileRelativePath)
+        const isFile = /.*\..{3,5}/.test(fileRelativePath)
+        const relativeDir = isFile ? getFileDirectory(fileRelativePath) : fileRelativePath
         if (relativeDir === '/') {
           setRelativeDir('')
         } else if (imgs.find((img) => img.path.includes(relativeDir))) {
