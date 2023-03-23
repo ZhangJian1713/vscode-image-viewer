@@ -131,7 +131,6 @@ const PreviewImages: React.FC = () => {
       currentProjectPath.current = projectPath
       if (clickFilePath) {
         const fileRelativePath = clickFilePath.replace(currentProjectPath.current, '')
-        // 如果正则验证了fileRelativePath是文件就返回 true  否则返回 false
         const isFile = /.*\..{3,5}/.test(fileRelativePath)
         const relativeDir = isFile ? getFileDirectory(fileRelativePath) : fileRelativePath
         if (relativeDir === '/') {
