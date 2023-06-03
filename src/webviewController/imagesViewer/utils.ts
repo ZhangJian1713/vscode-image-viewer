@@ -4,7 +4,7 @@ import { Webview, Uri } from 'vscode'
 import { utils } from '@easy_vscode/core'
 import imageSize from 'image-size'
 
-export const SUPPORT_IMG_TYPES = ['.svg', '.png', '.jpeg', '.jpg', '.ico', '.gif', '.webp', '.bmp', '.tif', '.apng']
+export const SUPPORT_IMG_TYPES = ['.svg', '.png', '.jpeg', '.jpg', '.ico', '.gif', '.webp', '.bmp', '.tif', '.apng', '.avif']
 const { getProjectPath } = utils
 
 function mapDir(pathname: string, callback: any) {
