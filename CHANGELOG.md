@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.5.3] - 2023-06-03
+
+### Added
+
+- Added support for avif format
+
 ## [1.4.1] - 2023-03-07
 
 ### Added
