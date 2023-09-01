@@ -5,8 +5,6 @@
 ``git clone git@github.com:ZhangJian1713/easy-vscode.git``  
 // install packages  
 ``yarn``  
-// change directory to the embedded webview UI project, then install packages and build a dist.  
-``cd src/webviewUI && yarn && yarn build``  
 Now you can press F5 to debug the extension in a new popup VSCode instance.  
 
 ### 1.2 Publish
