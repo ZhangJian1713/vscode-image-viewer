@@ -48,6 +48,19 @@
           "group": "z_commands"
         }
       ]
+    },
+    "configuration": {
+      "title": "zhangjian1713.image-viewer",
+      "properties": {
+        "zhangjian1713.image-viewer.includeFolders": {
+          "type": "array",
+          "default": [],
+          "description": "List of allowed folders to scan for images.",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
     }
   },
   "scripts": {
