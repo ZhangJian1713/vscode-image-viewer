@@ -5,6 +5,10 @@
     "ecmaVersion": 6,
     "sourceType": "module"
   },
+  "extends": [
+    "eslint:recommended",
+    "plugin:react/recommended"
+  ],
   "plugins": [
     "@typescript-eslint",
     "react",
@@ -18,7 +22,9 @@
     "no-throw-literal": "warn",
     "semi": "off",
     "no-console": "off",
-    "react-hooks/rules-of-hooks": "error"
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": "warn",
+    "no-undef": "off"
   },
   "ignorePatterns": [
     "out",

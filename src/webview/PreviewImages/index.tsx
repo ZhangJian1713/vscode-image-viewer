@@ -13,9 +13,9 @@ import {
   Tag,
   Tooltip
 } from 'antd'
-import { FolderOpenTwoTone, InfoCircleOutlined, SearchOutlined } from '@ant-design/icons'
+import { FolderOpenTwoTone, InfoCircleOutlined, SearchOutlined, SettingOutlined } from '@ant-design/icons'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { MESSAGE_CMD } from '../../constants'
+import { BACKGROUND_COLOR_OPTIONS, DEFAULT_BACKGROUND_COLOR, DEFAULT_IMAGE_SIZE, MESSAGE_CMD } from '../../constants'
 import { callVscode } from '@easy_vscode/webview'
 import ImageLazyLoad from './ImageLazyLoad'
 import {
@@ -34,6 +34,10 @@ import {
 import ImageInfo from './ImageInfo'
 import { useDebounceFn, useScroll } from 'ahooks'
 import { BUILTIN_MESSAGE_CMD } from '@easy_vscode/core/lib/constants'
+import { IConfig } from 'types'
+import SettingsModal from './SettingsModal'
+
+declare const window: any;
 
 const completeImgs = (imgs, projectPath) => {
   return imgs.map((img) => {
@@ -52,20 +56,7 @@ const completeImgs = (imgs, projectPath) => {
   })
 }
 
-const backgroundColorOptions = [
-  '#ffffff',
-  '#cccccc',
-  '#999999',
-  '#333333',
-  '#a89a89',
-  '#a9e4af',
-  '#f1a8a4',
-  '#64bbe2',
-  '#8488b6'
-]
-
 const THRESHOLD_ALL_COLLAPSED = 1200
-const DEFAULT_IMAGE_SIZE = 100
 const THRESHOLD_ENABLE_LAZY_LOADING = 150
 const THRESHOLD_DELAY_CHANGE_SIZE = 200
 
@@ -88,16 +79,19 @@ const PreviewImages: React.FC = () => {
   const [activeKey, setActiveKey] = useState<string[]>([])
   const [allPaths, setAllPaths] = useState<string[]>([])
   const [showImgs, setShowImgs] = useState<IImage[]>([])
-  const [backgroundColor, setBackgroundColor] = useState<string>(backgroundColorOptions[1])
+  const [backgroundColor, setBackgroundColor] = useState<string>(DEFAULT_BACKGROUND_COLOR)
   const [keyword, setKeyword] = useState<string>('')
   const [beforeFetch, setBeforeFetch] = useState(true)
   const [loading, setLoading] = useState(false)
   const [size, setSize] = useState<number>(DEFAULT_IMAGE_SIZE)
   const [isScrolling, setIsScrolling] = useState(false)
   const [relativeDir, setRelativeDir] = useState('')
-  const initClickFilePath = (window as any).commandArgs?.[0]?.path || ''
+  const initClickFilePath = window?.commandArgs?.[0]?.path || '';
   const [clickFilePath, setClickFilePath] = useState(initClickFilePath)
   const [everAutoPreview, setEverAutoPreview] = useState(false)
+  const [showSettingsModal, setShowSettingsModal] = useState(false)
+  const [includeFolders, setIncludeFolders] = useState('')
+  const [excludeFolders, setExcludeFolders] = useState('')
   const currentProjectPath = useRef('')
 
   const { run: onDebounceScroll } = useDebounceFn(
@@ -144,7 +138,7 @@ const PreviewImages: React.FC = () => {
       updateImgs(imgs)
     })
   }
-  useEffect(refreshImgs, [])
+  useEffect(refreshImgs, [clickFilePath])
 
   const onRevealWebview = useCallback((event) => {
     const message = event?.data
@@ -272,6 +266,50 @@ const PreviewImages: React.FC = () => {
     setEverAutoPreview(true)
   }
 
+  /**
+   * save to local config file
+   */
+  useEffect(() => {
+    callVscode({
+      cmd: MESSAGE_CMD.GET_CONFIG,
+    }, (data: IConfig) => {
+      setBackgroundColor(data.backgroundColor)
+      setSize(data.size)
+      setShowImageTypes(data.showImageTypes)
+      setKeyword(data.keyword)
+      setActiveKey(data.activeKey)
+      setIncludeFolders(data.includeFolders)
+      setExcludeFolders(data.excludeFolders)
+    })
+  }, [])
+
+  /**
+   * save to local config file
+   */
+  useEffect(() => {
+    callVscode({
+      cmd: MESSAGE_CMD.SAVE_CONFIG,
+      data: {
+        backgroundColor,
+        size,
+        showImageTypes,
+        keyword,
+        activeKey,
+        includeFolders,
+        excludeFolders
+      }
+    })
+  }, [showImageTypes, backgroundColor, size, activeKey, keyword, includeFolders, excludeFolders])
+
+  const handleClickSettings = () => {
+    setShowSettingsModal(true)
+  }
+
+  const handleApplySettings = (includeFolders: string, excludeFolders: string) => {
+    setIncludeFolders(includeFolders)
+    setExcludeFolders(excludeFolders)
+  }
+
   return (
     <ConfigProvider renderEmpty={customizeRenderEmpty}>
       <Spin spinning={loading}>
@@ -308,8 +346,9 @@ const PreviewImages: React.FC = () => {
           <StyleTopRows style={{ marginBottom: '6px' }}>
             <StyleRowTitle>Background:</StyleRowTitle>
             <span>
-              {backgroundColorOptions.map((color) => (
+              {BACKGROUND_COLOR_OPTIONS.map((color) => (
                 <StyleSquare
+                  key={color}
                   onClick={() => setBackgroundColor(color)}
                   isSelected={backgroundColor === color}
                   color={color}
@@ -332,19 +371,22 @@ const PreviewImages: React.FC = () => {
           </StyleTopRows>
           {/* Expand/Collapse All */}
           <StyleTopRows>
-            <Space>
-              <span style={{ color: '#bbb' }}>
-                Search result: <span style={{ color: '#333' }}>{showImgs.length}</span>
-              </span>
-              <Tooltip
-                placement='right'
-                title={`When there are more than ${THRESHOLD_ALL_COLLAPSED} images(after being filtered) being displayed, all directories are collapsed by default.`}
-              >
-                <InfoCircleOutlined style={{ fontSize: '16px', color: '#ccc' }} />
-              </Tooltip>
-              <Button onClick={() => setActiveKey([...allPaths])}>Expand All</Button>
-              <Button onClick={() => setActiveKey([])}>Collapse All</Button>
-            </Space>
+            <StyledBetweenWrapper>
+              <Space>
+                <span style={{ color: '#bbb' }}>
+                  Search result: <span style={{ color: '#333' }}>{showImgs.length}</span>
+                </span>
+                <Tooltip
+                  placement='right'
+                  title={`When there are more than ${THRESHOLD_ALL_COLLAPSED} images(after being filtered) being displayed, all directories are collapsed by default.`}
+                >
+                  <InfoCircleOutlined style={{ fontSize: '16px', color: '#ccc' }} />
+                </Tooltip>
+                <Button onClick={() => setActiveKey([...allPaths])}>Expand All</Button>
+                <Button onClick={() => setActiveKey([])}>Collapse All</Button>
+              </Space>
+              <SettingOutlined onClick={handleClickSettings} />
+            </StyledBetweenWrapper>
           </StyleTopRows>
           {relativeDir && (
             <StyleTopRows>
@@ -399,6 +441,13 @@ const PreviewImages: React.FC = () => {
           </div>
         </StyledPreviewImages>
       </Spin>
+      <SettingsModal
+        includeFolders={includeFolders}
+        excludeFolders={excludeFolders}
+        visible={showSettingsModal}
+        onClose={() => setShowSettingsModal(false)}
+        onApply={handleApplySettings}
+      />
     </ConfigProvider>
   )
 }
