@@ -4,6 +4,6 @@ export interface IConfig {
   activeKey: string[]
   backgroundColor: string,
   size: number,
-  includeFolders: string,
-  excludeFolders: string,
+  includeFolders: string[],
+  excludeFolders: string[],
 }

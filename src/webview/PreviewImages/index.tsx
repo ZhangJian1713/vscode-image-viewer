@@ -1,4 +1,5 @@
 import {
+  Alert,
   Button,
   Checkbox,
   Collapse,
@@ -85,13 +86,13 @@ const PreviewImages: React.FC = () => {
   const [loading, setLoading] = useState(false)
   const [size, setSize] = useState<number>(DEFAULT_IMAGE_SIZE)
   const [isScrolling, setIsScrolling] = useState(false)
-  const [relativeDir, setRelativeDir] = useState('')
+  const [relativeDir, setRelativeDir] = useState<string>('')
   const initClickFilePath = window?.commandArgs?.[0]?.path || '';
-  const [clickFilePath, setClickFilePath] = useState(initClickFilePath)
+  const [clickFilePath, setClickFilePath] = useState<string>(initClickFilePath)
   const [everAutoPreview, setEverAutoPreview] = useState(false)
   const [showSettingsModal, setShowSettingsModal] = useState(false)
-  const [includeFolders, setIncludeFolders] = useState('')
-  const [excludeFolders, setExcludeFolders] = useState('')
+  const [includeFolders, setIncludeFolders] = useState<string[]>([])
+  const [excludeFolders, setExcludeFolders] = useState<string[]>([])
   const currentProjectPath = useRef('')
 
   const { run: onDebounceScroll } = useDebounceFn(
@@ -119,7 +120,7 @@ const PreviewImages: React.FC = () => {
     return path.substring(0, path.lastIndexOf('/') + 1)
   }
 
-  const refreshImgs = () => {
+  const refreshImgs = useCallback(() => {
     setLoading(true)
     callVscode({ cmd: MESSAGE_CMD.GET_ALL_IMGS }, ({ imgs, projectPath }: { imgs: IImage[], projectPath: string }) => {
       currentProjectPath.current = projectPath
@@ -137,8 +138,8 @@ const PreviewImages: React.FC = () => {
       setBeforeFetch(false)
       updateImgs(imgs)
     })
-  }
-  useEffect(refreshImgs, [clickFilePath])
+  }, [clickFilePath])
+  useEffect(refreshImgs, [refreshImgs])
 
   const onRevealWebview = useCallback((event) => {
     const message = event?.data
@@ -295,17 +296,28 @@ const PreviewImages: React.FC = () => {
         showImageTypes,
         keyword,
         activeKey,
+      }
+    })
+  }, [showImageTypes, backgroundColor, size, activeKey, keyword])
+
+  /**
+   * save to local config file and refresh images
+   */
+  useEffect(() => {
+    callVscode({
+      cmd: MESSAGE_CMD.SAVE_CONFIG,
+      data: {
         includeFolders,
         excludeFolders
       }
-    })
-  }, [showImageTypes, backgroundColor, size, activeKey, keyword, includeFolders, excludeFolders])
+    }, refreshImgs)
+  }, [includeFolders, excludeFolders, refreshImgs])
 
   const handleClickSettings = () => {
     setShowSettingsModal(true)
   }
 
-  const handleApplySettings = (includeFolders: string, excludeFolders: string) => {
+  const handleApplySettings = (includeFolders: string[], excludeFolders: string[]) => {
     setIncludeFolders(includeFolders)
     setExcludeFolders(excludeFolders)
   }
@@ -313,6 +325,7 @@ const PreviewImages: React.FC = () => {
   return (
     <ConfigProvider renderEmpty={customizeRenderEmpty}>
       <Spin spinning={loading}>
+        <Alert closable message="New features: ① Individual project settings are now stored in local files. ② Search now has options to include or exclude specific folders." type="info" showIcon />
         <StyledPreviewImages style={{ padding: '20px' }}>
           <StyleTopRows>
             <Input
@@ -385,7 +398,7 @@ const PreviewImages: React.FC = () => {
                 <Button onClick={() => setActiveKey([...allPaths])}>Expand All</Button>
                 <Button onClick={() => setActiveKey([])}>Collapse All</Button>
               </Space>
-              <SettingOutlined onClick={handleClickSettings} />
+              <SettingOutlined style={{ fontSize: '20px' }} onClick={handleClickSettings} />
             </StyledBetweenWrapper>
           </StyleTopRows>
           {relativeDir && (
@@ -403,7 +416,7 @@ const PreviewImages: React.FC = () => {
                     <Collapse.Panel
                       header={
                         <span>
-                          {path}
+                          {path.replace(/^\/|\/$/g, '')}
                           <StyledPicCount>({showImgs.filter((img) => img.dirPath === path).length})</StyledPicCount>
                           <StyledFolderOpenTwoTone>
                             <FolderOpenTwoTone twoToneColor='#f4d057' onClick={(e) => handleClickOpenFolder(e, path)} />
@@ -441,13 +454,17 @@ const PreviewImages: React.FC = () => {
           </div>
         </StyledPreviewImages>
       </Spin>
-      <SettingsModal
-        includeFolders={includeFolders}
-        excludeFolders={excludeFolders}
-        visible={showSettingsModal}
-        onClose={() => setShowSettingsModal(false)}
-        onApply={handleApplySettings}
-      />
+      {
+        showSettingsModal && (
+          <SettingsModal
+            includeFolders={includeFolders}
+            excludeFolders={excludeFolders}
+            visible={showSettingsModal}
+            onClose={() => setShowSettingsModal(false)}
+            onApply={handleApplySettings}
+          />
+        )
+      }
     </ConfigProvider>
   )
 }

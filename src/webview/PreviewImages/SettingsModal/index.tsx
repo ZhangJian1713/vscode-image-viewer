@@ -1,15 +1,15 @@
-import { Modal, Button, Input } from "antd";
+import { Modal, Button, Input, Space } from "antd";
 import React, { FC } from "react";
 import { useState } from "react";
 
 const { TextArea } = Input;
 
 interface ISettingsModalProps {
-  includeFolders: string;
-  excludeFolders: string;
+  includeFolders: string[];
+  excludeFolders: string[];
   visible: boolean;
   // eslint-disable-next-line no-unused-vars
-  onApply: (includeFolders: string, excludeFolders: string) => void;
+  onApply: (includeFolders: string[], excludeFolders: string[]) => void;
   onClose: () => void;
 }
 
@@ -20,34 +20,36 @@ const SettingsModal: FC<ISettingsModalProps> = ({
   onApply,
   onClose
 }) => {
-  const [includeFolders, setIncludeFolders] = useState(initIncludeFolders);
-  const [excludeFolders, setExcludeFolders] = useState(initExcludeFolders);
+  const [includeFolders, setIncludeFolders] = useState<string>(initIncludeFolders.join("\n"));
+  const [excludeFolders, setExcludeFolders] = useState<string>(initExcludeFolders.join("\n"));
 
   const handleApply = () => {
-    const includeFoldersArray = includeFolders.split("\n");
-    const excludeFoldersArray = excludeFolders.split("\n");
-    console.log("Include Folders:", includeFoldersArray);
-    console.log("Exclude Folders:", excludeFoldersArray);
-    onApply(includeFolders, excludeFolders);
+    const includeFoldersArray = includeFolders.split("\n").map(i => i.trim()).filter(i => i);
+    const excludeFoldersArray = excludeFolders.split("\n").map(i => i.trim()).filter(i => i);
+    onApply(includeFoldersArray, excludeFoldersArray);
     onClose();
   };
 
   return (
-    <Modal open={visible} onCancel={onClose} footer={null}>
-      <div>Including these directories, 1 directory per line</div>
+    <Modal title='Settings' open={visible} onCancel={onClose} footer={null} destroyOnClose>
+      <div>Enter directories to <b>include</b> in search, one per line</div>
       <TextArea
+        autoSize={{ minRows: 5, maxRows: 10 }}
         placeholder="e.g. assets"
         value={includeFolders}
         onChange={(e) => setIncludeFolders(e.target.value)}
       />
-      <div>Excluding these directories, 1 directory per line</div>
+      <div style={{ margin: '20px 0 0 0' }}>Enter directories to <b>exclude</b> from search, one per line</div>
       <TextArea
-        placeholder="Exclude Folders e.g. dist/assets"
+        autoSize={{ minRows: 5, maxRows: 10 }}
+        placeholder="e.g. dist/assets"
         value={excludeFolders}
         onChange={(e) => setExcludeFolders(e.target.value)}
       />
-      <Button onClick={handleApply}>Apply</Button>
-      <Button onClick={onClose}>Cancel</Button>
+      <Space style={{ margin: '20px 0 0 0' }}>
+        <Button type="primary" onClick={handleApply}>Save & Apply</Button>
+        <Button onClick={onClose}>Cancel</Button>
+      </Space>
     </Modal>
   );
 };
