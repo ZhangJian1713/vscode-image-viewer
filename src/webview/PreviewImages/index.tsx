@@ -26,6 +26,7 @@ import {
   StyledPicCount,
   StyledPreviewImages,
   StyledReloadOutlined,
+  StyledSettingOutlined,
   StyleImage,
   StyleImageList,
   StyleRowTitle,
@@ -325,7 +326,12 @@ const PreviewImages: React.FC = () => {
   return (
     <ConfigProvider renderEmpty={customizeRenderEmpty}>
       <Spin spinning={loading}>
-        <Alert closable message="New features: ① Individual project settings are now stored in local files. ② Search now has options to include or exclude specific folders." type="info" showIcon />
+        <Alert closable message={
+          <div>
+            New features: ① Individual project settings are now stored in local files. ② Search now has options to include or exclude specific folders. &nbsp;&nbsp;
+            <a href='https://github.com/ZhangJian1713/vscode-image-viewer/issues' target='_blank' rel="noreferrer">Report issues</a>
+          </div>
+        } type="info" showIcon />
         <StyledPreviewImages style={{ padding: '20px' }}>
           <StyleTopRows>
             <Input
@@ -333,10 +339,11 @@ const PreviewImages: React.FC = () => {
               allowClear
               size='middle'
               placeholder='image path/name'
-              style={{ width: 'calc(100% - 32px)', marginRight: '8px' }}
+              style={{ width: 'calc(100% - 60px)', marginRight: '8px' }}
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
             />
+            <StyledSettingOutlined onClick={handleClickSettings} />
             <StyledReloadOutlined onClick={refreshImgs} />
           </StyleTopRows>
           {/* Type */}
@@ -398,7 +405,6 @@ const PreviewImages: React.FC = () => {
                 <Button onClick={() => setActiveKey([...allPaths])}>Expand All</Button>
                 <Button onClick={() => setActiveKey([])}>Collapse All</Button>
               </Space>
-              <SettingOutlined style={{ fontSize: '20px' }} onClick={handleClickSettings} />
             </StyledBetweenWrapper>
           </StyleTopRows>
           {relativeDir && (
