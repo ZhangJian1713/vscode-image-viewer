@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.0] - 2023-12-18
+
+### Added
+
+- Individual project settings are now stored in local files.
+- Search now has options to include or exclude specific folders.
+
 ## [1.5.3] - 2023-06-03
 
 ### Added
