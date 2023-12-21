@@ -3,8 +3,8 @@ import { ViewColumn, Webview } from 'vscode'
 import { utils, webviewUtils } from '@easy_vscode/core'
 import { IWebview, IWebviewProps, IMessage } from '@easy_vscode/core/lib/types'
 import { DIST_WEBVIEW_INDEX_HTML, EXTENSION_COMMANDS, MESSAGE_CMD, WEBVIEW_NAMES } from '../../constants'
-import { getAllImgs, getImageBase64, getImageSize } from './utils'
-import { readLocalConfigFile, writeLocalConfigFile } from './config'
+import { getAllImgs, getAllProjectPaths, getImageBase64, getImageSize, makeAbsoluteProjectPath, readValidatedConfigFile } from './utils'
+import { writeLocalConfigFile } from './config'
 
 const { deleteFile, getProjectPath, renameFile } = utils
 const { invokeCallback, successResp } = webviewUtils
@@ -31,7 +31,7 @@ const messageHandlers = new Map([
     MESSAGE_CMD.GET_ALL_IMGS,
     (message: IMessage, webview: Webview) => {
       const imgs = getAllImgs(webview)
-      invokeCallback(viewType, message, { imgs, projectPath: getProjectPath() })
+      invokeCallback(viewType, message, { imgs, projectPaths: getAllProjectPaths() })
     }
   ],
   [
@@ -51,7 +51,8 @@ const messageHandlers = new Map([
   [
     MESSAGE_CMD.OPEN_IMAGE_DIRECTORY,
     (message: IMessage) => {
-      exec(`open ${getProjectPath()}/${message.data.path}`)
+      // This needs to be 'explorer' on windows, 'xdg-open' (I think) on Linux
+      exec(`open ${makeAbsoluteProjectPath(message.data.path).replace(/\//g, '\\')}`)
     }
   ],
   [
@@ -77,7 +78,7 @@ const messageHandlers = new Map([
   ],
   [
     MESSAGE_CMD.GET_CONFIG,
-    (message: IMessage) => invokeCallback(viewType, message, readLocalConfigFile())
+    (message: IMessage) => invokeCallback(viewType, message, readValidatedConfigFile())
   ],
 ])
 

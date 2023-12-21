@@ -13,7 +13,7 @@ const DEFAULT_CONFIG: IConfig = {
   size: 100,
   includeFolders: [],
   excludeFolders: [],
-
+  includeProjectFolders: {},
 }
 
 const PROJECTS_CONFIG_DIRECTORY = 'projectsConfig'
