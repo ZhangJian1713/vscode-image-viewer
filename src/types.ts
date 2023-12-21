@@ -1,3 +1,5 @@
+export interface IConfigWorkspaceFolders {[key: string]: boolean}
+
 export interface IConfig {
   showImageTypes: string[],
   keyword: string,
@@ -6,4 +8,5 @@ export interface IConfig {
   size: number,
   includeFolders: string[],
   excludeFolders: string[],
+  includeProjectFolders: IConfigWorkspaceFolders,
 }

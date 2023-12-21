@@ -36,19 +36,22 @@ import {
 import ImageInfo from './ImageInfo'
 import { useDebounceFn, useScroll } from 'ahooks'
 import { BUILTIN_MESSAGE_CMD } from '@easy_vscode/core/lib/constants'
-import { IConfig } from 'types'
+import { IConfig, IConfigWorkspaceFolders } from 'types'
 import SettingsModal from './SettingsModal'
 
 declare const window: any;
 
-const completeImgs = (imgs, projectPath) => {
+const completeImgs = (imgs, projectPaths) => {
   return imgs.map((img) => {
-    const filePath = img.path
+    const projectPath = projectPaths.find((path) => path.endsWith(img.projectDir))
+
+    const filePath = img.path;
     const dirPath = filePath.substring(0, filePath.lastIndexOf('/') + 1)
     const fileName = filePath.substring(filePath.lastIndexOf('/') + 1)
     const fileType = filePath.substring(filePath.lastIndexOf('.') + 1)
     const newImg = {
       ...img,
+      projectDirPath: img.projectDir + dirPath,
       fullPath: projectPath + img.path,
       dirPath,
       fileName,
@@ -64,14 +67,17 @@ const THRESHOLD_DELAY_CHANGE_SIZE = 200
 
 export interface IImage {
   // origin properties
-  path: string
-  fullPath: string
-  vscodePath: string
-  size: number
+  projectDir: string;
+  path: string;
+  fullPath: string;
+  vscodePath: string;
+  size: number;
   // extend properties
-  fileName: string
-  fileType: string
-  dirPath: string
+  fileName: string;
+  fileType: string;
+  dirPath: string;
+  projectDirPath: string;
+  projectPath: string;
 }
 
 const PreviewImages: React.FC = () => {
@@ -94,7 +100,8 @@ const PreviewImages: React.FC = () => {
   const [showSettingsModal, setShowSettingsModal] = useState(false)
   const [includeFolders, setIncludeFolders] = useState<string[]>([])
   const [excludeFolders, setExcludeFolders] = useState<string[]>([])
-  const currentProjectPath = useRef('')
+  const [includeProjectFolders, setIncludeProjectFolders] = useState<IConfigWorkspaceFolders>(undefined)
+  const currentProjectPaths = useRef([] as string[])
 
   const { run: onDebounceScroll } = useDebounceFn(
     () => {
@@ -114,21 +121,20 @@ const PreviewImages: React.FC = () => {
     onDebounceScroll(scroll)
   }, [scroll])
 
-  /**
-   * get file directory of path
-   */
-  const getFileDirectory = (path: string) => {
-    return path.substring(0, path.lastIndexOf('/') + 1)
-  }
+/**
+ * get file directory of path
+ */
+const getFileDirectory = (path: string) => {
+  return path.substring(0, path.lastIndexOf('/') + 1)
+}
 
   const refreshImgs = useCallback(() => {
     setLoading(true)
-    callVscode({ cmd: MESSAGE_CMD.GET_ALL_IMGS }, ({ imgs, projectPath }: { imgs: IImage[], projectPath: string }) => {
-      currentProjectPath.current = projectPath
+    callVscode({ cmd: MESSAGE_CMD.GET_ALL_IMGS }, ({ imgs, projectPaths }: { imgs: IImage[], projectPaths: string[] }) => {
+      currentProjectPaths.current = projectPaths
       if (clickFilePath) {
-        const fileRelativePath = clickFilePath.replace(currentProjectPath.current, '')
-        const isFile = /.*\..{3,5}/.test(fileRelativePath)
-        const relativeDir = isFile ? getFileDirectory(fileRelativePath) : fileRelativePath
+        const isFile = /.*\..{3,5}/.test(clickFilePath)
+        const relativeDir = isFile ? getFileDirectory(clickFilePath) : clickFilePath
         if (relativeDir === '/') {
           setRelativeDir('')
         } else if (imgs.find((img) => img.path.includes(relativeDir))) {
@@ -149,9 +155,8 @@ const PreviewImages: React.FC = () => {
       const clickFilePath = commandArgs?.[0]?.path || ''
       setClickFilePath(clickFilePath)
       if (clickFilePath) {
-        const fileRelativePath = clickFilePath.replace(currentProjectPath.current, '')
-        const isFile = /.*\..{3,5}/.test(fileRelativePath)
-        const relativeDir = isFile ? getFileDirectory(fileRelativePath) : fileRelativePath
+        const isFile = /.*\..{3,5}/.test(clickFilePath)
+        const relativeDir = isFile ? getFileDirectory(clickFilePath) : clickFilePath
         if (relativeDir === '/') {
           setRelativeDir('')
         } else if (imgs.find((img) => img.path.includes(relativeDir))) {
@@ -170,7 +175,7 @@ const PreviewImages: React.FC = () => {
   }, [onRevealWebview])
 
   const updateImgs = (newImgs) => {
-    const imgs = completeImgs(newImgs, currentProjectPath.current)
+    const imgs = completeImgs(newImgs, currentProjectPaths.current)
     setImgs(imgs)
     let allFileTypes: string[] = imgs.map((img) => img.fileType)
     allFileTypes = Array.from(new Set(allFileTypes)).sort()
@@ -187,7 +192,7 @@ const PreviewImages: React.FC = () => {
       .filter((img) => img.path.indexOf(keyword) > -1)
       .filter((img) => showImageTypes.includes(img.fileType))
     setShowImgs(showImgs)
-    let arr: string[] = showImgs.map((img) => img.dirPath)
+    let arr: string[] = showImgs.map((img) => img.projectDirPath)
     arr = Array.from(new Set(arr)).sort()
     setAllPaths(arr)
     const isVeryMany = showImgs.length > THRESHOLD_ALL_COLLAPSED
@@ -282,6 +287,7 @@ const PreviewImages: React.FC = () => {
       setActiveKey(data.activeKey)
       setIncludeFolders(data.includeFolders)
       setExcludeFolders(data.excludeFolders)
+      setIncludeProjectFolders(data.includeProjectFolders)
     })
   }, [])
 
@@ -309,7 +315,8 @@ const PreviewImages: React.FC = () => {
       cmd: MESSAGE_CMD.SAVE_CONFIG,
       data: {
         includeFolders,
-        excludeFolders
+        excludeFolders,
+        includeProjectFolders,
       }
     }, refreshImgs)
   }, [includeFolders, excludeFolders, refreshImgs])
@@ -318,9 +325,10 @@ const PreviewImages: React.FC = () => {
     setShowSettingsModal(true)
   }
 
-  const handleApplySettings = (includeFolders: string[], excludeFolders: string[]) => {
+  const handleApplySettings = (includeFolders: string[], excludeFolders: string[], includeProjectFolders: IConfigWorkspaceFolders) => {
     setIncludeFolders(includeFolders)
     setExcludeFolders(excludeFolders)
+    setIncludeProjectFolders(includeProjectFolders)
   }
 
   return (
@@ -423,7 +431,7 @@ const PreviewImages: React.FC = () => {
                       header={
                         <span>
                           {path.replace(/^\/|\/$/g, '')}
-                          <StyledPicCount>({showImgs.filter((img) => img.dirPath === path).length})</StyledPicCount>
+                          <StyledPicCount>({showImgs.filter((img) => img.projectDirPath === path).length})</StyledPicCount>
                           <StyledFolderOpenTwoTone>
                             <FolderOpenTwoTone twoToneColor='#f4d057' onClick={(e) => handleClickOpenFolder(e, path)} />
                           </StyledFolderOpenTwoTone>
@@ -434,7 +442,7 @@ const PreviewImages: React.FC = () => {
                       <StyleImageList>
                         <Image.PreviewGroup>
                           {showImgs
-                            .filter((img) => img.dirPath === path)
+                            .filter((img) => img.projectDirPath === path)
                             .sort(sortImageFn)
                             .map((img) => (
                               <StyleImage key={img.path}>
@@ -465,6 +473,7 @@ const PreviewImages: React.FC = () => {
           <SettingsModal
             includeFolders={includeFolders}
             excludeFolders={excludeFolders}
+            includeProjectFolders={includeProjectFolders}
             visible={showSettingsModal}
             onClose={() => setShowSettingsModal(false)}
             onApply={handleApplySettings}
