@@ -41,20 +41,31 @@ export const StyleImageList = styled.div`
   display: flex;
   flex-wrap: wrap;
   width: 100%;
+  justify-content: flex-start;
+  align-items: flex-start;
 `
 
-export const StyleImage = styled.div`
+
+
+export const StyleImage = styled.div<{ columns: number }>`
   border-radius: 2px;
   display: flex;
   flex-direction: column;
   justify-content: start;
   align-items: center;
-  margin: 0 12px 12px 0;
+  padding: 0 12px 12px 0;
+  flex-basis: calc((100% / ${props => props.columns}) - 30px);
+  max-width: calc((100% / ${props => props.columns}));
+  flex-grow: 1;
 
   div .ant-image {
     position: relative;
     display: flex;
     align-items: center;
+  }
+
+  div .ant-image-img {
+      max-height: calc((100vw / ${props => props.columns}) - 100px);
   }
 `
 
