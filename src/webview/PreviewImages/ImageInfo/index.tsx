@@ -69,26 +69,27 @@ const ImageInfo: React.FC<any> = ({ img, onDeleteImage, size }) => {
       ]}
     />
   )
-  const limitLength = Math.round(size / 4)
+//   const limitLength = Math.round(size / 4)
   let displayName
-  if (size <= 10) {
-    displayName = '..'
-  } else if (size <= 15) {
-    displayName = img.fileName[0] + '\n...'
-  } else {
-    const tooLong = img.fileName.length > limitLength
-    if (!tooLong) {
-      displayName = img.fileName
-    } else if (limitLength >= 9) {
-      displayName = img.fileName.substr(0, limitLength - 6) + '...' + img.fileType
-    } else {
-      displayName = img.fileName.substr(0, limitLength - 3) + '...'
-    }
-  }
+//   if (size <= 10) {
+//     displayName = '..'
+//   } else if (size <= 15) {
+//     displayName = img.fileName[0] + '\n...'
+//   } else {
+//     const tooLong = img.fileName.length > limitLength
+//     if (!tooLong) {
+//       displayName = img.fileName
+//     } else if (limitLength >= 9) {
+//       displayName = img.fileName.substr(0, limitLength - 6) + '...' + img.fileType
+//     } else {
+//       displayName = img.fileName.substr(0, limitLength - 3) + '...'
+//     }
+//   }
+  displayName = img.fileName
   return (
     <StyleImageInfo>
       <Dropdown overlay={menu}>
-        <StyleImageName style={{ width: `${size}px` }}>{displayName}</StyleImageName>
+        <StyleImageName>{displayName}</StyleImageName>
       </Dropdown>
     </StyleImageInfo>
   )
