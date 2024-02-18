@@ -22,7 +22,7 @@ const StyleImagePlaceHolder = styled.div`
   border: solid 1px #ccc;
 `
 
-const MIN_SIZE_SHOW_PREVIEW_INFO = 10
+const MIN_SIZE_SHOW_PREVIEW_INFO = 60
 
 interface IDimensions {
   width: number
@@ -88,8 +88,8 @@ const ImageLazyLoad: React.FC<IImageLazyLoadProps> = ({ isScrolling, enableLazyL
   return (
     <Image
       id={img.fullPath}
-      width={`100%`}
-      height={"auto"}
+      width={size}
+      height={size}
       style={{ backgroundColor, objectFit: 'contain' }}
       src={img.vscodePath}
       preview={{
@@ -97,7 +97,7 @@ const ImageLazyLoad: React.FC<IImageLazyLoadProps> = ({ isScrolling, enableLazyL
         mask: (
           <div className='ant-image-mask-info' onMouseOver={handleMouseOver}>
             <EyeOutlined />
-            {size <= MIN_SIZE_SHOW_PREVIEW_INFO && (
+            {size >= MIN_SIZE_SHOW_PREVIEW_INFO && (
               <>
                 Preview
                 {dimensions && (

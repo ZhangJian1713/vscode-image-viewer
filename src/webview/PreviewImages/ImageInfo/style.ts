@@ -5,7 +5,6 @@ export const StyleImageInfo = styled.div`
   flex-direction: column;
   align-items: center;
   margin-top: 4px;
-  width: 100%;
 `
 
 export const StyleEllipsis = styled.div`
@@ -17,8 +16,4 @@ export const StyleImageName = styled.div`
   text-align: center;
   line-height: 16px;
   font-size: 12px;
-  width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 `
