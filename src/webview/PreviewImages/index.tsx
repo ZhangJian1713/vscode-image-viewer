@@ -381,9 +381,9 @@ const PreviewImages: React.FC = () => {
             <StyleRowTitle>Size:</StyleRowTitle>
             <Slider
               style={{ flex: 1 }}
-              min={10}
-              max={600}
-              step={5}
+              min={1}
+              max={10}
+              step={1}
               defaultValue={size}
               onChange={handlerChangeImageSize}
               onAfterChange={handlerAfterChangeImageSize}
@@ -437,7 +437,7 @@ const PreviewImages: React.FC = () => {
                             .filter((img) => img.dirPath === path)
                             .sort(sortImageFn)
                             .map((img) => (
-                              <StyleImage key={img.path}>
+                              <StyleImage key={img.path} columns={size}>
                                 <ImageLazyLoad
                                   isScrolling={isScrolling}
                                   enableLazyLoad={enableLazyLoad}
