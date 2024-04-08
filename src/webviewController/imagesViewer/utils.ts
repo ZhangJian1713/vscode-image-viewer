@@ -101,7 +101,7 @@ export const getImageBase64 = (filePath: string): string => {
     tif: 'tiff'
   }
   imgType = map[imgType] ?? imgType
-  const imgBase64 = `data: image/${imgType};base64,` + Buffer.from(bitmap).toString('base64')
+  const imgBase64 = `data:image/${imgType};base64,` + Buffer.from(bitmap).toString('base64')
   return imgBase64
 }
 
