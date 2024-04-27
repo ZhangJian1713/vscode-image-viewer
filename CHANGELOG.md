@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.2] - 2024-04-28
+
+### Fixed
+
+- Image not reloading upon clicking the refresh button when content changes but filename remains unchanged.
+- Failure to detect images with uppercase extensions.
+
 ## [1.6.0] - 2023-12-18
 
 ### Added
