@@ -2,11 +2,12 @@ import { IConfig } from "types";
 import { utils } from '@easy_vscode/core'
 import fs from 'fs'
 import json5 from 'json5'
+import { SUPPORT_IMG_TYPES } from "./constant";
 
 const { getProjectPath, envVars } = utils
 
 const DEFAULT_CONFIG: IConfig = {
-  showImageTypes: ['.svg', '.png', '.jpeg', '.jpg', '.ico', '.gif', '.webp', '.bmp', '.tif', '.tiff', '.apng', '.avif'],
+  showImageTypes: SUPPORT_IMG_TYPES,
   keyword: '',
   activeKey: [],
   backgroundColor: '#fff',

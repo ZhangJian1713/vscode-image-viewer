@@ -14,7 +14,7 @@ import {
   Tag,
   Tooltip
 } from 'antd'
-import { FolderOpenTwoTone, InfoCircleOutlined, SearchOutlined, SettingOutlined } from '@ant-design/icons'
+import { FolderOpenTwoTone, InfoCircleOutlined, SearchOutlined } from '@ant-design/icons'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { BACKGROUND_COLOR_OPTIONS, DEFAULT_BACKGROUND_COLOR, DEFAULT_IMAGE_SIZE, MESSAGE_CMD } from '../../constants'
 import { callVscode } from '@easy_vscode/webview'
@@ -94,6 +94,7 @@ const PreviewImages: React.FC = () => {
   const [showSettingsModal, setShowSettingsModal] = useState(false)
   const [includeFolders, setIncludeFolders] = useState<string[]>([])
   const [excludeFolders, setExcludeFolders] = useState<string[]>([])
+  const [refreshTime, setRefreshTime] = useState<string>(new Date().toISOString())
   const currentProjectPath = useRef('')
 
   const { run: onDebounceScroll } = useDebounceFn(
@@ -121,28 +122,35 @@ const PreviewImages: React.FC = () => {
     return path.substring(0, path.lastIndexOf('/') + 1)
   }
 
-  const refreshImgs = useCallback(() => {
-    setLoading(true)
-    callVscode({ cmd: MESSAGE_CMD.GET_ALL_IMGS }, ({ imgs, projectPath }: { imgs: IImage[], projectPath: string }) => {
-      currentProjectPath.current = projectPath
-      if (clickFilePath) {
-        const fileRelativePath = clickFilePath.replace(currentProjectPath.current, '')
-        const isFile = /.*\..{3,5}/.test(fileRelativePath)
-        const relativeDir = isFile ? getFileDirectory(fileRelativePath) : fileRelativePath
-        if (relativeDir === '/') {
-          setRelativeDir('')
-        } else if (imgs.find((img) => img.path.includes(relativeDir))) {
-          setRelativeDir(relativeDir)
-        }
-      }
-      setLoading(false)
-      setBeforeFetch(false)
-      updateImgs(imgs)
-    })
-  }, [clickFilePath])
+  const refreshImgs =
+    useCallback(
+      (ignoreRelativeDir: boolean = false) => {
+        setLoading(true)
+        callVscode({ cmd: MESSAGE_CMD.GET_ALL_IMGS }, ({ imgs, projectPath }: { imgs: IImage[], projectPath: string }) => {
+          currentProjectPath.current = projectPath
+          if (clickFilePath) {
+            const fileRelativePath = clickFilePath.replace(currentProjectPath.current, '')
+            const isFile = /.*\..{3,5}/.test(fileRelativePath)
+            const relativeDir = isFile ? getFileDirectory(fileRelativePath) : fileRelativePath
+            // if user clicked the reload button, ignore the relativeDir
+            if (!ignoreRelativeDir) {
+              if (relativeDir === '/') {
+                setRelativeDir('')
+              } else if (imgs.find((img) => img.path.includes(relativeDir))) {
+                setRelativeDir(relativeDir)
+              }
+            }
+          }
+          setLoading(false)
+          setBeforeFetch(false)
+          updateImgs(imgs)
+          setRefreshTime(new Date().toISOString())
+        })
+      }, [clickFilePath])
+
   useEffect(refreshImgs, [refreshImgs])
 
-  const onRevealWebview = useCallback((event) => {
+  const messageHandler = useCallback((event) => {
     const message = event?.data
     if (message?.cmd === BUILTIN_MESSAGE_CMD.REVEAL_WEBVIEW) {
       const commandArgs = message.data?.commandArgs
@@ -150,7 +158,7 @@ const PreviewImages: React.FC = () => {
       setClickFilePath(clickFilePath)
       if (clickFilePath) {
         const fileRelativePath = clickFilePath.replace(currentProjectPath.current, '')
-        const isFile = /.*\..{3,5}/.test(fileRelativePath)
+        const isFile = /.*\..{2,5}$/.test(fileRelativePath)
         const relativeDir = isFile ? getFileDirectory(fileRelativePath) : fileRelativePath
         if (relativeDir === '/') {
           setRelativeDir('')
@@ -163,11 +171,11 @@ const PreviewImages: React.FC = () => {
   }, [imgs])
 
   useEffect(() => {
-    window.addEventListener('message', onRevealWebview)
+    window.addEventListener('message', messageHandler)
     return () => {
-      window.removeEventListener('message', onRevealWebview)
+      window.removeEventListener('message', messageHandler)
     }
-  }, [onRevealWebview])
+  }, [messageHandler])
 
   const updateImgs = (newImgs) => {
     const imgs = completeImgs(newImgs, currentProjectPath.current)
@@ -311,7 +319,7 @@ const PreviewImages: React.FC = () => {
         includeFolders,
         excludeFolders
       }
-    }, refreshImgs)
+    }, () => refreshImgs(true))
   }, [includeFolders, excludeFolders, refreshImgs])
 
   const handleClickSettings = () => {
@@ -328,7 +336,8 @@ const PreviewImages: React.FC = () => {
       <Spin spinning={loading}>
         <Alert closable message={
           <div>
-            New features: ① Individual project settings are now stored in local files. ② Search now has options to include or exclude specific folders. &nbsp;&nbsp;
+            Bug fixed: ①  Image not reloading upon clicking the refresh button when content changes but filename remains unchanged.
+            ② Failure to detect images with uppercase extensions. &nbsp;&nbsp;
             <a href='https://github.com/ZhangJian1713/vscode-image-viewer/issues' target='_blank' rel="noreferrer">Report issues</a>
           </div>
         } type="info" showIcon />
@@ -344,7 +353,7 @@ const PreviewImages: React.FC = () => {
               onChange={(e) => setKeyword(e.target.value)}
             />
             <StyledSettingOutlined onClick={handleClickSettings} />
-            <StyledReloadOutlined onClick={refreshImgs} />
+            <StyledReloadOutlined onClick={() => refreshImgs(true)} />
           </StyleTopRows>
           {/* Type */}
           <StyleTopRows style={{ marginBottom: '2px' }}>
@@ -420,6 +429,7 @@ const PreviewImages: React.FC = () => {
                 <Collapse activeKey={activeKey} onChange={handleChangeActiveKey}>
                   {allPaths.map((path) => (
                     <Collapse.Panel
+                      key={path}
                       header={
                         <span>
                           {path.replace(/^\/|\/$/g, '')}
@@ -429,7 +439,6 @@ const PreviewImages: React.FC = () => {
                           </StyledFolderOpenTwoTone>
                         </span>
                       }
-                      key={path}
                     >
                       <StyleImageList>
                         <Image.PreviewGroup>
@@ -437,7 +446,7 @@ const PreviewImages: React.FC = () => {
                             .filter((img) => img.dirPath === path)
                             .sort(sortImageFn)
                             .map((img) => (
-                              <StyleImage key={img.path}>
+                              <StyleImage key={img.path + ',' + refreshTime}>
                                 <ImageLazyLoad
                                   isScrolling={isScrolling}
                                   enableLazyLoad={enableLazyLoad}

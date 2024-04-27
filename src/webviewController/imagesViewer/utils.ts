@@ -4,11 +4,9 @@ import { Webview, Uri } from 'vscode'
 import { utils } from '@easy_vscode/core'
 import imageSize from 'image-size'
 import { readLocalConfigFile } from './config'
+import { SUPPORT_IMG_TYPES } from './constant'
 
-export const SUPPORT_IMG_TYPES = ['.svg', '.png', '.jpeg', '.jpg', '.ico', '.gif', '.webp', '.bmp', '.tif', '.tiff', '.apng', '.avif']
 const { getProjectPath } = utils
-
-
 
 interface IImage {
   path: string
@@ -53,7 +51,7 @@ function searchImgs(basePath: string, includeFolders: string[], excludeFolders: 
           dfs(pathname + '/' + file, callback)
         })
       } else if (stats.isFile()) {
-        if (SUPPORT_IMG_TYPES.includes(path.extname(pathname))) {
+        if (SUPPORT_IMG_TYPES.includes(path.extname(pathname).toLowerCase())) {
           callback && callback(pathname)
         }
       }
