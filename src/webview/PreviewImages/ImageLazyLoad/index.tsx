@@ -36,7 +36,6 @@ interface IDimensions {
  */
 const ImageLazyLoad: React.FC<IImageLazyLoadProps> = ({ isScrolling, enableLazyLoad, img, size, backgroundColor, autoPreview = false, onAutoPreview }) => {
   const ref = useRef(null)
-  const childRef = useRef(null);
   const [inViewport] = useInViewport(ref)
   const [isShow, setIsShow] = useState(!enableLazyLoad || inViewport)
   const [dimensions, setDimensions] = useState<IDimensions>()
@@ -91,7 +90,7 @@ const ImageLazyLoad: React.FC<IImageLazyLoadProps> = ({ isScrolling, enableLazyL
       width={size}
       height={size}
       style={{ backgroundColor, objectFit: 'contain' }}
-      src={img.vscodePath}
+      src={img.vscodePath + '?modifyTime=' + img.modifyTime}
       preview={{
         scaleStep: 3,
         mask: (

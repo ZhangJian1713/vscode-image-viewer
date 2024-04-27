@@ -62,16 +62,20 @@ function searchImgs(basePath: string, includeFolders: string[], excludeFolders: 
   const searchFolders = includeFolders.length > 0 ? includeFolders.map(folder => basePath + '/' + removeSlash(folder)) : [basePath]
   searchFolders.forEach((folder) => {
     dfs(folder, (filePath: string) => {
-      const size = fs.statSync(filePath)?.size
-      const relativePath = filePath.replace(basePath, '')
-      // vscodePath e.g. https://file%2B.vscode-resource.vscode-cdn.net/Users/user_name/project_dir/src/favicon.ico
-      const vscodePath = webview.asWebviewUri(Uri.file(filePath)).toString()
-      const img = {
-        path: relativePath,
-        vscodePath,
-        size
+      const fileStat = fs.statSync(filePath)
+      if (fileStat) {
+        const { mtime, size } = fileStat
+        const relativePath = filePath.replace(basePath, '')
+        // vscodePath e.g. https://file%2B.vscode-resource.vscode-cdn.net/Users/user_name/project_dir/src/favicon.ico
+        const vscodePath = webview.asWebviewUri(Uri.file(filePath)).toString()
+        const img = {
+          path: relativePath,
+          vscodePath,
+          size,
+          modifyTime: mtime.getTime()
+        }
+        imgs.push(img)
       }
-      imgs.push(img)
     })
   })
   return imgs

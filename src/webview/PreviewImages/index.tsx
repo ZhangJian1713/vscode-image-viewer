@@ -68,6 +68,7 @@ export interface IImage {
   fullPath: string
   vscodePath: string
   size: number
+  modifyTime: number
   // extend properties
   fileName: string
   fileType: string
