@@ -1,5 +1,5 @@
 import {
-  Alert,
+  // Alert,
   Button,
   Checkbox,
   Collapse,
@@ -144,7 +144,7 @@ const PreviewImages: React.FC = () => {
           setLoading(false)
           setBeforeFetch(false)
           updateImgs(imgs)
-          setRefreshTime(new Date().toISOString())
+          setRefreshTime(new Date().getTime() + '')
         })
       }, [clickFilePath])
 
@@ -334,13 +334,13 @@ const PreviewImages: React.FC = () => {
   return (
     <ConfigProvider renderEmpty={customizeRenderEmpty}>
       <Spin spinning={loading}>
-        <Alert closable message={
+        {/* <Alert closable message={
           <div>
             Bug fixed: ①  Image not reloading upon clicking the refresh button when content changes but filename remains unchanged.
             ② Failure to detect images with uppercase extensions. &nbsp;&nbsp;
             <a href='https://github.com/ZhangJian1713/vscode-image-viewer/issues' target='_blank' rel="noreferrer">Report issues</a>
           </div>
-        } type="info" showIcon />
+        } type="info" showIcon /> */}
         <StyledPreviewImages style={{ padding: '20px' }}>
           <StyleTopRows>
             <Input
@@ -446,7 +446,7 @@ const PreviewImages: React.FC = () => {
                             .filter((img) => img.dirPath === path)
                             .sort(sortImageFn)
                             .map((img) => (
-                              <StyleImage key={img.path + ',' + refreshTime}>
+                              <StyleImage key={img.path + '_' + refreshTime}>
                                 <ImageLazyLoad
                                   isScrolling={isScrolling}
                                   enableLazyLoad={enableLazyLoad}
