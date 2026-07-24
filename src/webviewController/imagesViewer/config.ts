@@ -1,10 +1,18 @@
 import { IConfig } from 'types'
-import { utils } from '@easy_vscode/core'
 import * as fs from 'fs'
 import json5 from 'json5'
 import { BACKGROUND_TRANSPARENT } from '../../constants'
+import { ExtensionContext, workspace } from 'vscode'
 
-const { getProjectPath, envVars } = utils
+let configStorageRoot: string | null = null
+
+export function initImageViewerConfigStorage(context: ExtensionContext): void {
+  configStorageRoot = context.globalStorageUri.fsPath
+}
+
+function getProjectPath(): string {
+  return workspace.workspaceFolders?.[0]?.uri.fsPath ?? ''
+}
 
 const DEFAULT_CONFIG: IConfig = {
   showImageTypes: ['.svg', '.png', '.jpeg', '.jpg', '.ico', '.gif', '.webp', '.bmp', '.tif', '.tiff', '.apng', '.avif'],
@@ -19,7 +27,7 @@ const DEFAULT_CONFIG: IConfig = {
 
 const PROJECTS_CONFIG_DIRECTORY = 'projectsConfig'
 
-const getConfigDirectoryPath = () => `${envVars.extensionPath}${PROJECTS_CONFIG_DIRECTORY}`
+const getConfigDirectoryPath = () => configStorageRoot ? `${configStorageRoot}/${PROJECTS_CONFIG_DIRECTORY}` : ''
 
 const getConfigFilePath = () => {
   const projectPath = getProjectPath()
@@ -29,6 +37,7 @@ const getConfigFilePath = () => {
 
 export const writeLocalConfigFile = (data: IConfig) => {
   try {
+    if (!configStorageRoot) return
     // Check if the directory exists, if not, create it
     const localConfigDirectory = getConfigDirectoryPath()
     if (!fs.existsSync(localConfigDirectory)) {
@@ -45,6 +54,7 @@ export const writeLocalConfigFile = (data: IConfig) => {
 
 export const readLocalConfigFile = (): IConfig => {
   try {
+    if (!configStorageRoot) return DEFAULT_CONFIG
     const configFilePath = getConfigFilePath();
     // Check if the file exists, if not, create it with default config
     if (!fs.existsSync(configFilePath)) {
