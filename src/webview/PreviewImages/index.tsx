@@ -46,7 +46,6 @@ import {
   StyleSquare,
   StyleTopRows
 } from './style'
-import { BUILTIN_MESSAGE_CMD } from '@easy_vscode/core/lib/constants'
 import { IConfig, type ImageSortMode, type WebviewUiThemePreference } from 'types'
 import SettingsModal from './SettingsModal'
 import { useWebviewTheme } from '../WebviewThemeContext'
@@ -73,6 +72,7 @@ export type { IImage } from './imageTypes'
 const THRESHOLD_ALL_COLLAPSED = 1200
 const THRESHOLD_ENABLE_LAZY_LOADING = 150
 const THRESHOLD_DELAY_CHANGE_SIZE = 200
+const REVEAL_WEBVIEW_MESSAGE = 'revealWebview'
 
 const WORKSPACE_ROOT_DISPLAY = '(workspace root)'
 
@@ -313,7 +313,7 @@ const PreviewImages: React.FC = () => {
   const onRevealWebview = useCallback(
     (event: MessageEvent) => {
       const message = event?.data
-      if (message?.cmd === BUILTIN_MESSAGE_CMD.REVEAL_WEBVIEW) {
+      if (message?.cmd === REVEAL_WEBVIEW_MESSAGE) {
         const commandArgs = message.data?.commandArgs as unknown[] | undefined
         const nextPath = commandArgToFsPath(commandArgs?.[0])
         setClickFilePath(nextPath)

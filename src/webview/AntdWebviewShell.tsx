@@ -6,8 +6,6 @@ import { applyBodySemanticTokens, clearBodySemanticTokens } from './semanticToke
 import { WebviewThemeProvider } from './WebviewThemeContext'
 import type { WebviewUiThemePreference } from 'types'
 
-const NO_CURRENT_VIEW = '$currentView$'
-
 export interface WebviewRootProps {
   components: Record<string, React.FC>
 }
@@ -78,11 +76,7 @@ export const AntdWebviewShell: React.FC<WebviewRootProps> = ({ components }) => 
     }
   }, [uiThemePreference, effectiveIsDark])
 
-  let currentView = (window as any).currentView
-  if (currentView === NO_CURRENT_VIEW) {
-    currentView = Object.keys(components)[0]
-  }
-  const CurrentComponent = components[currentView]
+  const CurrentComponent = components.PreviewImages ?? Object.values(components)[0]
 
   return (
     <WebviewThemeProvider value={themeCtx}>

@@ -4,21 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <meta http-equiv="Content-Security-Policy" content="
-    default-src 'self' https://*;
-    connect-src 'self' https://* wss://* ws:;
-    font-src 'self' https://* blob: data:;
-    frame-src 'self' https://* blob: data:;
-    media-src 'self' https://* blob: data:;
-    img-src 'self' https://* blob: data:;
-    script-src 'self' 'unsafe-inline' 'unsafe-eval' https://* http://*;
-    style-src 'self' 'unsafe-inline' https://* blob: data: http://*;
-    "
-  />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src __WEBVIEW_CSP_SOURCE__ data: blob:; style-src __WEBVIEW_CSP_SOURCE__ 'unsafe-inline'; font-src __WEBVIEW_CSP_SOURCE__; script-src __WEBVIEW_CSP_SOURCE__; connect-src 'none'; frame-src 'none'; media-src __WEBVIEW_CSP_SOURCE__;" />
   <title>easy-vscode-webview</title>
-  <script type="text/javascript"> window.currentView = '$currentView$' </script>
-  <script type="text/javascript"> window.vscodeEnv = $vscodeEnv$ </script>
-  <script type="text/javascript"> window.commandArgs = $commandArgs$ </script>
 </head>
 <body>
   <div id="root"></div>

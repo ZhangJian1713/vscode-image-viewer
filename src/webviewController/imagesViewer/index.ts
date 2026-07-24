@@ -1,8 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import { Uri, ViewColumn, Webview, env as vscodeEnv } from 'vscode'
-import { utils, webviewUtils } from '@easy_vscode/core'
-import { IWebview, IWebviewProps, IMessage } from '@easy_vscode/core/lib/types'
+import { Uri, ViewColumn, Webview, env as vscodeEnv, workspace } from 'vscode'
+import type { IWebview, IWebviewProps, IMessage } from '@easy_vscode/core/lib/types'
 import { DIST_WEBVIEW_INDEX_HTML, EXTENSION_COMMANDS, MESSAGE_CMD, WEBVIEW_NAMES } from '../../constants'
 import { getAllImgs, getImageBase64, getImageSize, isSupportedImageFile } from './utils'
 import { normalizeThumbTierEdge } from '../../config/gridThumb'
@@ -15,8 +14,22 @@ export type GridThumbWirePayload =
   | { kind: 'thumb'; thumbSrc: string }
   | { kind: 'original' }
 
-const { deleteFile, getProjectPath, renameFile } = utils
-const { invokeCallback, successResp } = webviewUtils
+const successResp = { code: 0, text: 'success!' }
+
+function getProjectPath(): string {
+  return workspace.workspaceFolders?.[0]?.uri.fsPath ?? ''
+}
+
+function invokeCallback(message: IMessage, response: unknown, webview: Webview): void {
+  void webview.postMessage({ cmd: 'vscodeCallback', callbackId: message.callbackId, data: response })
+}
+
+/** Per-panel Explorer scope; command arguments never enter the webview HTML. */
+const panelScopeByWebview = new WeakMap<Webview, string | null>()
+
+export function setImageViewerScope(webview: Webview, scope: string | null): void {
+  panelScopeByWebview.set(webview, scope)
+}
 
 /**
  * Webview messages are untrusted input. Only allow operations on regular image
@@ -90,8 +103,9 @@ const messageHandlers = new Map([
     MESSAGE_CMD.GET_ALL_IMGS,
     (message: IMessage, webview: Webview) => {
       const basePath = path.resolve(getProjectPath())
+      const panelScope = panelScopeByWebview.get(webview)
       const hint = (message.data as { scopeHintFsPath?: string } | undefined)?.scopeHintFsPath
-      let listScopeAbs: string | null = null
+      let listScopeAbs: string | null = panelScope ?? null
       if (hint && typeof hint === 'string') {
         const trimmed = hint.trim()
         if (trimmed.length > 0) {
@@ -111,7 +125,7 @@ const messageHandlers = new Map([
         }
       }
       const imgs = getAllImgs(webview, listScopeAbs)
-      invokeCallback(viewType, message, { imgs, projectPath: getProjectPath() }, webview)
+      invokeCallback(message, { imgs, projectPath: getProjectPath() }, webview)
     }
   ],
   [
@@ -122,8 +136,8 @@ const messageHandlers = new Map([
       if (!filePath || typeof newName !== 'string' || path.basename(newName) !== newName || newName.length === 0) {
         return
       }
-      renameFile(filePath, newName)
-      invokeCallback(viewType, message, successResp, w)
+      fs.renameSync(filePath, path.join(path.dirname(filePath), newName))
+      invokeCallback(message, successResp, w)
     }
   ],
   [
@@ -133,8 +147,8 @@ const messageHandlers = new Map([
       if (!filePath) {
         return
       }
-      deleteFile(filePath)
-      invokeCallback(viewType, message, successResp, w)
+      fs.unlinkSync(filePath)
+      invokeCallback(message, successResp, w)
     }
   ],
   [
@@ -151,7 +165,7 @@ const messageHandlers = new Map([
     (message: IMessage, w: Webview) => {
       const filePath = resolveWorkspaceImagePath((message.data as { filePath?: unknown } | undefined)?.filePath)
       if (filePath) {
-        invokeCallback(viewType, message, getImageBase64(filePath), w)
+        invokeCallback(message, getImageBase64(filePath), w)
       }
     }
   ],
@@ -160,7 +174,7 @@ const messageHandlers = new Map([
     (message: IMessage, w: Webview) => {
       const filePath = resolveWorkspaceImagePath((message.data as { filePath?: unknown } | undefined)?.filePath)
       if (filePath) {
-        invokeCallback(viewType, message, getImageSize(filePath), w)
+        invokeCallback(message, getImageSize(filePath), w)
       }
     }
   ],
@@ -171,7 +185,7 @@ const messageHandlers = new Map([
       const filePathIn = String(message.data?.filePath ?? '')
       const targetEdge = normalizeThumbTierEdge(Number(message.data?.targetMaxEdgePx))
       const reply = (payload: GridThumbWirePayload) => {
-        invokeCallback(viewType, { ...message, callbackId } as IMessage, payload, panelWebview)
+        invokeCallback({ ...message, callbackId } as IMessage, payload, panelWebview)
       }
       void (async () => {
         try {
@@ -196,13 +210,13 @@ const messageHandlers = new Map([
     MESSAGE_CMD.SAVE_CONFIG,
     (message: IMessage, w: Webview) => {
       writeLocalConfigFile(message.data)
-      invokeCallback(viewType, message, successResp, w)
+      invokeCallback(message, successResp, w)
     }
   ],
   [
     MESSAGE_CMD.GET_CONFIG,
     (message: IMessage, w: Webview) =>
-      invokeCallback(viewType, message, {
+      invokeCallback(message, {
         ...readLocalConfigFile(),
         hostUiLanguage: vscodeEnv.language
       }, w)

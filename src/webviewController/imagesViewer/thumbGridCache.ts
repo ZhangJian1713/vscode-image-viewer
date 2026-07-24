@@ -7,7 +7,6 @@ import * as os from 'os'
 import * as path from 'path'
 import { promisify } from 'util'
 import imageSize from 'image-size'
-import { utils } from '@easy_vscode/core'
 import { ExtensionContext, Uri, workspace, extensions } from 'vscode'
 import {
   GRID_THUMB_GLOBAL_SUBDIR,
@@ -43,6 +42,7 @@ export type GridThumbResponse =
   | { kind: 'original' }
 
 let globalThumbRoot: string | null = null
+let extensionRootPath: string | null = null
 /** `Uri.joinPath(globalStorageUri, GRID_THUMB_GLOBAL_SUBDIR)`, used by `asWebviewUri` to align with webview roots. */
 let globalThumbBaseUri: Uri | null = null
 let janitorLastRun = 0
@@ -54,6 +54,7 @@ export function initGridThumbGlobalStorage(context: ExtensionContext): void {
   const root = globalThumbBaseUri.fsPath
   fs.mkdirSync(root, { recursive: true })
   globalThumbRoot = root
+  extensionRootPath = context.extensionPath
 }
 
 /** Convert absolute cache path to a `Uri` rooted at `globalThumbBaseUri` (avoid direct `Uri.file` for hosts with stricter webview URI handling). */
@@ -156,9 +157,8 @@ function extensionRoot(): string {
     return packaged.extensionPath
   }
 
-  const envRoot = utils.envVars?.extensionPath?.trim()
-  if (envRoot) {
-    return path.resolve(envRoot)
+  if (extensionRootPath) {
+    return path.resolve(extensionRootPath)
   }
 
   return path.resolve(__dirname, '..')

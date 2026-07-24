@@ -1,12 +1,14 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import { Webview, Uri } from 'vscode'
-import { utils } from '@easy_vscode/core'
+import { workspace } from 'vscode'
 import imageSize from 'image-size'
 import { readLocalConfigFile } from './config'
 
 export const SUPPORT_IMG_TYPES = ['.svg', '.png', '.jpeg', '.jpg', '.ico', '.gif', '.webp', '.bmp', '.tif', '.tiff', '.apng', '.avif']
-const { getProjectPath } = utils
+function getProjectPath(): string {
+  return workspace.workspaceFolders?.[0]?.uri.fsPath ?? ''
+}
 
 /** macOS AppleDouble sidecar files on exFAT/USB (e.g. ._085.jpg); they may look like images by extension but are not bitmap content. */
 function isAppleDoubleSidecarFile(absPath: string): boolean {
@@ -54,12 +56,34 @@ function searchImgs(
   // const imgs: any = new Map<string, IImage>()
   const imgs: IImage[] = []
   const searchedFolders = new Set<string>()
-  const excludeFoldersSet = new Set(excludeFolders.map(folder => basePath + '/' + removeSlash(folder)))
+  let workspaceRealPath: string
+  try {
+    workspaceRealPath = fs.realpathSync(basePath)
+  } catch {
+    return imgs
+  }
+  const isInsideWorkspace = (candidate: string): boolean =>
+    candidate === workspaceRealPath || candidate.startsWith(workspaceRealPath + path.sep)
+  const resolveWorkspaceDirectory = (folder: string): string | null => {
+    try {
+      const resolved = path.resolve(basePath, removeSlash(folder))
+      if (resolved !== basePath && !resolved.startsWith(basePath + path.sep)) return null
+      const real = fs.realpathSync(resolved)
+      return isInsideWorkspace(real) && fs.statSync(real).isDirectory() ? real : null
+    } catch {
+      return null
+    }
+  }
+  const excludeFoldersSet = new Set(excludeFolders.map(resolveWorkspaceDirectory).filter((folder): folder is string => folder !== null))
   // eslint-disable-next-line no-unused-vars
   const dfs = (pathname: string, callback: (filePath: string) => void) => {
     try {
-      const stats = fs.statSync(pathname)
+      const stats = fs.lstatSync(pathname)
       if (stats.isDirectory() && !pathname.includes('node_modules')) {
+        if (stats.isSymbolicLink()) return
+        const realPath = fs.realpathSync(pathname)
+        if (!isInsideWorkspace(realPath)) return
+        pathname = realPath
         if (excludeFoldersSet.has(pathname)) {
           return
         }
@@ -72,8 +96,9 @@ function searchImgs(
           dfs(pathname + '/' + file, callback)
         })
       } else if (stats.isFile()) {
-        if (isSupportedImageFile(pathname)) {
-          callback && callback(pathname)
+        if (!stats.isSymbolicLink() && isSupportedImageFile(pathname)) {
+          const realPath = fs.realpathSync(pathname)
+          if (isInsideWorkspace(realPath)) callback && callback(realPath)
         }
       }
     } catch (e) {
@@ -84,8 +109,8 @@ function searchImgs(
     listScopeAbsPath != null
       ? [path.normalize(listScopeAbsPath)]
       : includeFolders.length > 0
-        ? includeFolders.map((folder) => basePath + '/' + removeSlash(folder))
-        : [basePath]
+        ? includeFolders.map(resolveWorkspaceDirectory).filter((folder): folder is string => folder !== null)
+        : [workspaceRealPath]
   searchFolders.forEach((folder) => {
     dfs(folder, (filePath: string) => {
       const st = fs.statSync(filePath)
