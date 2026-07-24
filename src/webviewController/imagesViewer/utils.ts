@@ -13,6 +13,10 @@ function isAppleDoubleSidecarFile(absPath: string): boolean {
   return path.basename(absPath).startsWith('._')
 }
 
+export function isSupportedImageFile(absPath: string): boolean {
+  return !isAppleDoubleSidecarFile(absPath) && SUPPORT_IMG_TYPES.includes(path.extname(absPath).toLowerCase())
+}
+
 
 
 interface IImage {
@@ -68,8 +72,7 @@ function searchImgs(
           dfs(pathname + '/' + file, callback)
         })
       } else if (stats.isFile()) {
-        const extLower = path.extname(pathname).toLowerCase()
-        if (!isAppleDoubleSidecarFile(pathname) && SUPPORT_IMG_TYPES.includes(extLower)) {
+        if (isSupportedImageFile(pathname)) {
           callback && callback(pathname)
         }
       }

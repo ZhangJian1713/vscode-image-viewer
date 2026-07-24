@@ -4,7 +4,7 @@ import { Uri, ViewColumn, Webview, env as vscodeEnv } from 'vscode'
 import { utils, webviewUtils } from '@easy_vscode/core'
 import { IWebview, IWebviewProps, IMessage } from '@easy_vscode/core/lib/types'
 import { DIST_WEBVIEW_INDEX_HTML, EXTENSION_COMMANDS, MESSAGE_CMD, WEBVIEW_NAMES } from '../../constants'
-import { getAllImgs, getImageBase64, getImageSize } from './utils'
+import { getAllImgs, getImageBase64, getImageSize, isSupportedImageFile } from './utils'
 import { normalizeThumbTierEdge } from '../../config/gridThumb'
 import { resolveThumbForGrid, cacheFsPathToThumbResourceUri } from './thumbGridCache'
 import { readLocalConfigFile, writeLocalConfigFile } from './config'
@@ -17,6 +17,52 @@ export type GridThumbWirePayload =
 
 const { deleteFile, getProjectPath, renameFile } = utils
 const { invokeCallback, successResp } = webviewUtils
+
+/**
+ * Webview messages are untrusted input. Only allow operations on regular image
+ * files inside the opened workspace, including after resolving symlinks.
+ */
+function resolveWorkspaceImagePath(value: unknown): string | null {
+  if (typeof value !== 'string' || value.length === 0) {
+    return null
+  }
+
+  try {
+    const workspacePath = path.resolve(getProjectPath())
+    const candidatePath = path.resolve(value)
+    if (candidatePath !== workspacePath && !candidatePath.startsWith(workspacePath + path.sep)) {
+      return null
+    }
+
+    const workspaceRealPath = fs.realpathSync(workspacePath)
+    const candidateRealPath = fs.realpathSync(candidatePath)
+    if (candidateRealPath !== workspaceRealPath && !candidateRealPath.startsWith(workspaceRealPath + path.sep)) {
+      return null
+    }
+
+    const stat = fs.statSync(candidateRealPath)
+    return stat.isFile() && isSupportedImageFile(candidateRealPath) ? candidateRealPath : null
+  } catch {
+    return null
+  }
+}
+
+function resolveWorkspaceDirectory(value: unknown): string | null {
+  if (typeof value !== 'string') {
+    return null
+  }
+
+  try {
+    const workspacePath = path.resolve(getProjectPath())
+    const candidatePath = path.resolve(workspacePath, value)
+    if (candidatePath !== workspacePath && !candidatePath.startsWith(workspacePath + path.sep)) {
+      return null
+    }
+    return fs.statSync(candidatePath).isDirectory() ? candidatePath : null
+  } catch {
+    return null
+  }
+}
 
 const viewType = WEBVIEW_NAMES.PreviewImages
 const webviewProps: IWebviewProps = {
@@ -71,37 +117,51 @@ const messageHandlers = new Map([
   [
     MESSAGE_CMD.RENAME_FILE,
     (message: IMessage, w: Webview) => {
-      renameFile(message.data.filePath, message.data.newName)
+      const filePath = resolveWorkspaceImagePath((message.data as { filePath?: unknown } | undefined)?.filePath)
+      const newName = (message.data as { newName?: unknown } | undefined)?.newName
+      if (!filePath || typeof newName !== 'string' || path.basename(newName) !== newName || newName.length === 0) {
+        return
+      }
+      renameFile(filePath, newName)
       invokeCallback(viewType, message, successResp, w)
     }
   ],
   [
     MESSAGE_CMD.DELETE_FILE,
     (message: IMessage, w: Webview) => {
-      deleteFile(message.data.filePath)
+      const filePath = resolveWorkspaceImagePath((message.data as { filePath?: unknown } | undefined)?.filePath)
+      if (!filePath) {
+        return
+      }
+      deleteFile(filePath)
       invokeCallback(viewType, message, successResp, w)
     }
   ],
   [
     MESSAGE_CMD.OPEN_IMAGE_DIRECTORY,
     (message: IMessage) => {
-      const rel = String(message.data.path ?? '').replace(/^[/\\]+/, '')
-      const abs = path.join(getProjectPath(), rel)
-      void vscodeEnv.openExternal(Uri.file(abs))
+      const directoryPath = resolveWorkspaceDirectory((message.data as { path?: unknown } | undefined)?.path)
+      if (directoryPath) {
+        void vscodeEnv.openExternal(Uri.file(directoryPath))
+      }
     }
   ],
   [
     MESSAGE_CMD.GET_IMAGE_BASE64,
     (message: IMessage, w: Webview) => {
-      const strBase64 = getImageBase64(message.data.filePath)
-      invokeCallback(viewType, message, strBase64, w)
+      const filePath = resolveWorkspaceImagePath((message.data as { filePath?: unknown } | undefined)?.filePath)
+      if (filePath) {
+        invokeCallback(viewType, message, getImageBase64(filePath), w)
+      }
     }
   ],
   [
     MESSAGE_CMD.GET_IMAGE_SIZE,
     (message: IMessage, w: Webview) => {
-      const dimensions = getImageSize(message.data.filePath)
-      invokeCallback(viewType, message, dimensions, w)
+      const filePath = resolveWorkspaceImagePath((message.data as { filePath?: unknown } | undefined)?.filePath)
+      if (filePath) {
+        invokeCallback(viewType, message, getImageSize(filePath), w)
+      }
     }
   ],
   [
@@ -151,8 +211,13 @@ const messageHandlers = new Map([
     MESSAGE_CMD.OPEN_EXTERNAL_URI,
     (message: IMessage) => {
       const raw = String((message.data as { url?: string } | undefined)?.url ?? '').trim()
-      if (raw) {
-        void vscodeEnv.openExternal(Uri.parse(raw))
+      try {
+        const uri = Uri.parse(raw)
+        if (uri.scheme === 'https') {
+          void vscodeEnv.openExternal(uri)
+        }
+      } catch {
+        // Ignore malformed URLs from the webview.
       }
     }
   ],
