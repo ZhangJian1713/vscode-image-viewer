@@ -30,13 +30,14 @@ export function compareImagesForSort(
     return 1
   }
 
+  const nameOpts: Intl.CollatorOptions = { numeric: true, sensitivity: 'base' }
   let c = 0
   switch (mode) {
     case 'nameAsc':
-      c = a.fileName.localeCompare(b.fileName, undefined, { sensitivity: 'base' })
+      c = a.fileName.localeCompare(b.fileName, undefined, nameOpts)
       break
     case 'nameDesc':
-      c = b.fileName.localeCompare(a.fileName, undefined, { sensitivity: 'base' })
+      c = b.fileName.localeCompare(a.fileName, undefined, nameOpts)
       break
     case 'mtimeAsc':
       c = (a.mtimeMs ?? 0) - (b.mtimeMs ?? 0)
@@ -51,10 +52,10 @@ export function compareImagesForSort(
       c = (b.size ?? 0) - (a.size ?? 0)
       break
     default:
-      c = a.fileName.localeCompare(b.fileName, undefined, { sensitivity: 'base' })
+      c = a.fileName.localeCompare(b.fileName, undefined, nameOpts)
   }
   if (c !== 0) {
     return c
   }
-  return a.path.localeCompare(b.path)
+  return a.path.localeCompare(b.path, undefined, nameOpts)
 }
