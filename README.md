@@ -29,12 +29,16 @@ This shows another light theme style, as well as switching to a checkerboard bac
 - **Include / exclude** folders
 - **Copy** path, file name, or Base64 from the image menu.
 - Open a folder from Explorer: **only that folder tree** is scanned (fast in huge repos). **Multiple** Image Viewer tabs for different folders; tab title includes the folder name.
+- Optionally register Image Viewer as the default editor so clicking an image in Explorer opens it immediately in the gallery preview.
 
 ## How to use
 
 1. Open a folder or workspace in VS Code / Cursor.
-2. **Whole workspace (default):** `Ctrl+Shift+P` / `⌘⇧P` → run **「View Images」** (command id: `vscode-infra.webviewImageViewer`).
+2. **Whole workspace:** `Ctrl+Shift+P` / `⌘⇧P` → run **View Images** (command id: `vscode-infra.webviewImageViewer`).
 3. **Folder only:** In the **Explorer**, right-click a **folder** (or an image file) → **View Images 🌄**. Only that directory (and subfolders) is indexed in that panel; the editor tab title reflects the folder.
+4. **Open images on a normal click:** run **Image Viewer: Use as Default Image Editor** once. Run **Image Viewer: Restore VS Code's Default Image Editor** to undo the association.
+
+You can also switch editors for an individual file with VS Code's **Reopen Editor With...** command.
 
 ## More documentation
 
