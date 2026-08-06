@@ -24,9 +24,27 @@ export const MESSAGE_CMD = {
 }
 
 export const EXTENSION_NAME = 'vscode-infra'
+export const IMAGE_EDITOR_VIEW_TYPE = `${EXTENSION_NAME}.imageViewer`
+
+export const IMAGE_FILE_PATTERNS = [
+  '*.svg',
+  '*.png',
+  '*.jpeg',
+  '*.jpg',
+  '*.ico',
+  '*.gif',
+  '*.webp',
+  '*.bmp',
+  '*.tif',
+  '*.tiff',
+  '*.apng',
+  '*.avif'
+]
 
 export const EXTENSION_COMMANDS = {
   OPEN_WEBVIEW_IMAGE_VIEWER: `${EXTENSION_NAME}.webviewImageViewer`,
+  SET_AS_DEFAULT_IMAGE_VIEWER: `${EXTENSION_NAME}.setAsDefaultImageViewer`,
+  RESTORE_BUILT_IN_IMAGE_VIEWER: `${EXTENSION_NAME}.restoreBuiltInImageViewer`,
 }
 
 
