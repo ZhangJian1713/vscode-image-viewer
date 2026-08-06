@@ -29,7 +29,7 @@ This shows another light theme style, as well as switching to a checkerboard bac
 - **Include / exclude** folders
 - **Copy** path, file name, or Base64 from the image menu.
 - Open a folder from Explorer: **only that folder tree** is scanned (fast in huge repos). **Multiple** Image Viewer tabs for different folders; tab title includes the folder name.
-- Optionally register Image Viewer as the default editor so clicking an image in Explorer opens it immediately in the gallery preview.
+- Optionally register Image Viewer as the default editor so clicking an image in Explorer opens it directly in the full-screen viewer without loading the image library first.
 
 ## How to use
 
