@@ -39,6 +39,37 @@
       {
         "command": "vscode-infra.webviewImageViewer",
         "title": "View Images 🌄"
+      },
+      {
+        "command": "vscode-infra.setAsDefaultImageViewer",
+        "title": "Use as Default Image Editor",
+        "category": "Image Viewer"
+      },
+      {
+        "command": "vscode-infra.restoreBuiltInImageViewer",
+        "title": "Restore VS Code's Default Image Editor",
+        "category": "Image Viewer"
+      }
+    ],
+    "customEditors": [
+      {
+        "viewType": "vscode-infra.imageViewer",
+        "displayName": "Image Viewer",
+        "selector": [
+          { "filenamePattern": "*.svg" },
+          { "filenamePattern": "*.png" },
+          { "filenamePattern": "*.jpeg" },
+          { "filenamePattern": "*.jpg" },
+          { "filenamePattern": "*.ico" },
+          { "filenamePattern": "*.gif" },
+          { "filenamePattern": "*.webp" },
+          { "filenamePattern": "*.bmp" },
+          { "filenamePattern": "*.tif" },
+          { "filenamePattern": "*.tiff" },
+          { "filenamePattern": "*.apng" },
+          { "filenamePattern": "*.avif" }
+        ],
+        "priority": "option"
       }
     ],
     "menus": {

@@ -5,6 +5,7 @@ export const DIST_WEBVIEW_INDEX_HTML = `${DIST_WEBVIEW_PATH}/index.html`
 
 export const WEBVIEW_NAMES = {
   PreviewImages: 'PreviewImages',
+  SingleImageViewer: 'SingleImageViewer',
 }
 
 export const MESSAGE_CMD = {
@@ -21,12 +22,32 @@ export const MESSAGE_CMD = {
   GET_CONFIG: 'getConfig',
   /** Open https URL or other URI in system browser (extension host `openExternal`). */
   OPEN_EXTERNAL_URI: 'openExternalUri',
+  /** Close the custom-editor tab when the direct image viewer is dismissed. */
+  CLOSE_CUSTOM_IMAGE_EDITOR: 'closeCustomImageEditor',
 }
 
 export const EXTENSION_NAME = 'vscode-infra'
+export const IMAGE_EDITOR_VIEW_TYPE = `${EXTENSION_NAME}.imageViewer`
+
+export const IMAGE_FILE_PATTERNS = [
+  '*.svg',
+  '*.png',
+  '*.jpeg',
+  '*.jpg',
+  '*.ico',
+  '*.gif',
+  '*.webp',
+  '*.bmp',
+  '*.tif',
+  '*.tiff',
+  '*.apng',
+  '*.avif'
+]
 
 export const EXTENSION_COMMANDS = {
   OPEN_WEBVIEW_IMAGE_VIEWER: `${EXTENSION_NAME}.webviewImageViewer`,
+  SET_AS_DEFAULT_IMAGE_VIEWER: `${EXTENSION_NAME}.setAsDefaultImageViewer`,
+  RESTORE_BUILT_IN_IMAGE_VIEWER: `${EXTENSION_NAME}.restoreBuiltInImageViewer`,
 }
 
 
