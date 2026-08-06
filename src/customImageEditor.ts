@@ -1,5 +1,15 @@
+import * as fs from 'fs'
+import * as path from 'path'
 import * as vscode from 'vscode'
-import { EXTENSION_COMMANDS, IMAGE_EDITOR_VIEW_TYPE, IMAGE_FILE_PATTERNS } from './constants'
+import {
+  DIST_WEBVIEW_INDEX_HTML,
+  DIST_WEBVIEW_PATH,
+  EXTENSION_COMMANDS,
+  IMAGE_EDITOR_VIEW_TYPE,
+  IMAGE_FILE_PATTERNS,
+  MESSAGE_CMD,
+  WEBVIEW_NAMES
+} from './constants'
 
 class ImageViewerDocument implements vscode.CustomDocument {
   constructor(public readonly uri: vscode.Uri) {}
@@ -7,25 +17,76 @@ class ImageViewerDocument implements vscode.CustomDocument {
   dispose() {}
 }
 
+type SingleImageViewerBootstrap = {
+  src: string
+  name: string
+}
+
+function serializeForInlineScript(value: unknown): string {
+  return JSON.stringify(value)
+    .replace(/</g, '\\u003c')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029')
+}
+
+function createCustomEditorHtml(
+  context: vscode.ExtensionContext,
+  webview: vscode.Webview,
+  documentUri: vscode.Uri
+): string {
+  const htmlPath = path.join(context.extensionPath, DIST_WEBVIEW_INDEX_HTML)
+  const image: SingleImageViewerBootstrap = {
+    src: webview.asWebviewUri(documentUri).toString(),
+    name: path.basename(documentUri.fsPath)
+  }
+
+  let html = fs.readFileSync(htmlPath, 'utf8')
+  html = html
+    .replace('$currentView$', () => WEBVIEW_NAMES.SingleImageViewer)
+    .replace('$vscodeEnv$', () => serializeForInlineScript({ language: vscode.env.language }))
+    .replace('$commandArgs$', () => serializeForInlineScript([image]))
+
+  return html.replace(
+    /\b(src|href)=(["'])\/([^"']+)\2/g,
+    (_match, attribute: string, quote: string, assetPath: string) => {
+      const assetUri = webview.asWebviewUri(
+        vscode.Uri.joinPath(context.extensionUri, DIST_WEBVIEW_PATH, assetPath)
+      )
+      return `${attribute}=${quote}${assetUri.toString()}${quote}`
+    }
+  )
+}
+
 class ImageViewerEditorProvider implements vscode.CustomReadonlyEditorProvider<ImageViewerDocument> {
-  async openCustomDocument(uri: vscode.Uri): Promise<ImageViewerDocument> {
+  constructor(private readonly context: vscode.ExtensionContext) {}
+
+  openCustomDocument(uri: vscode.Uri): ImageViewerDocument {
     return new ImageViewerDocument(uri)
   }
 
-  async resolveCustomEditor(
+  resolveCustomEditor(
     document: ImageViewerDocument,
     webviewPanel: vscode.WebviewPanel
-  ): Promise<void> {
-    try {
-      await vscode.commands.executeCommand(
-        EXTENSION_COMMANDS.OPEN_WEBVIEW_IMAGE_VIEWER,
-        document.uri
-      )
-    } finally {
-      // The existing gallery owns the real viewer panel. Close the transient
-      // custom-editor panel after the gallery has opened the selected image.
-      webviewPanel.dispose()
+  ): void {
+    const distRoot = vscode.Uri.joinPath(this.context.extensionUri, DIST_WEBVIEW_PATH)
+    const documentFolder = vscode.Uri.joinPath(document.uri, '..')
+
+    webviewPanel.webview.options = {
+      enableScripts: true,
+      localResourceRoots: [distRoot, documentFolder]
     }
+    webviewPanel.webview.html = createCustomEditorHtml(
+      this.context,
+      webviewPanel.webview,
+      document.uri
+    )
+
+    const messageSubscription = webviewPanel.webview.onDidReceiveMessage((message) => {
+      if (message?.cmd === MESSAGE_CMD.CLOSE_CUSTOM_IMAGE_EDITOR) {
+        webviewPanel.dispose()
+      }
+    })
+    webviewPanel.onDidDispose(() => messageSubscription.dispose())
   }
 }
 
@@ -70,7 +131,7 @@ export function registerCustomImageEditor(context: vscode.ExtensionContext): voi
   context.subscriptions.push(
     vscode.window.registerCustomEditorProvider(
       IMAGE_EDITOR_VIEW_TYPE,
-      new ImageViewerEditorProvider(),
+      new ImageViewerEditorProvider(context),
       {
         webviewOptions: { retainContextWhenHidden: false },
         supportsMultipleEditorsPerDocument: false
