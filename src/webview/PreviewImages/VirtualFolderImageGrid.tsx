@@ -6,6 +6,7 @@ import React, { useCallback, useLayoutEffect, useMemo, useRef, useState } from '
 import type { IImage } from './imageTypes'
 import { thumbDecodeMaxEdgeFromCellWidth } from '../../config/gridThumb'
 import { IMAGE_GRID_SHOW_FILENAME_MAX_COLS, IMAGE_TILE_GAP, gridSquareCellWidthPx } from '../imageGridColumns'
+import { sameImageFsPath } from '../imageSort'
 import ImageInfo from './ImageInfo'
 import ImageLazyLoad from './ImageLazyLoad'
 import { StyleImage, StyleImageList } from './style'
@@ -148,7 +149,7 @@ export const VirtualFolderImageGrid: React.FC<VirtualFolderImageGridProps> = ({
               enableLazyLoad={enableLazyLoad}
               img={img}
               backgroundColor={backgroundColor}
-              autoPreview={!everAutoPreview && clickFilePath && clickFilePath === img.fullPath}
+              autoPreview={!everAutoPreview && sameImageFsPath(clickFilePath, img.fullPath)}
               onAutoPreview={onAutoPreview}
               onOpenPreview={() => onOpenPreview(img)}
               indexInFolder={indexInFolder}
@@ -205,7 +206,7 @@ export const VirtualFolderImageGrid: React.FC<VirtualFolderImageGridProps> = ({
                       enableLazyLoad={enableLazyLoad}
                       img={img}
                       backgroundColor={backgroundColor}
-                      autoPreview={!everAutoPreview && clickFilePath && clickFilePath === img.fullPath}
+                      autoPreview={!everAutoPreview && sameImageFsPath(clickFilePath, img.fullPath)}
                       onAutoPreview={onAutoPreview}
                       onOpenPreview={() => onOpenPreview(img)}
                       indexInFolder={i}
