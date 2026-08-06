@@ -17,16 +17,28 @@ export const IMAGE_SORT_OPTIONS: { value: ImageSortMode; label: string }[] = [
   { value: 'sizeDesc', label: 'Sort by file size (largest first)' }
 ]
 
+function normalizeFsPathForComparison(value: string): string {
+  const normalized = value.replace(/\\/g, '/').replace(/\/+$/, '')
+  return /^[a-zA-Z]:\//.test(normalized) ? normalized.toLowerCase() : normalized
+}
+
+export function sameImageFsPath(a: string | undefined, b: string | undefined): boolean {
+  if (!a || !b) {
+    return false
+  }
+  return normalizeFsPathForComparison(a) === normalizeFsPathForComparison(b)
+}
+
 export function compareImagesForSort(
   mode: ImageSortMode,
   clickFilePath: string | undefined,
   a: SortableImage,
   b: SortableImage
 ): number {
-  if (clickFilePath && a.fullPath === clickFilePath) {
+  if (sameImageFsPath(a.fullPath, clickFilePath)) {
     return -1
   }
-  if (clickFilePath && b.fullPath === clickFilePath) {
+  if (sameImageFsPath(b.fullPath, clickFilePath)) {
     return 1
   }
 
