@@ -4,7 +4,7 @@
   "displayName": "Image Viewer",
   "description": "Browse workspace images in a fast thumbnail gallery or open individual files in a full-screen custom editor. Includes sorting, filtering, zoom, themes, and large-folder tuning.",
   "icon": "assets/logo.png",
-  "version": "2.0.5",
+  "version": "2.0.6",
   "author": "Zhang Jian <zhangjian1713@gmail.com>",
   "homepage": "https://github.com/ZhangJian1713/vscode-image-viewer",
   "license": "MIT",
@@ -58,18 +58,42 @@
         "viewType": "vscode-infra.imageViewer",
         "displayName": "Image Viewer",
         "selector": [
-          { "filenamePattern": "*.svg" },
-          { "filenamePattern": "*.png" },
-          { "filenamePattern": "*.jpeg" },
-          { "filenamePattern": "*.jpg" },
-          { "filenamePattern": "*.ico" },
-          { "filenamePattern": "*.gif" },
-          { "filenamePattern": "*.webp" },
-          { "filenamePattern": "*.bmp" },
-          { "filenamePattern": "*.tif" },
-          { "filenamePattern": "*.tiff" },
-          { "filenamePattern": "*.apng" },
-          { "filenamePattern": "*.avif" }
+          {
+            "filenamePattern": "*.svg"
+          },
+          {
+            "filenamePattern": "*.png"
+          },
+          {
+            "filenamePattern": "*.jpeg"
+          },
+          {
+            "filenamePattern": "*.jpg"
+          },
+          {
+            "filenamePattern": "*.ico"
+          },
+          {
+            "filenamePattern": "*.gif"
+          },
+          {
+            "filenamePattern": "*.webp"
+          },
+          {
+            "filenamePattern": "*.bmp"
+          },
+          {
+            "filenamePattern": "*.tif"
+          },
+          {
+            "filenamePattern": "*.tiff"
+          },
+          {
+            "filenamePattern": "*.apng"
+          },
+          {
+            "filenamePattern": "*.avif"
+          }
         ],
         "priority": "option"
       }
