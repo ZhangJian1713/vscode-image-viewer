@@ -12,7 +12,11 @@ import {
 } from './constants'
 
 class ImageViewerDocument implements vscode.CustomDocument {
-  constructor(public readonly uri: vscode.Uri) {}
+  public readonly uri: vscode.Uri
+
+  constructor(uri: vscode.Uri) {
+    this.uri = uri
+  }
 
   dispose() {}
 }
@@ -58,7 +62,11 @@ function createCustomEditorHtml(
 }
 
 class ImageViewerEditorProvider implements vscode.CustomReadonlyEditorProvider<ImageViewerDocument> {
-  constructor(private readonly context: vscode.ExtensionContext) {}
+  private readonly context: vscode.ExtensionContext
+
+  constructor(context: vscode.ExtensionContext) {
+    this.context = context
+  }
 
   openCustomDocument(uri: vscode.Uri): ImageViewerDocument {
     return new ImageViewerDocument(uri)
@@ -112,19 +120,23 @@ async function setAsDefaultImageViewer(): Promise<void> {
     next[pattern] = IMAGE_EDITOR_VIEW_TYPE
   }
   await writeGlobalEditorAssociations(next)
-  void vscode.window.showInformationMessage('Image Viewer is now the default editor for supported images.')
+  void vscode.window.showInformationMessage(
+    'Image Viewer is now the global default editor for supported images. Workspace settings may override this choice.'
+  )
 }
 
 async function restoreBuiltInImageViewer(): Promise<void> {
   const current = readGlobalEditorAssociations()
-  const next: EditorAssociations = {}
-  for (const [pattern, editor] of Object.entries(current)) {
-    if (editor !== IMAGE_EDITOR_VIEW_TYPE) {
-      next[pattern] = editor
+  const next = { ...current }
+  for (const pattern of IMAGE_FILE_PATTERNS) {
+    if (next[pattern] === IMAGE_EDITOR_VIEW_TYPE) {
+      delete next[pattern]
     }
   }
   await writeGlobalEditorAssociations(next)
-  void vscode.window.showInformationMessage("VS Code's built-in image editor is restored as the default.")
+  void vscode.window.showInformationMessage(
+    "Image Viewer's global editor associations were removed. VS Code will use its normal editor selection behavior."
+  )
 }
 
 export function registerCustomImageEditor(context: vscode.ExtensionContext): void {
