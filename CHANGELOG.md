@@ -1,5 +1,18 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- Added an optional, read-only custom editor for opening individual image files directly in the full-screen viewer.
+- Added **Image Viewer: Use as Default Image Editor** and **Image Viewer: Restore VS Code's Default Image Editor** commands for the supported image formats.
+- Added a dedicated single-image viewer mode that opens without scanning or briefly rendering the image-library view.
+
+### Changed
+
+- The restore command removes only supported-format associations that still point to Image Viewer and preserves unrelated editor associations.
+- Normalized selected-image path matching across slash styles on Windows.
+
 ## [2.0.5] - 2026-04-17
 
 ### Added

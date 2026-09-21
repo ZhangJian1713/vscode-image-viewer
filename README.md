@@ -1,6 +1,6 @@
 # Image Viewer
 
-View and manage images in your workspace: thumbnail grid, large preview, copy Base64 / path / file name, and per-project include/exclude folders.
+Browse and manage images in your workspace, or open individual image files directly in a full-screen custom editor. Includes a thumbnail grid, large preview, copy Base64 / path / file name, and per-project include/exclude folders.
 
 ## Screenshots
 
@@ -29,18 +29,33 @@ This shows another light theme style, as well as switching to a checkerboard bac
 - **Include / exclude** folders
 - **Copy** path, file name, or Base64 from the image menu.
 - Open a folder from Explorer: **only that folder tree** is scanned (fast in huge repos). **Multiple** Image Viewer tabs for different folders; tab title includes the folder name.
-- Optionally register Image Viewer as the default editor so clicking an image in Explorer opens it directly in the full-screen viewer without loading the image library first.
+- **Optional default editor:** open individual image files directly in the full-screen viewer without scanning or briefly displaying the image library.
 
 ## How to use
 
 1. Open a folder or workspace in VS Code / Cursor.
 2. **Whole workspace:** `Ctrl+Shift+P` / `⌘⇧P` → run **View Images** (command id: `vscode-infra.webviewImageViewer`).
 3. **Folder only:** In the **Explorer**, right-click a **folder** (or an image file) → **View Images 🌄**. Only that directory (and subfolders) is indexed in that panel; the editor tab title reflects the folder.
-4. **Open images on a normal click:** run **Image Viewer: Use as Default Image Editor** once. Run **Image Viewer: Restore VS Code's Default Image Editor** to remove Image Viewer's global associations and return to VS Code's normal editor selection behavior.
+4. **Individual image:** right-click an image and choose **Open With...** / **Reopen Editor With...** → **Image Viewer**.
+5. **Use Image Viewer by default:** run **Image Viewer: Use as Default Image Editor** once. See [Use as the default image editor](#use-as-the-default-image-editor) for details.
 
-You can also switch editors for an individual file with VS Code's **Reopen Editor With...** command.
+## Use as the default image editor
 
-The default-editor commands update the global User `workbench.editorAssociations` setting. Workspace or Workspace Folder associations can override the global choice. Before uninstalling Image Viewer, run the restore command if you want to remove these global associations; uninstalling an extension does not edit your User settings.
+Image Viewer is registered as an optional, read-only custom editor. Installing or updating the extension does **not** change your default editor automatically.
+
+To make it the default for supported images:
+
+1. Open the Command Palette with `Ctrl+Shift+P` / `⌘⇧P`.
+2. Run **Image Viewer: Use as Default Image Editor**.
+3. Open an image from Explorer. It opens directly in the full-screen viewer without scanning the surrounding folder or creating an additional gallery tab.
+
+The command applies to these filename patterns:
+
+`*.svg`, `*.png`, `*.jpeg`, `*.jpg`, `*.ico`, `*.gif`, `*.webp`, `*.bmp`, `*.tif`, `*.tiff`, `*.apng`, `*.avif`
+
+To stop using Image Viewer as the default, run **Image Viewer: Restore VS Code's Default Image Editor**. This removes Image Viewer's global associations for the supported patterns and returns control to VS Code's normal editor selection. It preserves unrelated editor associations and any target association that no longer points to Image Viewer.
+
+These commands update the global User `workbench.editorAssociations` setting. Workspace or Workspace Folder associations can override the global choice. Before uninstalling Image Viewer, run the restore command if you want to remove its global associations; uninstalling an extension does not edit your User settings.
 
 ## More documentation
 
