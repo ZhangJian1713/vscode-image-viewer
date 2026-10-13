@@ -1,6 +1,6 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import { Uri, ViewColumn, Webview, env as vscodeEnv } from 'vscode'
+import { Uri, ViewColumn, Webview, env as vscodeEnv, window as vscodeWindow } from 'vscode'
 import { utils, webviewUtils } from '@easy_vscode/core'
 import { IWebview, IWebviewProps, IMessage } from '@easy_vscode/core/lib/types'
 import { DIST_WEBVIEW_INDEX_HTML, EXTENSION_COMMANDS, MESSAGE_CMD, WEBVIEW_NAMES } from '../../constants'
@@ -154,6 +154,33 @@ const messageHandlers = new Map([
       if (raw) {
         void vscodeEnv.openExternal(Uri.parse(raw))
       }
+    }
+  ],
+  [
+    MESSAGE_CMD.RESOURCE_CACHE_CLEANUP_RESULT,
+    (message: IMessage) => {
+      const data = message.data as {
+        ok?: boolean
+        matchedCaches?: number
+        deletedCaches?: number
+        failedCaches?: number
+        error?: string
+      }
+      if (!data?.ok) {
+        void vscodeWindow.showWarningMessage(
+          `Image Viewer could not clean the WebView image cache: ${data?.error || 'unknown error'}`
+        )
+        return
+      }
+      const matched = Number(data.matchedCaches ?? 0)
+      const deleted = Number(data.deletedCaches ?? 0)
+      const failed = Number(data.failedCaches ?? 0)
+      const suffix = failed > 0 ? ` ${failed} cache(s) could not be deleted.` : ''
+      void vscodeWindow.showInformationMessage(
+        matched > 0
+          ? `Image Viewer cleaned ${deleted} of ${matched} gallery WebView resource cache(s).${suffix} Single-image editor caches are cleaned automatically when that editor is next opened.`
+          : 'Image Viewer found no gallery WebView resource cache to clean. Single-image editor caches are cleaned automatically when that editor is next opened.'
+      )
     }
   ],
 ])

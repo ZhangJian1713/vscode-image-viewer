@@ -57,6 +57,14 @@ To stop using Image Viewer as the default, run **Image Viewer: Restore VS Code's
 
 These commands update the global User `workbench.editorAssociations` setting. Workspace or Workspace Folder associations can override the global choice. Before uninstalling Image Viewer, run the restore command if you want to remove its global associations; uninstalling an extension does not edit your User settings.
 
+## Disk cache behavior
+
+VS Code and Cursor may store full copies of local images loaded by a WebView. Image Viewer removes old resource caches reachable from the current WebView origin in the background, then keeps only images that live panels are currently using plus a short navigation grace period. Automatic cleanup starts only after the viewer has rendered and the browser grants an idle window; it does not delay opening the viewer or show a notification.
+
+The gallery and single-image editor have separate WebView origins. Opening either viewer cleans history for the origin that VS Code or Cursor currently assigns to that viewer. Closing the last panel performs a best-effort full cleanup, and the next opening removes residue left by a crash or forced exit when the host reuses the same origin.
+
+To clean the gallery origin immediately, run **Image Viewer: Clean Gallery WebView Image Cache**. Users who upgrade but never open Image Viewer again—or whose host has orphaned an older WebView origin—must close VS Code or Cursor and remove that old host CacheStorage manually. Browser same-origin rules prevent an extension WebView from enumerating or deleting another origin.
+
 ## More documentation
 
 - See **[CHANGELOG.md](./CHANGELOG.md)** for release notes

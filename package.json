@@ -51,6 +51,11 @@
         "command": "vscode-infra.restoreBuiltInImageViewer",
         "title": "Restore VS Code's Default Image Editor",
         "category": "Image Viewer"
+      },
+      {
+        "command": "vscode-infra.cleanWebviewImageCache",
+        "title": "Clean Gallery WebView Image Cache",
+        "category": "Image Viewer"
       }
     ],
     "customEditors": [
@@ -131,6 +136,7 @@
     "ui-build": "npx webpack --config scaffold/webview.webpack.js --color --mode production",
     "lint-staged": "lint-staged",
     "check-type": "tsc --noEmit",
+    "test:resource-cache": "jest src/webview/resourceCache --runInBand",
     "bench:thumb-mac": "node scripts/benchmark-ql-vs-jimp.cjs"
   },
   "repository": {

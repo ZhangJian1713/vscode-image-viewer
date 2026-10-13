@@ -28,6 +28,19 @@
       "args": ["--disable-extensions", "--extensionDevelopmentPath=${workspaceFolder}"],
       "outFiles": ["${workspaceFolder}/dist/**/*.js"],
       "preLaunchTask": "Build Extension & Webview"
+    },
+    {
+      "name": "Run Extension (separate user data; WebStorage may be shared)",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": [
+        "--disable-extensions",
+        "--extensionDevelopmentPath=${workspaceFolder}",
+        "--user-data-dir=${workspaceFolder}/.vscode-test/cache-user-data",
+        "--extensions-dir=${workspaceFolder}/.vscode-test/cache-extensions"
+      ],
+      "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+      "preLaunchTask": "Build Extension & Webview"
     }
   ]
 }

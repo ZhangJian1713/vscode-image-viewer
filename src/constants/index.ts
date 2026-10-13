@@ -24,6 +24,8 @@ export const MESSAGE_CMD = {
   OPEN_EXTERNAL_URI: 'openExternalUri',
   /** Close the custom-editor tab when the direct image viewer is dismissed. */
   CLOSE_CUSTOM_IMAGE_EDITOR: 'closeCustomImageEditor',
+  /** Result of a user-requested same-origin CacheStorage cleanup. */
+  RESOURCE_CACHE_CLEANUP_RESULT: 'resourceCacheCleanupResult',
 }
 
 export const EXTENSION_NAME = 'vscode-infra'
@@ -48,7 +50,11 @@ export const EXTENSION_COMMANDS = {
   OPEN_WEBVIEW_IMAGE_VIEWER: `${EXTENSION_NAME}.webviewImageViewer`,
   SET_AS_DEFAULT_IMAGE_VIEWER: `${EXTENSION_NAME}.setAsDefaultImageViewer`,
   RESTORE_BUILT_IN_IMAGE_VIEWER: `${EXTENSION_NAME}.restoreBuiltInImageViewer`,
+  CLEAN_WEBVIEW_IMAGE_CACHE: `${EXTENSION_NAME}.cleanWebviewImageCache`,
 }
+
+/** Internal command argument used to make the existing gallery origin run a forced cleanup. */
+export const RESOURCE_CACHE_CLEANUP_ARG = '__imageViewerCleanResourceCache'
 
 
 /** Thumbnail pad uses PS-style transparency grid (stored in config). */

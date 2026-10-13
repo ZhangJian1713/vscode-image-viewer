@@ -10,6 +10,7 @@ import styled from 'styled-components'
 import type { IImage } from '../imageTypes'
 import { MESSAGE_CMD } from '../../../constants'
 import { imageInlineBackground, thumbPadStyle } from '../../thumbSurfaceStyle'
+import { useRetainedResourceUrl } from '../../resourceCache/ResourceCacheBoundary'
 import {
   computeThumbRetentionScore,
   useThumbLoadBudget
@@ -226,6 +227,7 @@ const ImageLazyLoad: React.FC<IImageLazyLoadProps> = ({
   }
 
   const isShow = rawShow && painted
+  useRetainedResourceUrl(gridDisplaySrc, isShow && gridDisplaySrc !== null)
 
   useEffect(() => {
     thumbRequestKeyDone.current = null

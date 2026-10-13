@@ -7,11 +7,14 @@
 - Added an optional, read-only custom editor for opening individual image files directly in the full-screen viewer.
 - Added **Image Viewer: Use as Default Image Editor** and **Image Viewer: Restore VS Code's Default Image Editor** commands for the supported image formats.
 - Added a dedicated single-image viewer mode that opens without scanning or briefly rendering the image-library view.
+- Added **Image Viewer: Clean Gallery WebView Image Cache** for an immediate, same-origin gallery cache cleanup.
 
 ### Changed
 
 - The restore command removes only supported-format associations that still point to Image Viewer and preserves unrelated editor associations.
 - Normalized selected-image path matching across slash styles on Windows.
+- WebView resource caches are migrated in the background on first use and continuously pruned to the images that live panels are actively using, preventing viewed originals from accumulating without limit without delaying the viewer UI.
+- Automatic historical cache migration waits for the initial render and a browser idle window, and deletes old cache generations sequentially to reduce startup disk-I/O contention.
 
 ## [2.0.5] - 2026-04-17
 

@@ -13,5 +13,8 @@ ai-*/
 benchmark-out/
 TestPics/
 docs/
+!docs/
+docs/*
+!docs/webview-resource-cache-management-design.md
 scripts/
 issues/

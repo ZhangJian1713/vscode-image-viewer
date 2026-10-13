@@ -3,6 +3,7 @@ import { ImagePreview } from 'right-image-preview'
 import type { ImageGroup } from 'right-image-preview'
 import { callVscode } from '@easy_vscode/webview'
 import { MESSAGE_CMD } from '../constants'
+import { useResourceCacheSlot } from './resourceCache/ResourceCacheBoundary'
 
 type SingleImageViewerArgs = {
   src?: string
@@ -26,6 +27,7 @@ function readSingleImageViewerArgs(): SingleImageViewerArgs {
 
 const SingleImageViewer: React.FC = () => {
   const { src, name } = readSingleImageViewerArgs()
+  useResourceCacheSlot('single-editor-main-image', src)
   const groupedImages = useMemo<ImageGroup[] | undefined>(() => {
     if (!src) {
       return undefined

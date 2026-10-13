@@ -67,6 +67,7 @@ import { IMAGE_SORT_OPTIONS, compareImagesForSort } from '../imageSort'
 import type { IImage } from './imageTypes'
 import { VirtualFolderImageGrid } from './VirtualFolderImageGrid'
 import { AnnouncementBar } from './AnnouncementBar'
+import { useResourceCacheSlot } from '../resourceCache/ResourceCacheBoundary'
 
 export type { IImage } from './imageTypes'
 
@@ -227,6 +228,7 @@ const PreviewImages: React.FC = () => {
   const [lightboxVisible, setLightboxVisible] = useState(false)
   const [lightboxKey, setLightboxKey] = useState(0)
   const [lightboxDefaultIndex, setLightboxDefaultIndex] = useState(0)
+  const [lightboxCurrentIndex, setLightboxCurrentIndex] = useState(0)
   const [minimapSrcByVscodePath, setMinimapSrcByVscodePath] = useState<Record<string, string>>({})
 
   const ref = useRef<HTMLDivElement | null>(null)
@@ -493,6 +495,18 @@ const PreviewImages: React.FC = () => {
     return out
   }, [allPaths, sortedImagesByDir])
 
+  const lightboxCurrentImage = globalPreviewFlat[lightboxCurrentIndex]
+  useResourceCacheSlot(
+    'gallery-main-image',
+    lightboxVisible ? lightboxCurrentImage?.vscodePath : null
+  )
+  useResourceCacheSlot(
+    'gallery-minimap-image',
+    lightboxVisible && lightboxCurrentImage
+      ? minimapSrcByVscodePath[lightboxCurrentImage.vscodePath]
+      : null
+  )
+
   useEffect(() => {
     const valid = new Set(globalPreviewFlat.map((img) => img.vscodePath))
     setMinimapSrcByVscodePath((prev) => {
@@ -543,6 +557,7 @@ const PreviewImages: React.FC = () => {
     (img: IImage) => {
       const idx = globalIndexByVscodePath.get(img.vscodePath) ?? 0
       setLightboxDefaultIndex(idx)
+      setLightboxCurrentIndex(idx)
       setLightboxKey((k) => k + 1)
       setLightboxVisible(true)
     },
@@ -853,6 +868,7 @@ const PreviewImages: React.FC = () => {
         closeOnMaskClick
         arrows='side'
         showFlip
+        onIndexChange={setLightboxCurrentIndex}
         onClose={() => setLightboxVisible(false)}
       />
       </>
