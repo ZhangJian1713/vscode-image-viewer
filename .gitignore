@@ -21,3 +21,14 @@ issues/
 
 !docs/gallery-layout-design.md
 !docs/code-server-compatibility.md
+
+native/build/
+!scripts/build-imageio.cjs
+!scripts/prepare-sharp.cjs
+!scripts/package.cjs
+!scripts/vsix-targets.cjs
+!scripts/test-imageio.cjs
+!scripts/test-sharp.cjs
+!scripts/test-thumbnail-adapters.cjs
+!scripts/benchmark-imageio-sharp.cjs
+!scripts/vsix.sh

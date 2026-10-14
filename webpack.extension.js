@@ -5,6 +5,10 @@
 const path = require('path');
 const webpack = require('webpack')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
+const { validateTarget } = require('./scripts/vsix-targets.cjs')
+const vsixTarget = process.env.IMAGE_VIEWER_VSIX_TARGET && validateTarget(process.env.IMAGE_VIEWER_VSIX_TARGET)
+const includeImageIO = vsixTarget ? vsixTarget.startsWith('darwin-') : process.platform === 'darwin'
+const includeSharp = vsixTarget ? !vsixTarget.startsWith('darwin-') : true
 
 /**@type {import('webpack').Configuration}*/
 const configExtension = {
@@ -27,7 +31,11 @@ const configExtension = {
   devtool: 'nosources-source-map',
   plugins: [
     new CopyWebpackPlugin({
-      patterns: [{ from: 'node_modules/@jsquash/webp/codec/dec/webp_dec.wasm', to: 'wasm/webp_dec.wasm' }]
+      patterns: [
+        // Vendor runtime files must remain byte-for-byte unchanged, including new ESM syntax.
+        ...(includeSharp ? [{ from: 'native/build/sharp-runtime', to: 'native/sharp-runtime', info: { minimized: true } }] : []),
+        ...(includeImageIO ? [{ from: 'native/build/imageio.node', to: 'native/imageio.node' }] : [])
+      ]
     })
   ],
   externals: {

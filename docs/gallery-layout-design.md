@@ -134,7 +134,28 @@ Feedback 提供已有 Issue 列表、新建 Issue 指引，以及打开邮件应
 
 扫描改为异步目录遍历和每批 16 个 stat，跳过 node_modules、AppleDouble 与符号链接；一个面板的新扫描会取消上一请求，前端 request generation 阻止迟到结果覆盖当前范围。扫描完成后发布完整快照，本轮未实现流式首批图片或文件变化 watcher。
 
-缩略图继续使用 sips / Jimp / WebP WASM 后端及 100/200/400/800/1600 档位。相同缓存输出合并生成，跨面板最多同时生成 2 张；失败仍保留原有原图回退行为。
+缩略图维持 100/200/400/800/1600 档位。macOS 全部使用进程内 ImageIO；Windows/Linux 使用 Sharp 0.35.5。平台选择集中在 `config/thumbnailBackend.ts`，缓存指纹随后端改变。相同缓存输出合并生成，跨面板并发为 `clamp(CPU 数 - 1, 1, 4)`；失败返回原图。不调用 sips / Quick Look，不回退 Jimp / WebP WASM。
+
+### ImageIO 原生后端
+
+- 自主实现薄的 Objective-C + Node-API C 桥接，参考 Media Lens 的 ImageIO 调用方式，不引入第三方原生图像库或复制其私有业务逻辑。`native/imageio.m` 用 `napi_create_async_work` 把解码/缩放/编码移到 libuv 工作线程；JS 主线程仅提交任务、接收压缩 Buffer 和写缓存。每个任务独立管理 CG/CF 资源与 autorelease pool，不共享解码图像。
+- 使用 `CGImageSourceCreateThumbnailAtIndex`，Always 从主图生成、WithTransform 应用 EXIF 方向、ShouldCache=false 避免保留整图；通过 ImageIO properties 夹紧原始尺寸，不放大小图。动画使用首帧，SVG 保持原图；macOS raster 范围补充 TIFF / ICO / AVIF / APNG，实际解码能力由系统 ImageIO 决定。
+- 保留 JPEG Q78 磁盘协议；透明像素合成到白色后编码，不输出原图 RGBA 到 JavaScript。缓存指纹使用 `mac-imageio-v1` 与方向/alpha 策略，旧后端结果不会命中，历史文件继续由 janitor 清理。
+- 使用 Node-API 8，兼容当前 VS Code 最低版本的 Node 运行时，不依赖 V8 ABI。`scripts/build-imageio.cjs` 在 macOS 上使用 Node C headers + Apple Command Line Tools 构建 arm64/x86_64 universal `.node`（部署目标 macOS 11）；无需用户机器安装编译工具。`compile`、`watch`、`package` 自动构建，Webpack 复制到 `dist/native/imageio.node`，运行时使用未被 Webpack 打包的 Node require。
+- macOS 平台 VSIX 应在 macOS 构建，携带 universal ImageIO 模块；Windows/Linux 目标跳过 ImageIO，不能把这些构建当成 macOS 发布包。发布包排除 native 源码/构建目录，保留 dist 内二进制。原生模块加载或解码失败走原图，绝不重启外部缩略图工具。
+- `yarn test:imageio` 是真实原生模块的功能检查，验证档位、方向、透明背景 JPEG、非法输入、异步工作和 Worker 环境加载，不执行后端性能对比。本轮 arm64 实测；x86_64 编译和 Mach-O 架构检查通过，Intel 实机与 Windows/Linux 原生运行未验收。
+
+### Sharp 与原生模块分发
+
+- 封装采用最新稳定版 Sharp 0.35.5（Apache-2.0），底层 libvips 为 LGPL-3.0-or-later。它提供常见图片格式、自动方向修正和缩放/编码能力；替代 Jimp 的 CPU 主线程处理与单独 WebP WASM 解码。Jimp 仅作为开发测试的 fixture 工具；不进入生产 bundle。
+- 使用当前版本支持的 Node-API v9 / Node >=20.9，最低宿主调整为 VS Code 1.92（官方内置 Node 20.14）。用户电脑安装的 Node 版本不参与插件运行；开发/构建环境仍需要合适的 Node。远程工作区同样由 VS Code Server 提供 Node 运行时，原生包按 Extension Host 的 OS/CPU 加载。
+- `sharpThumbnail.ts` 用 Node `createRequire` 加载 `dist/native/sharp-runtime` 中的独立运行时；与基准和 smoke check 共用 `native/sharp-thumbnail.cjs`。使用 autoOrient、fit:inside、withoutEnlargement、白色 flatten、JPEG Q78；关闭 libvips operation cache，保留图库既有磁盘缓存；单图内部线程设为 1，依靠多个任务并行，避免与宿主争抢全部核心。此参数是保守默认，不声称在 Windows 上已经调优到最优值。
+- Sharp 路径覆盖 JPEG / PNG / WebP / GIF / TIFF / AVIF / APNG；BMP / ICO 当前使用原图，macOS 仍可由 ImageIO 生成。动画仅首帧，不新增格式入口。系统/libvips 无法解码的输入也返回原图。
+- `prepare-sharp.cjs` 解析并复制 Sharp 实际运行依赖（包括 nested semver 的正确版本），不由 Webpack 解析动态原生 require。开发构建保留当前平台 Sharp 以便基准测试；发布构建 macOS 不准备 Sharp，Windows/Linux 仅准备目标平台。外国平台包从官方 npm 下载并校验 integrity，不执行其代码；保留 LICENSE、第三方说明和版本清单。
+- `vsix-targets.cjs` 集中维护平台名称/映射。`yarn vsix` 默认生成宿主平台包，`IMAGE_VIEWER_VSIX_TARGET=win32-x64 yarn vsix` 可指定平台，各目标包需串行构建。矩阵复用一次 WebView 构建，并在结束后恢复宿主产物供 F5 使用；共享 dist 不可并行打包。macOS 包只含 ImageIO；其他包只含目标 Sharp/libvips，Webpack 清理旧 dist，发布前校验平台标识和后端内容。通用 VSIX 不再属于发布流程。
+- CopyWebpackPlugin 将 Sharp vendor 运行文件标记为已处理，避免生产模式 Terser 二次压缩/改写；保留原始 CJS/ESM 文件及许可证，支持 Sharp 新版 import attributes 语法。发布包须检查 VSIX 身份、版本、平台和原生依赖。
+- 直接比较见 [2026-10-14 基准报告](thumbnail-backend-benchmark-2026-10-14.md)：相同 12 张混合输入，200/400/800px、外层 1/2/4/8 并发及 Sharp 内部 1/4/默认线程。当前规格下 ImageIO 在混合批次更快、更省 RSS，因此 macOS 保留 ImageIO。不能把此结论泛化为所有格式或所有硬件，也不是等画质的编码器比较。
+- `yarn test:sharp` 验证独立运行时；`yarn test:thumbnail-native` 验证实际 TS 适配器在打包路径加载。Windows/Linux 分支、缓存失败与去重有程序化验证；本机只执行了 macOS arm64 原生代码，Windows/Linux 实机验证仍待完成。
 
 磁盘容量为 500 MiB、文件数为 25,000。启动约 3 秒后检查，此后每 2 分钟检查；新增缩略图也触发去抖检查。超限按近似 LRU 回收到两个上限的 85%。这是后台软上限，短期生成高峰可能超过阈值，不承诺任意时刻的严格硬上限。清理串行单飞、最多 32 个并行 stat / 16 个 unlink，允许文件检查期间消失。删除磁盘文件同时失效 memo，命中时也验证文件仍存在。
 

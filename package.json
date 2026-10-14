@@ -9,7 +9,7 @@
   "homepage": "https://github.com/ZhangJian1713/vscode-image-viewer",
   "license": "MIT",
   "engines": {
-    "vscode": "^1.75.0"
+    "vscode": "^1.92.0"
   },
   "categories": [
     "Visualization",
@@ -121,9 +121,9 @@
   },
   "scripts": {
     "vscode:prepublish": "yarn run package",
-    "compile": "npx webpack --config webpack.extension.js",
-    "watch": "npx webpack --config webpack.extension.js --watch",
-    "package": "yarn ui-build && npx webpack --config webpack.extension.js --mode production --devtool hidden-source-map",
+    "compile": "yarn native:build && npx webpack --config webpack.extension.js",
+    "watch": "yarn native:build && npx webpack --config webpack.extension.js --watch",
+    "package": "node scripts/package.cjs",
     "vsix": "bash scripts/vsix.sh",
     "test-compile": "tsc -p ./",
     "test-watch": "tsc -watch -p ./",
@@ -139,7 +139,13 @@
     "test:resource-cache": "jest src/webview/resourceCache --runInBand",
     "test:gallery": "jest src/folderFilterRules.test.ts src/webview/webviewPalette.test.ts src/webview/PreviewImages/gallery*.test.* src/webviewController/imagesViewer/*.test.ts --runInBand",
     "bench:thumb-mac": "node scripts/benchmark-ql-vs-jimp.cjs",
-    "test:preview": "jest src/vendor/right-image-preview --runInBand"
+    "test:preview": "jest src/vendor/right-image-preview --runInBand",
+    "native:build": "node scripts/build-imageio.cjs && node scripts/prepare-sharp.cjs",
+    "native:package": "node scripts/build-imageio.cjs && node scripts/prepare-sharp.cjs --package",
+    "test:sharp": "yarn native:build && node scripts/test-sharp.cjs",
+    "test:thumbnail-native": "yarn compile && jest src/webviewController/imagesViewer/nativeTests --runInBand",
+    "test:imageio": "yarn native:build && node scripts/test-imageio.cjs",
+    "bench:thumbnail-backends": "node scripts/benchmark-imageio-sharp.cjs"
   },
   "repository": {
     "type": "git",
@@ -228,13 +234,13 @@
     "webpack-cli": "^4.7.2",
     "webpack-dev-server": "^3.11.2",
     "webpack-resolve-config-plugin": "^1.0.0",
-    "right-image-preview": "0.2.0"
+    "right-image-preview": "0.2.0",
+    "jimp": "0.22.12"
   },
   "dependencies": {
     "@ant-design/icons": "^5.5.0",
     "@easy_vscode/core": "3.0.0",
     "@easy_vscode/webview": "2.0.2",
-    "@jsquash/webp": "1.5.0",
     "ahooks": "^3.7.5",
     "antd": "^5.22.0",
     "axios": "^0.24.0",
@@ -242,14 +248,14 @@
     "fs-extra": "^10.0.0",
     "i18next": "^21.9.0",
     "image-size": "^1.0.2",
-    "jimp": "0.22.12",
     "json5": "^2.2.3",
     "lodash": "^4.17.21",
     "picomatch": "4.0.7",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-i18next": "^11.18.3",
-    "styled-components": "^5.3.0"
+    "styled-components": "^5.3.0",
+    "sharp": "0.35.5"
   },
   "resolutions": {
     "webpack": "5.73.0",

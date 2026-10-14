@@ -25,6 +25,9 @@ ai-*/
 benchmark-out/
 TestPics/
 assets/demos/**
+assets/screenshots/**
+!assets/screenshots/CREDITS.md
+!assets/screenshots/SOURCES.json
 docs/
 !docs/usage-notes.md
 !docs/thumbnail-backend-benchmark-2026-10-14.md
