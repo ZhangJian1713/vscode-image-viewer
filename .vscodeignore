@@ -2,9 +2,11 @@
 .vscode-test/**
 node_modules/**
 src/**
+native/**
 .gitignore
 .nvmrc
 .yarnrc
+.openvsx-token
 vsc-extension-quickstart.md
 **/tsconfig.json
 **/.eslintrc.json
@@ -22,7 +24,13 @@ projectsConfig/**
 ai-*/
 benchmark-out/
 TestPics/
+assets/demos/**
 docs/
+!docs/usage-notes.md
+!docs/thumbnail-backend-benchmark-2026-10-14.md
+!docs/thumbnail-backend-benchmark-2026-10-14.json
+!docs/gallery-scale-validation-2026-10-14.md
+!docs/gallery-scale-validation-2026-10-14.json
 scripts/
 github-issues/
 issues/

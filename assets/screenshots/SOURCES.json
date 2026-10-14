@@ -1,0 +1,233 @@
+{
+  "reviewed": "2026-10-14",
+  "images": [
+    {
+      "filename": "06-quebec-lakes-8256x5504.jpg",
+      "demo_path": "Nature/Lacs Laberge.jpg",
+      "title": "Base de plein air de Sainte-Foy, Lacs Laberge 002",
+      "artist": "Wilfredor",
+      "provider": "Wikimedia Commons",
+      "license": "CC0",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Base_de_plein_air_de_Sainte-Foy,_Lacs_Laberge_002.jpg",
+      "sha256": "9a5b20a4b9917278ca95ebdd9056b9cf0652e7680b96e9797a8050cc8354ee8b",
+      "transform": "Resized to a maximum edge of 2000 px and re-encoded as JPEG for the gallery demo.",
+      "width": 8256,
+      "height": 5504
+    },
+    {
+      "filename": "08-hinrichshagen-forest-8368x5584.jpg",
+      "demo_path": "Nature/Forest trail.jpg",
+      "title": "Forest in Hinrichshagen 2021-09-10 21",
+      "artist": "Leonhard Lenz",
+      "provider": "Wikimedia Commons",
+      "license": "CC0",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Forest_in_Hinrichshagen_2021-09-10_21.jpg",
+      "sha256": "5efaa0c9f96f352edcdab34b15070dc8b4ba2347579d75a4f027f47d9e87e6ad",
+      "transform": "Resized to a maximum edge of 2000 px and re-encoded as JPEG for the gallery demo.",
+      "width": 8368,
+      "height": 5584
+    },
+    {
+      "filename": "05-trevi-fountain-8739x7781.jpg",
+      "demo_path": "Architecture/Trevi Fountain.jpg",
+      "title": "Fontana di Trevi 013",
+      "artist": "Wilfredor",
+      "provider": "Wikimedia Commons",
+      "license": "CC0",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Fontana_di_Trevi_013.jpg",
+      "sha256": "05602be62d6affc3e871179f417772a9eba69c8a929fc8d5e58ad92c53d974f3",
+      "transform": "Resized to a maximum edge of 2000 px and re-encoded as JPEG for the gallery demo.",
+      "width": 8739,
+      "height": 7781
+    },
+    {
+      "filename": "07-tuebingen-church-tower-3945x8209.jpg",
+      "demo_path": "Architecture/Church tower.jpg",
+      "title": "Turm der Jakobuskirche in Tübingen 2019",
+      "artist": "Dktue",
+      "provider": "Wikimedia Commons",
+      "license": "CC0",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Turm_der_Jakobuskirche_in_T%C3%BCbingen_2019.jpg",
+      "sha256": "2a6bd16bfc811c434be1bfd4ffa7df686bf4f9e4983fffddc73b3a73e136378a",
+      "transform": "Resized to a maximum edge of 2000 px and re-encoded as JPEG for the gallery demo.",
+      "width": 3945,
+      "height": 8209
+    },
+    {
+      "filename": "0268-duomo-di-milano-2022-09-28-08.jpg",
+      "demo_path": "Architecture/Milan Cathedral.jpg",
+      "title": "Duomo di Milano 2022-09-28 08",
+      "artist": "Leonhard Lenz",
+      "provider": "Wikimedia Commons",
+      "license": "CC0",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Duomo_di_Milano_2022-09-28_08.jpg",
+      "sha256": "67330f35c96a0c9816bb9999e727363fe79a7250cc3344066f32acc2eea57e01",
+      "transform": "Resized to a maximum edge of 2000 px and re-encoded as JPEG for the gallery demo.",
+      "width": 8368,
+      "height": 5584
+    },
+    {
+      "filename": "si-1009-FS-8142_08.jpg",
+      "demo_path": "Art/Pavilions by a mountain stream.jpg",
+      "title": "Pavilions by a mountain stream",
+      "provider": "Smithsonian Institution / Freer Gallery of Art and Arthur M. Sackler Gallery",
+      "license": "CC0",
+      "source_page": "https://asia.si.edu/object/F1911.155e/",
+      "current_source_page": "https://asia.si.edu/explore-art-culture/collections/search/edanmdm:fsg_F1911.155e/",
+      "sha256": "4d621116b27b90fffa7bf0061796af0ab17c9b9afe3e140c7b4ed22230185e7d",
+      "transform": "Resized to a maximum edge of 2000 px and re-encoded as JPEG for the gallery demo.",
+      "width": 8640,
+      "height": 7696
+    },
+    {
+      "filename": "si-1010-FS-8142_09.jpg",
+      "demo_path": "Art/Palace and gardens.jpg",
+      "title": "Palace and gardens",
+      "provider": "Smithsonian Institution / Freer Gallery of Art and Arthur M. Sackler Gallery",
+      "license": "CC0",
+      "source_page": "https://asia.si.edu/object/F1911.155f/",
+      "current_source_page": "https://asia.si.edu/explore-art-culture/collections/search/edanmdm:fsg_F1911.155f/",
+      "sha256": "2526d17febb0bddcf6fafbc86036867346bd9a0c519af4171598853c698ea3c3",
+      "transform": "Resized to a maximum edge of 2000 px and re-encoded as JPEG for the gallery demo.",
+      "width": 8640,
+      "height": 8181
+    },
+    {
+      "filename": "si-1011-FS-8142_10.jpg",
+      "demo_path": "Art/Mule-train in snowy mountains.jpg",
+      "title": "Mule-train in snowy mountains 雪山驢運圖",
+      "provider": "Smithsonian Institution / Freer Gallery of Art and Arthur M. Sackler Gallery",
+      "license": "CC0",
+      "source_page": "https://asia.si.edu/object/F1911.155g/",
+      "current_source_page": "https://asia.si.edu/explore-art-culture/collections/search/edanmdm:fsg_F1911.155g/",
+      "sha256": "12b949a8dac1f9fca21db9133cfe3219f9bfbb83d4c1ee634fb1ef751947dabb",
+      "transform": "Resized to a maximum edge of 2000 px and re-encoded as JPEG for the gallery demo.",
+      "width": 8640,
+      "height": 7794
+    },
+    {
+      "filename": "02-earth-arctic-12000x12000.jpg",
+      "demo_path": "Space/Earth from above.jpg",
+      "title": "View of Earth showing the Arctic, Europe, and Asia",
+      "artist": "NASA/NOAA; Norman Kuring, NASA/GSFC/Suomi NPP",
+      "provider": "Wikimedia Commons",
+      "license": "Public domain",
+      "source_page": "https://commons.wikimedia.org/wiki/File:View_of_Earth_showing_the_Arctic,_Europe,_and_Asia.jpg",
+      "sha256": "1ed3eb7590d5eeb0eb9061ddc166aab77fdec915012ad92e629a5ae2aced71d6",
+      "transform": "Resized to a maximum edge of 2000 px and re-encoded as JPEG for the gallery demo.",
+      "width": 12000,
+      "height": 12000
+    },
+    {
+      "filename": "03-tropical-storms-9200x12000.jpg",
+      "demo_path": "Space/Tropical storms.jpg",
+      "title": "Tropical Storms Mahasen and Jamala",
+      "artist": "NASA, Terra MODIS Rapid Response System",
+      "provider": "Wikimedia Commons",
+      "license": "Public domain",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Tropical_Storms_Mahasen(North)_and_Jamala(south)_May_10_2013_0425Z.jpg",
+      "sha256": "98399b11f26f17992f5659e6b3c9fd81596775c05e3cad7acccf64e4295981b3",
+      "transform": "Resized to a maximum edge of 2000 px and re-encoded as JPEG for the gallery demo.",
+      "width": 9200,
+      "height": 12000
+    },
+    {
+      "filename": "04-mars-spirit-panorama-12756x3487.jpg",
+      "demo_path": "Space/Mars panorama.jpg",
+      "title": "Spirit's West Valley Panorama",
+      "artist": "NASA/JPL-Caltech/Cornell University",
+      "provider": "Wikimedia Commons",
+      "license": "Public domain",
+      "source_page": "https://commons.wikimedia.org/wiki/File:Spirit%27s_West_Valley_Panorama_(PIA10216).jpg",
+      "sha256": "e46357eb50ca10f02b4c49fbc16ad4c838271e574b598972b498e576c14bfa30",
+      "transform": "Resized to a maximum edge of 2000 px and re-encoded as JPEG for the gallery demo.",
+      "width": 12756,
+      "height": 3487
+    },
+    {
+      "demo_path": "Space/Blue Marble 2012.jpg",
+      "title": "Most Amazing High Definition Image of Earth - Blue Marble 2012",
+      "artist": "NASA/NOAA/GSFC/Suomi NPP/VIIRS/Norman Kuring",
+      "license": "CC BY 2.0",
+      "license_url": "https://creativecommons.org/licenses/by/2.0/",
+      "source_page": "https://www.flickr.com/photos/gsfc/6760135001/",
+      "sha256": "55924f1759c591b72cf8849d345e5a1ea410302df1050c21beb3dd793ccba27c",
+      "transform": "Unmodified original; screenshot viewport crops depend on zoom.",
+      "width": 8000,
+      "height": 8000
+    }
+  ],
+  "screenshots": {
+    "single-image-editor-blue-marble.jpg": [
+      "Space/Blue Marble 2012.jpg"
+    ],
+    "set-default-image-editor-blue-marble.jpg": [
+      "Space/Blue Marble 2012.jpg"
+    ],
+    "gallery-photos.jpg": [
+      "Nature/Lacs Laberge.jpg",
+      "Nature/Forest trail.jpg",
+      "Architecture/Trevi Fountain.jpg",
+      "Architecture/Church tower.jpg",
+      "Architecture/Milan Cathedral.jpg",
+      "Art/Pavilions by a mountain stream.jpg",
+      "Art/Palace and gardens.jpg",
+      "Art/Mule-train in snowy mountains.jpg",
+      "Space/Earth from above.jpg",
+      "Space/Tropical storms.jpg",
+      "Space/Mars panorama.jpg",
+      "Space/Blue Marble 2012.jpg"
+    ],
+    "set-default-image-editor-command.jpg": [],
+    "gallery-grid-photos.jpg": [
+      "Nature/Lacs Laberge.jpg",
+      "Nature/Forest trail.jpg",
+      "Architecture/Trevi Fountain.jpg",
+      "Architecture/Church tower.jpg",
+      "Architecture/Milan Cathedral.jpg",
+      "Art/Pavilions by a mountain stream.jpg",
+      "Art/Palace and gardens.jpg",
+      "Art/Mule-train in snowy mountains.jpg",
+      "Space/Earth from above.jpg",
+      "Space/Tropical storms.jpg",
+      "Space/Mars panorama.jpg",
+      "Space/Blue Marble 2012.jpg"
+    ],
+    "gallery-list-photos.jpg": [
+      "Architecture/Trevi Fountain.jpg",
+      "Architecture/Church tower.jpg",
+      "Architecture/Milan Cathedral.jpg",
+      "Art/Pavilions by a mountain stream.jpg",
+      "Art/Palace and gardens.jpg",
+      "Art/Mule-train in snowy mountains.jpg"
+    ],
+    "gallery-fill-photos.jpg": [
+      "Nature/Lacs Laberge.jpg",
+      "Nature/Forest trail.jpg",
+      "Architecture/Trevi Fountain.jpg",
+      "Architecture/Church tower.jpg",
+      "Architecture/Milan Cathedral.jpg",
+      "Art/Pavilions by a mountain stream.jpg",
+      "Art/Palace and gardens.jpg",
+      "Art/Mule-train in snowy mountains.jpg",
+      "Space/Earth from above.jpg",
+      "Space/Tropical storms.jpg",
+      "Space/Mars panorama.jpg",
+      "Space/Blue Marble 2012.jpg"
+    ],
+    "gallery-fill-compact-photos.jpg": [
+      "Nature/Lacs Laberge.jpg",
+      "Nature/Forest trail.jpg",
+      "Architecture/Trevi Fountain.jpg",
+      "Architecture/Church tower.jpg",
+      "Architecture/Milan Cathedral.jpg",
+      "Art/Pavilions by a mountain stream.jpg",
+      "Art/Palace and gardens.jpg",
+      "Art/Mule-train in snowy mountains.jpg",
+      "Space/Earth from above.jpg",
+      "Space/Tropical storms.jpg",
+      "Space/Mars panorama.jpg",
+      "Space/Blue Marble 2012.jpg"
+    ]
+  }
+}

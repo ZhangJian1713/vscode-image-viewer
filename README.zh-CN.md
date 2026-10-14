@@ -2,7 +2,19 @@
 
 [English](./README.md) | **中文**
 
-在 **VS Code 和 Cursor** 中查看单张图片，或以图库形式浏览文件夹。通过缩放、拖动、旋转、翻转和导航小地图检查细节，通过缩略图、搜索、排序和筛选查找项目素材。
+**推荐将 Image Viewer 设为 VS Code 的默认图片查看器。** 提供最高 **800%** 的缩放预设、空格/单击切换缩放、旋转与翻转、导航小地图，以及同目录图片连续切换。[设置方法](#设为默认查看器)。
+
+也可以在 **VS Code 和 Cursor** 中通过连续图片墙浏览项目素材，用目录、搜索和筛选快速找到需要的图片。
+
+点击截图可查看原图。
+
+## 视频演示
+
+查看图片墙浏览与目录定位的实际操作。
+
+<video src="https://raw.githubusercontent.com/ZhangJian1713/vscode-image-viewer/main/assets/demos/gallery-demo.mp4" poster="https://raw.githubusercontent.com/ZhangJian1713/vscode-image-viewer/main/assets/demos/gallery-demo-poster.jpg" width="800" controls preload="none"></video>
+
+[观看或下载视频](https://raw.githubusercontent.com/ZhangJian1713/vscode-image-viewer/main/assets/demos/gallery-demo.mp4)。
 
 ## 快速开始
 
@@ -11,88 +23,137 @@
 | 打开一张图片 | 在 Explorer（资源管理器）中右键图片 → **Open With...** / **Reopen Editor With...** → **Image Viewer** |
 | 设为默认图片查看器 | 打开命令面板（`Ctrl+Shift+P` / `⌘⇧P`）→ **Image Viewer: Use as Default Image Editor** |
 | 浏览工作区图片 | 打开文件夹或工作区 → 从命令面板运行 **View Images 🌄** |
-| 浏览指定文件夹 | 在 Explorer 中右键文件夹 → **View Images 🌄**，包含其子文件夹 |
+| 浏览指定文件夹 | 在 Explorer 中右键文件夹 → **View Images 🌄**，打开项目图库并定位到该目录 |
 
 ## 单图查看器
 
-直接在编辑器标签页中以全屏预览方式打开图片，控件在空闲时自动淡出。
+放大检查细节，通过导航小地图移动视角，或连续查看同目录图片；这些操作不修改原文件。
 
-- **缩放：** 使用鼠标滚轮、工具栏按钮，或输入百分比；按 **Space** 或单击主图，在 Fit → Detail → 100% 间自适应循环（中间档收益不明显时为两档，小图使用 Fit/100% → 200%）；放大后拖动可平移；高档预设支持 250%、300%、400%、600% 和 800%。
+[![单图查看器：缩放、旋转、翻转与导航缩略图](https://raw.githubusercontent.com/ZhangJian1713/vscode-image-viewer/main/assets/screenshots/single-image-editor-blue-marble.jpg)](https://raw.githubusercontent.com/ZhangJian1713/vscode-image-viewer/main/assets/screenshots/single-image-editor-blue-marble.jpg)
+
+- **缩放与平移：** 使用鼠标滚轮、工具栏或输入百分比；按 **Space** 或单击图片，在适合当前图片的两到三个缩放档位间循环；缩放预设最高 **800%**。
 - **查看细节：** 放大后拖动图片，或通过导航小地图移动查看位置。
-- **旋转与翻转：** 向左或向右旋转，水平或垂直翻转；这些显示变换不会修改图片文件。
-- **切换图片：** 使用工具栏或侧边箭头查看同目录中的其他图片，顺序跟随 Explorer 的排序设置，包括倒序。
-- **键盘操作：** 使用键盘缩放、切换缩放模式、旋转和切换图片。
+- **旋转与翻转：** 向左或向右旋转，水平或垂直翻转，不修改原文件。
+- **切换图片：** 使用工具栏、侧边箭头或键盘查看同目录中的其他图片，顺序跟随 Explorer 的排序设置。
+- **专注看图：** 控件在空闲时自动淡出；也可以打开工作区以外的图片。
 
-单图编辑器是只读的。它只列出所打开图片直接所在目录中的图片，不扫描子目录，也不加载图库界面。查看时直接使用原图，不生成缩略图；工作区外的图片也可以打开。
-
-<!-- 截图待补：assets/screenshots/single-image-editor.png。
-截取深色主题的编辑器窗口，保留 Explorer、选中的图片标签页、放大的图片、小地图，
-以及可见的工具栏（文件名、缩放、旋转、翻转和切换图片）。文件存在后再添加 Markdown 图片引用。
--->
+Blue Marble 2012 图片署名：NASA/NOAA/GSFC/Suomi NPP/VIIRS/Norman Kuring；[NASA 来源](https://www.flickr.com/photos/gsfc/6760135001/)，[CC BY 2.0 许可](https://creativecommons.org/licenses/by/2.0/)。截图展示查看器中的缩放和视口裁切。[截图素材署名](./assets/screenshots/CREDITS.md)。
 
 ### 设为默认查看器
 
 运行 **Image Viewer: Use as Default Image Editor**，即可默认使用本查看器打开受支持的图片文件。安装或升级扩展不会自动更改默认编辑器。
 
-要移除这些关联，运行 **Image Viewer: Restore VS Code's Default Image Editor**。此后由 VS Code 按正常规则选择编辑器；该命令不会恢复被设置命令覆盖的其他自定义关联。
+[![通过 VS Code 命令面板设置默认图片编辑器](https://raw.githubusercontent.com/ZhangJian1713/vscode-image-viewer/main/assets/screenshots/set-default-image-editor-command.jpg)](https://raw.githubusercontent.com/ZhangJian1713/vscode-image-viewer/main/assets/screenshots/set-default-image-editor-command.jpg)
 
-两个命令都会修改全局 User 设置中的 `workbench.editorAssociations`，工作区和工作区文件夹设置可以覆盖它。恢复命令只移除仍指向 Image Viewer 的受支持图片关联，保留无关或后来改过的关联。如需在卸载时清理这些全局关联，请先运行恢复命令。
-
-<!-- 截图待补：assets/screenshots/set-default-image-editor.png。
-截取命令面板，突出显示“Image Viewer: Use as Default Image Editor”。
-主题与单图截图保持一致；截图完成后再添加 Markdown 图片引用。
--->
+如需移除这些关联，请在卸载前运行 **Image Viewer: Restore VS Code's Default Image Editor**。该命令不会恢复被设置命令覆盖的其他自定义关联。[默认编辑器关联说明](./docs/usage-notes.md#默认编辑器关联)。
 
 ## 工作区图库
 
-从左侧 Folders 目录树选择文件夹，在右侧连续的缩略图墙中浏览；点击缩略图打开大图预览。
+从侧栏选择文件夹，在连续的图片墙中浏览；点击任意缩略图打开大图预览。Fill 和 Grid 支持 **1～20 列**、实时调整缩略图大小，以及减少间距的紧凑模式。
 
-- **Folders 目录树：** 显示直属或含子目录的图片数量；支持目录搜索、展开/折叠、收起侧栏和拖动调整宽度；从 Folders 菜单切换 **Include subfolders**（包含子目录）；Find folder 右侧的筛选按钮可展开目录扫描规则。右键目录可定位、复制路径、展开/折叠子树，或排除扫描。
-- **Fill / Grid / List：** Fill 将缩略图裁切填满方格；Grid 显示完整图片；List 补充路径、大小、原图尺寸和修改时间。底栏缩略图滑动条向右增大图片，实时显示像素；Fill/Grid 支持 1～20 列。
-- **紧凑模式：** Fill/Grid 去除间距与常驻文字，List 减小留白；图片菜单仍可使用。
-- **滚动位置：** 拖动图片墙滚动条时显示当前屏幕涉及的目录，并在 Folders 树中展开、定位和高亮，不改变当前选中目录；滚轮滚动不触发此指示。
-- **大图库：** 图片墙和目录树均采用虚拟滚动，只挂载视口附近的内容。缩略图请求优先处理可见图片，限制并发，并淘汰超出预算的闲置结果。
-- **搜索、筛选与排序：** 按文件名/路径搜索，按类型筛选，切换是否包含子目录。默认先按文件夹、再按组内名称排序；名称、修改时间、大小和格式均支持文件夹优先或全局排序。大图切换顺序跟随当前结果；滚动条目录提示和树高亮仅在文件夹优先模式启用。
-- **图片菜单：** 定位图片、浏览所在目录、复制路径/文件名/Base64，或经确认后 **Move to Trash**（移入系统回收站）。
-- **设置与反馈：** 右下角齿轮打开设置，可调整文件大小显示方式，并查看 Issue 和邮件反馈入口；主题和背景继续使用图库上的控件。
-- **外观与目录标签页：** Follow 继承当前编辑器配色；手动 Light / Dark 使用预存的 VS Code Light 2026 / Dark 2026 配色。图片背景依次提供无背景（无底色和边界）、棋盘纹与纯色；支持通过 Explorer 为不同目录打开独立图库标签页。
+### Fill：快速浏览缩略图
 
-### 目录规则
+缩略图裁切填满方格，适合一屏浏览、快速寻找图片。
 
-目录搜索和扫描筛选可以同时使用。展开 **Find folder** 右侧的筛选按钮，每行输入一条项目相对目录规则，按 Enter 或 **Apply** 应用；Shift+Enter 换行。收起输入区后，已应用的规则继续生效。
+[![Fill 填充布局：Folders 侧栏与连续图片墙](https://raw.githubusercontent.com/ZhangJian1713/vscode-image-viewer/main/assets/screenshots/gallery-fill-photos.jpg)](https://raw.githubusercontent.com/ZhangJian1713/vscode-image-viewer/main/assets/screenshots/gallery-fill-photos.jpg)
 
-| 规则 | 含义 |
+### Compact：紧凑浏览
+
+打开底部工具栏的 **Compact** 开关。Fill/Grid 下会去掉缩略图间距和常驻的文件名、大小，鼠标悬停时再显示文件名。**Fill + Compact** 将图片拼成无缝的图片墙，在相同列数下，一屏能看到更多图片。
+
+拖动 **Thumbnails** 滑动条可调整 **1～20 列**：向右图片更大、列数更少；向左缩略图更小、一行能显示更多。拖动时提示当前像素大小和列数。下图将前面 Fill 示例的 6 列调整为 **4 列 + Compact**。
+
+[![Fill + Compact 四列图片墙，缩略图大小为 260 px](https://raw.githubusercontent.com/ZhangJian1713/vscode-image-viewer/main/assets/screenshots/gallery-fill-compact-photos.jpg)](https://raw.githubusercontent.com/ZhangJian1713/vscode-image-viewer/main/assets/screenshots/gallery-fill-compact-photos.jpg)
+
+### Grid：查看完整图片
+
+保持图片原始比例，不裁切内容，适合比较竖图、横图和全景图。
+
+[![Grid 网格布局：保持图片原始比例](https://raw.githubusercontent.com/ZhangJian1713/vscode-image-viewer/main/assets/screenshots/gallery-grid-photos.jpg)](https://raw.githubusercontent.com/ZhangJian1713/vscode-image-viewer/main/assets/screenshots/gallery-grid-photos.jpg)
+
+### List：查看文件信息
+
+在缩略图旁查看文件名、相对路径、大小、原图尺寸和修改时间。
+
+[![List 列表布局：路径、大小、尺寸与修改时间](https://raw.githubusercontent.com/ZhangJian1713/vscode-image-viewer/main/assets/screenshots/gallery-list-photos.jpg)](https://raw.githubusercontent.com/ZhangJian1713/vscode-image-viewer/main/assets/screenshots/gallery-list-photos.jpg)
+
+示例图片的[来源与许可](./assets/screenshots/CREDITS.md)。
+
+### 主题切换
+
+点击右下角齿轮左边的主题按钮，在 **Follow、Light、Dark** 之间循环切换。
+
+- **Follow**（显示器图标）：继承当前 VS Code/Cursor 的主题与自定义配色，包括用户正在使用的定制主题，让查看器与宿主编辑器保持统一的主题风格。
+- **Light**（太阳）和 **Dark**（月亮）：使用以 VS Code 默认明亮/黑暗主题为基础的固定配色，独立于编辑器当前主题。
+
+缩略图背景可单独选择：无背景、用于观察透明区域的棋盘纹，或纯色。
+
+### 从 Explorer 定位
+
+右键文件夹或文件 → **View Images 🌄**。左侧以项目根目录显示目录树，并展开、定位到目标；图片会在图片墙中高亮并打开大图预览，普通文件则定位到所在目录。无图片目录会逐级回退到最近有图片资源的祖先，最后回到项目根节点；关闭预览后回到已定位的缩略图。
+
+在已打开的项目图库中切换目录会复用索引；外部文件变动后可通过 **Refresh images** 更新。定位时可临时放开搜索和类型筛选，通过 **Restore filters** 恢复；目录 include/exclude 规则和 **Include subfolders** 偏好保持不变。
+
+### 查找与整理图片
+
+- **Folders 目录树：** 查看图片数量、搜索目录、包含子目录、展开或折叠分支；支持收起侧栏、调整宽度；同一项目的 Explorer 入口复用一个图库标签页，不同工作区根目录分别打开。
+- **搜索与筛选：** 文件名/路径搜索、格式筛选和目录 include/exclude 规则可以组合使用。
+- **排序与定位：** 按文件夹分组，或对全部图片统一按名称、修改时间、大小、格式排序；文件夹优先模式下，拖动滚动条会在目录树中高亮当前可见图片的文件夹。
+- **文件操作：** 定位文件、复制路径/文件名/Base64，确认后移入系统回收站；右键目录可定位、复制路径或排除该目录。
+- **外观与设置：** 跟随编辑器主题，或手动选择明亮/黑暗；缩略图背景支持无背景、棋盘纹和纯色；右下角齿轮提供设置与反馈入口。
+
+### 文件夹搜索与 Include/Exclude
+
+在左侧 **Find folder** 中输入文件夹名称的一部分，不区分大小写。目录树保留匹配目录及其祖先，并展开到匹配位置；点击结果即可查看图片。清空搜索后恢复完整目录树。
+
+展开 **Find folder** 右侧的筛选按钮，设置 **folders to include**（包含目录）和 **folders to exclude**（排除目录）。Include 限定要浏览的目录树，Exclude 跳过构建产物等不需要的目录。文件夹搜索在这些规则范围内工作，也可以与图片墙上方的文件名/路径搜索、**Types** 格式筛选一起使用。
+
+规则支持相对于项目根目录的文件夹路径，以及 **Glob 表达式（通配符匹配）**。每行一条，按 Enter 或 **Apply** 应用；Shift+Enter 换行。
+
+| 规则 | 选择范围 |
 | --- | --- |
-| `assets` 或 `assets/**` | assets 及其整个目录树 |
+| `assets` | assets 及其全部子目录 |
 | `assets/{photos,icons}/**` | 两个目录及其子树 |
-| `**/test-*` | 任意层级中匹配的目录及其子树 |
+| `assets/set-*` | 名称匹配的 set 目录及其子树 |
 | `**/{dist,build}` | 任意层级的 dist/build 目录及其子树 |
 
-include 与 exclude 组合使用，exclude 优先。include 留空表示扫描当前入口的整个范围；Explorer 文件夹入口会与 include 取交集。规则采用 Glob（通配符路径匹配），匹配的是目录；图片格式仍由 **Types** 筛选。错误规则会提示且不会应用。
+Glob 支持 `*`、`**`、`?`、`[ab]` 等字符集合，以及 `{photos,icons}` 等多选匹配。规则针对**文件夹**，匹配后包含整个子树。Exclude 优先于 Include；Include 留空表示浏览项目中的全部目录。收起输入区后，已应用的规则继续生效。
 
-### 截图
+**Folders → Include subfolders** 控制图片墙是否包含当前选中目录的子目录图片，与 Include/Exclude 扫描规则独立。
 
-使用生成的 Mock 图片进行开发预览：
+## 性能与使用要求
 
-![Folders 侧栏与连续图片墙](./assets/screenshots/gallery-folder-filters.jpg)
+| 项目 | 参数与表现 |
+| --- | --- |
+| 缩放预设 | 最高 **800%** |
+| 图片墙密度 | Fill/Grid 支持 **1～20 列** |
+| 大图库验证规模 | **10 万张图片、约 1 万个目录节点**，使用模拟数据验证 |
+| 图片墙位置跳转 | 已验证首部、中部和末尾；优先加载当前位置的缩略图，无需预先生成整库缩略图 |
+| 缩略图生成实测 | Apple M1 Max，预热后 **12 张混合格式图片约 0.61 秒**，缩略图长边 400px |
+| 加载方式 | 优先加载当前可见图片，后台最多同时生成 **4 张**缩略图 |
+| 缩略图磁盘缓存 | 超过 **500 MiB** 或 **25,000 个文件**后自动清理，生成期间可能短暂超限 |
+| 运行要求 | **VS Code 1.92+** 或兼容的 Cursor 版本；Mac 需要 **macOS 11+** |
+| 安装使用 | 无需另装运行环境或编译工具 |
+
+图片墙和目录树采用虚拟滚动，减少大图库浏览时的负担。在上述模拟图库中，1280×720 窗口、8 列布局只挂载 **40～56 个图片卡片**，展开后的目录树约 **20 行**。这验证的是浏览规模，不代表固定上限或真实磁盘扫描速度。[大图库验证记录](./docs/gallery-scale-validation-2026-10-14.md)。
+
+**0.61 秒**实测仅指缩略图生成，不等同于拖动滚动条后整屏显示完成的时间；实际速度随图片、磁盘和设备变化。[缩略图测试条件与详细结果](./docs/thumbnail-backend-benchmark-2026-10-14.md)。
+
+缓存会自动清理。需要手动清理图库缓存时，运行 **Image Viewer: Clean Gallery WebView Image Cache**。[缓存说明](./docs/usage-notes.md#图片缓存)。
 
 ## 图片格式
 
-可识别的文件扩展名：`SVG`、`PNG`、`JPEG`、`JPG`、`ICO`、`GIF`、`WebP`、`BMP`、`TIF`、`TIFF`、`APNG`、`AVIF`。
+图库和图片编辑器入口识别以下扩展名：
 
-实际显示能力取决于 VS Code 或 Cursor 的内嵌浏览器；识别扩展名不代表能显示该格式的所有编码。
+| 格式 | 查看说明 |
+| --- | --- |
+| JPEG / JPG、PNG、WebP、BMP、ICO | 常见位图；格式支持时可显示透明区域 |
+| SVG | 直接显示矢量图片 |
+| GIF、APNG | 原图动画取决于宿主支持；生成的缩略图为静态首帧 |
+| AVIF | 显示和缩略图可用性取决于宿主版本与平台解码能力 |
+| TIF / TIFF | 可为能解码的文件生成图库缩略图；有缩略图不代表能打开大图 |
 
-## 磁盘缓存
-
-VS Code 和 Cursor 可能缓存 WebView（内嵌浏览器视图）加载过的完整图片副本。Image Viewer 会在首屏渲染后、浏览器获得空闲时间片时后台清理旧图片资源缓存。使用过程中会回收不再被打开的面板使用的资源，并为图片切换保留短暂宽限期。
-
-图库与单图编辑器使用独立的缓存作用域。升级后分别打开两种查看器，即可清理各自能访问到的历史缓存。同一作用域内最后一个面板关闭时会尝试清空缓存；崩溃或强制退出后的残留，会在宿主复用该作用域、再次打开查看器时清理。图库的缩略图磁盘缓存与这些资源缓存相互独立。它在打开后及每两分钟检查一次：超过 500 MiB 或 25,000 个文件时，淘汰旧条目直到降至两个上限的 85%。这些是后台软上限，缩略图生成高峰中可能短暂超限。
-
-需要立即清理图库缓存时，运行 **Image Viewer: Clean Gallery WebView Image Cache**；此命令不清理单图编辑器缓存。宿主遗留且已不可达的旧缓存作用域无法由扩展清理，可能需要退出 VS Code 或 Cursor 后手动处理。
-
-## 开发预览
-
-运行 `yarn ui-dev`，然后打开 `http://127.0.0.1:5000/?mock=1`。添加 `&count=100000&folders=1000` 可测试大图库。Mock 使用合成 SVG 和独立浏览器配置，文件菜单操作不会影响真实文件，仅开发模式的浏览器构建可启用。真实工作区图片和宿主交互请通过 F5 → **Run Extension** 验证。
+大图显示依赖 VS Code/Cursor 内置浏览器的解码能力。部分编码，尤其是 TIFF，可能有图库缩略图但无法在大图查看器中打开。目前支持的扩展名列表不包含 HEIC/HEIF、PSD 和相机 RAW 格式。
 
 ## 反馈
 
