@@ -99,6 +99,7 @@ Explorer entries in the same project reuse one gallery tab; different workspace 
 - **Sorting:** keep each folder's images together, or sort the whole collection by name, modified time, size, or format. In folder-first mode, dragging the scrollbar highlights the visible folders in the tree.
 - **File actions:** reveal files, copy paths, names, or Base64, and move images to Trash after confirmation. Right-click folders to reveal, copy paths, or exclude them.
 - **Settings and feedback:** use the bottom-right gear for settings, bug reports, and feature requests.
+- **Language:** choose Follow VS Code, English, 简体中文, or 繁體中文 in **Settings → General → Language**. All open gallery and single-image panels update immediately while preserving browsing and preview state.
 - **Language:** Settings → General → Language offers Follow VS Code, English, 简体中文, and 繁體中文. Unsupported editor languages default to English. Switching updates open panels while preserving your browsing state.
 
 ### Folder search and Include/Exclude

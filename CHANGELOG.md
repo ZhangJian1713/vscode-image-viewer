@@ -1,10 +1,14 @@
 # Changelog
 
-## Unreleased
+## [2.2.0] - 2026-10-15
 
 ### Added
 
 - Add live English, Simplified Chinese and Traditional Chinese language switching, with a user-level setting shared by gallery and single-image panels while preserving browsing and preview state.
+
+### Changed
+
+- Rename the gallery sidebar to **Image folders**. Image menus now offer **Reveal in Image folders**, which shows, selects, and centers the containing directory, temporarily clears image search, and centers/highlights the original image so neighboring images can be browsed. Saved search, type filters, and Include subfolders preferences are preserved.
 
 ### Fixed
 
@@ -25,7 +29,6 @@
 
 ### Changed
 
-- Rename the gallery sidebar to **Image folders**. Image menus now offer **Reveal in Image folders**, which shows, selects, and centers the containing directory, temporarily clears image search, and centers/highlights the original image so neighboring images can be browsed. Saved search, type filters, and Include subfolders preferences are preserved.
 - Show the same v2.1.1 announcement to new users and users upgrading from any earlier version, including those who dismissed v2.1.0. Retain all v2.1.0 announcement content and add a brief security-fix note in English, Simplified Chinese, and Traditional Chinese.
 - Put Grid before Fill in the gallery layout controls and use Grid by default when no layout is saved. Preserve existing layout preferences.
 - Update the Marketplace description and keywords to highlight Image Viewer as a replacement for VS Code's default image viewer alongside the workspace gallery.

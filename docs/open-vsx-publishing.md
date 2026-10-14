@@ -4,7 +4,7 @@
 
 默认发布平台为 `darwin-arm64`、`darwin-x64`、`win32-x64`、`win32-arm64`。两个市场共用同一批 VSIX。
 
-发布前将 `package.json`、公告版本 `ANNOUNCEMENT_ID` 与 CHANGELOG 更新到未发布的新版本，例如 `2.1.1`。已经发布的 `2.1.0` 不能用来覆盖新的源码或元数据。
+发布前将 `package.json`、公告版本 `ANNOUNCEMENT_ID` 与 CHANGELOG 更新到未发布的新版本，例如 `2.2.0`。已经发布的 `2.1.1` 不能用来覆盖新的源码或元数据。
 
 发布前检查与打包（在 macOS 上执行）：
 
@@ -59,14 +59,14 @@ Token 需要能发布到 `vscode-infra`。检查命令会调用官方 `verify-pa
 nvm use
 yarn install
 yarn vsix:all darwin-arm64 darwin-x64 win32-x64 win32-arm64
-yarn openvsx:check image-viewer-2.1.0-darwin-arm64.vsix
-yarn openvsx:publish image-viewer-2.1.0-darwin-arm64.vsix
+yarn openvsx:check image-viewer-2.2.0-darwin-arm64.vsix
+yarn openvsx:publish image-viewer-2.2.0-darwin-arm64.vsix
 ```
 
 默认发布按平台分包，完整矩阵在 macOS 构建：`darwin-arm64`、`darwin-x64`、`win32-x64`、`win32-arm64`、`linux-x64`、`linux-arm64`、`linux-armhf`、`alpine-x64`、`alpine-arm64`。每个包分别上传，相同 publisher/name/version 的不同目标属于同一个插件。`yarn vsix` 默认仅打包宿主平台；`yarn vsix:all` 一次构建 WebView，再串行构建/检查所有目标，并恢复宿主构建供 F5 使用。只做离线包检查可运行：
 
 ```bash
-yarn openvsx:check image-viewer-2.1.0-darwin-arm64.vsix --offline
+yarn openvsx:check image-viewer-2.2.0-darwin-arm64.vsix --offline
 ```
 
 包检查核对身份、版本、VSIX 平台元数据、插件/WebView 入口、目标原生文件，并拒绝凭据文件及通用包。macOS 包必须只有 ImageIO 后端；其他平台包必须只有该目标的 Sharp/libvips 后端。打印 SHA-256 用于确认上传的是已检查的文件。单包在线检查另外查询同版本、同平台是否存在；发布前验证 Token 权限，拒绝重复覆盖，并在上传后核对线上版本。异步处理或查询暂不可用时明确提示已上传，之后用 `publish:check` 核对，不把公开延迟当作上传失败。
@@ -78,9 +78,9 @@ yarn openvsx:check image-viewer-2.1.0-darwin-arm64.vsix --offline
 同一套上传命令也适用于带 TargetPlatform 的 VSIX，`ovsx` 读取包内平台标识，不需另传 `--target`：
 
 ```bash
-IMAGE_VIEWER_VSIX_TARGET=win32-x64 yarn vsix --out image-viewer-2.1.0-win32-x64.vsix
-yarn openvsx:check image-viewer-2.1.0-win32-x64.vsix
-yarn openvsx:publish image-viewer-2.1.0-win32-x64.vsix
+IMAGE_VIEWER_VSIX_TARGET=win32-x64 yarn vsix --out image-viewer-2.2.0-win32-x64.vsix
+yarn openvsx:check image-viewer-2.2.0-win32-x64.vsix
+yarn openvsx:publish image-viewer-2.2.0-win32-x64.vsix
 ```
 
 macOS 包不包含 Sharp；Windows/Linux 包不包含 ImageIO 和其他架构 Sharp。平台名称同时决定原生文件和 VSIX TargetPlatform，不能单独给一个现成通用包加平台标签。Windows/Linux 真实运行验证仍待完成。
@@ -149,3 +149,37 @@ macOS 包不包含 Sharp；Windows/Linux 包不包含 ImageIO 和其他架构 Sh
 - Marketplace 与 Open VSX 均已返回四个平台上传成功；2026-10-14 14:45:56 UTC，两市场公开 API 均提供全部四个 `2.1.1` 平台版本。没有重复上传。
 - Marketplace 公开的四个 VSIX SHA-256 均与本地一致；Open VSX 四个下载包逐一校验 SHA-256 一致。两个市场四个平台的 README 均核对 Grid 优先、WebP 截图与 GitHub 视频；两市场的简介与全部 25 个关键词也已核对生效。
 - 仍未做 Windows/Intel macOS 实机、Cursor 代理安装更新与市场页面视频播放器的 GUI 验收。
+
+
+## 2.1.1 发布内容核对（2026-10-15）
+
+发布新版本前，以安装包实际内容核对增量。Marketplace 最新版本与 Open VSX 最新版本均为 2.1.1；四个平台本地 VSIX 的 SHA-256 与 Marketplace 公开哈希、Open VSX 下载包计算出的哈希分别一致，基线即上面的 2.1.1 四个平台包。
+
+| 当前新增内容 | 2.1.1 安装包中的证据 |
+| --- | --- |
+| 全界面三语言选择与热切换 | 没有 `imageViewer.language` 设置、`package.nls` 文件或语言消息；旧版本的三语言公告仍已存在 |
+| 图片目录定位与 Image folders 命名 | 菜单为 `Browse containing folder`，只调用目录选择；侧栏仍叫 `Folders`，不会由此临时清除图片搜索、显示并居中目录树 |
+| code-server / HTTP(S) WebView 消息初始化修复 | manifest 依赖 `@easy_vscode/webview 2.0.1`，bundle 保留 `location.origin.startsWith("http")` 时跳过 `acquireVsCodeApi()` 的旧逻辑；当前代码依赖 2.0.2 |
+
+2.1.1 已包含 ImageIO / Sharp、原生平台分包、core 3.0.0 安全边界、项目根图库与优先子树扫描、Grid 默认布局、缩略图悬停效果、分类公告及既有截图/演示材料。这些内容虽然之后才提交到 Git，但不再次列为新版本功能。进一步逐文件比较，2.2.0 与 2.1.1 的原生运行文件完全一致：每个 macOS 包 1 个文件、每个 Windows 包 121 个文件，均无新增、删除或内容变化。
+
+2.2.0 的 CHANGELOG 与英文/简体中文/繁体中文公告只列上述三项增量；目录定位条目从此前误列的 2.1.1 节移到 2.2.0。发布范围沿用 macOS / Windows 的四个平台及 Marketplace / Open VSX 两个市场。
+
+
+## 2.2.0 发布（2026-10-15）
+
+本次相对 2.1.1 只发布语言热切换、图片目录定位增强和 code-server 消息初始化修复。两市场使用同一批四个平台包。
+
+| TargetPlatform | MiB | SHA-256 |
+| --- | ---: | --- |
+| darwin-arm64 | 0.69 | `5768e15bc771b2790c7531c4f3e45565726b4ce57656e13b0f7ce255669770f5` |
+| darwin-x64 | 0.69 | `c2bfb2baf21db1b6dc11cf5ced5272a01a5d9ae70aae0e5ea80a1cf62d03f3ca` |
+| win32-x64 | 9.15 | `d27506d2364abdb35475ff31f0f26d02e334f70a26d761379cc979959d5afffb` |
+| win32-arm64 | 8.50 | `5b8db322be6190ef8f470d52218e74e24269f217125ea8696368b326a8c76406` |
+
+- `release:check` 的类型、TS/TSX ESLint 和 186 项测试通过；额外覆盖从已关闭 2.1.1 公告升级到 2.2.0 时重新提示。
+- 四平台构建与离线包检查通过。manifest、三份 NLS catalog、README、CHANGELOG 和公告内容核对一致；英文 README 的项目相对链接由 VSCE 正常改写为 GitHub 链接。
+- 包内含 `imageViewer.language` 设置、语言消息及 `Reveal in Image folders` 文案，依赖 `@easy_vscode/webview 2.0.2`；新的 bundle 使用注入的 `acquireVsCodeApi` 能力检测，已移除以 HTTP origin 跳过初始化的旧逻辑。
+- `release:verify` 的实际 ImageIO 适配器加载、尺寸档位、EXIF、透明图、BMP/GIF/TIFF、异常输入、32 个异步任务和 Worker 验证通过；四包离线发布演练通过。
+- Marketplace 与 Open VSX 均已接受四个平台上传；2026-10-15 01:36（Asia/Singapore）核对两市场四个平台均已公开。Marketplace 公开 SHA-256、Open VSX 下载包 SHA-256 与本地验证包逐一一致，两市场最新版本均为 2.2.0。未重复上传。
+- Windows / Intel macOS 的实机运行、真实编辑器语言热切换与 code-server GUI 验收未覆盖；程序化检查和构建结果不等同于实机验收。

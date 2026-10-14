@@ -4,7 +4,7 @@
   "displayName": "Image Viewer",
   "description": "A replacement for VS Code's default image viewer with zoom, pan, rotation, flip, and same-folder navigation. Includes a fast workspace gallery with folder search, filters, and Grid/Fill/List layouts.",
   "icon": "assets/logo.png",
-  "version": "2.1.1",
+  "version": "2.2.0",
   "author": "Zhang Jian <zhangjian1713@gmail.com>",
   "homepage": "https://github.com/ZhangJian1713/vscode-image-viewer",
   "license": "MIT",

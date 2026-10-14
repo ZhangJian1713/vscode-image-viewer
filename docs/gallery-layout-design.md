@@ -71,7 +71,7 @@ Folder filters 位于 Find folder 右侧，展开后以 VS Code Search 风格直
 
 Feedback 提供已有 Issue 列表、新建 Issue 指引，以及打开邮件应用的 mailto 入口，不自动提交 Issue 或发送邮件。Mock 通过统一 transport 模拟外部链接动作。
 
-顶部 What’s new 复用版本公告机制：v2.1.1 公告完整保留 v2.1.0 内容，并新增一条简短的安全修复说明；此前是否安装或关闭过 v2.1.0 公告，均不影响首次打开图库时展示同一份 v2.1.1 公告。公告以 Feature、Improvement、Bugfix、Compatibility 标记每条更新，提供英文、简体中文、繁体中文文案，末尾邀请用户通过右下角 Settings → Feedback 分享体验。公告正文独立滚动，关闭按钮保留可见；关闭状态按公告版本保存，升级后再次提示，之后仍可手动重新打开。
+顶部 What’s new 复用版本公告机制：v2.2.0 只列相对实际发布的 v2.1.1 新增的三项更新：三语言热切换、图片所在目录定位，以及 code-server 消息初始化修复；此前已经发布的原生缩略图、安全加固和图库入口等功能不重复列为新功能。公告提供英文、简体中文、繁体中文文案，末尾邀请用户通过右下角 Settings → Feedback 分享体验。正文独立滚动，关闭状态按版本保存；升级后再次提示，之后仍可手动重新打开。
 
 ### Folder filters 与 Glob
 
