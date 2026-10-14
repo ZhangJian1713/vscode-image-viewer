@@ -1,35 +1,4 @@
-function normalizeLangTag(raw: string): string {
-  return raw.trim().toLowerCase().replace(/_/g, '-')
-}
-
-/** Webview `navigator` locale tags only (when the host does not inject a language). */
-function collectNavigatorLocaleTags(): string[] {
-  const tags: string[] = []
-  if (typeof navigator !== 'undefined') {
-    tags.push(normalizeLangTag(navigator.language))
-    for (const l of navigator.languages ?? []) {
-      tags.push(normalizeLangTag(l))
-    }
-  }
-  return tags.filter((t) => t.length > 0)
-}
-
-function isChineseLocale(tags: string[]): boolean {
-  return tags.some((t) => t === 'zh' || t.startsWith('zh-'))
-}
-
-function isTraditionalChineseLocale(tags: string[]): boolean {
-  return tags.some(
-    (t) =>
-      t.startsWith('zh-tw') ||
-      t.startsWith('zh-hk') ||
-      t.startsWith('zh-mo') ||
-      t === 'zh-hant' ||
-      (t.startsWith('zh-') && t.includes('hant'))
-  )
-}
-
-
+import { resolveLanguage } from '../../i18n/language'
 
 /**
  * Release notes: bump {@link ANNOUNCEMENT_ID} with `package.json` version and refresh copy per locale.
@@ -254,19 +223,8 @@ const ANNOUNCEMENT_COPY_ZH_HANT: AnnouncementStrings = {
  * @param hostUiLanguage Resolved application language; an omitted value uses English.
  */
 export function getAnnouncementStrings(hostUiLanguage?: string | null): AnnouncementStrings {
-  const trimmed = typeof hostUiLanguage === 'string' ? hostUiLanguage.trim() : ''
-  if (trimmed !== '') {
-    const host = normalizeLangTag(trimmed)
-    if (!(host === 'zh' || host.startsWith('zh-'))) {
-      return ANNOUNCEMENT_COPY_EN
-    }
-    return isTraditionalChineseLocale([host]) ? ANNOUNCEMENT_COPY_ZH_HANT : ANNOUNCEMENT_COPY_ZH_HANS
-  }
-  const tags = collectNavigatorLocaleTags()
-  if (!isChineseLocale(tags)) {
-    return ANNOUNCEMENT_COPY_EN
-  }
-  return isTraditionalChineseLocale(tags) ? ANNOUNCEMENT_COPY_ZH_HANT : ANNOUNCEMENT_COPY_ZH_HANS
+  const language = resolveLanguage(hostUiLanguage)
+  return language === 'zh-CN' ? ANNOUNCEMENT_COPY_ZH_HANS : language === 'zh-TW' ? ANNOUNCEMENT_COPY_ZH_HANT : ANNOUNCEMENT_COPY_EN
 }
 
 export type AnnouncementBarTopStrings = Pick<AnnouncementStrings, 'barCta' | 'barHint' | 'openReleaseNotesAria'>

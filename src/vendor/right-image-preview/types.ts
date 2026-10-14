@@ -231,10 +231,10 @@ export interface ImagePreviewProps {
      * aria-labels, zoom display, etc.).
      *
      * Accepts any BCP 47 language tag such as `"en"`, `"en-US"`, `"zh"`, or
-     * `"zh-CN"`. Matching is performed on the primary subtag; unrecognised
+     * `"zh-CN"` or `"zh-TW"`. Chinese script/region tags select Simplified or Traditional; unrecognised
      * locales fall back to English.
      *
-     * Currently built-in: `"en"` (default) and `"zh"` (Simplified Chinese).
+     * Currently built-in: `"en"` (default), `"zh"` / `"zh-CN"`, and `"zh-TW"` / `"zh-Hant"`.
      *
      * Default: `"en"`.
      */

@@ -5,7 +5,7 @@ import type { IConfig } from '../../types'
 import { IMAGE_FILE_PATTERNS, MESSAGE_CMD } from '../../constants'
 import { GalleryMessage, GalleryTransport } from './galleryBridge'
 import type { RawWorkspaceImage } from './galleryModel'
-
+import { effectiveLanguage, isLanguagePreference, LanguagePreference } from '../../i18n/language'
 
 /** Explicit development-only fixture. No external images, local file access, or real deletions. */
 export function installGalleryMock(): void {
@@ -15,6 +15,11 @@ export function installGalleryMock(): void {
   const projectPath = '/demo/image-project'
   const session = params.get('mockSession')?.slice(0, 80)
   const key = `image-viewer.gallery-browser-mock-v1${session ? `:${session}` : ''}`
+  const savedLanguage = localStorage.getItem(`${key}:language`)
+  let languagePreference: LanguagePreference = isLanguagePreference(savedLanguage) ? savedLanguage : 'auto'
+  let languageRevision = 0
+  const languageSnapshot = () => ({ preference: languagePreference,
+    language: effectiveLanguage(languagePreference, params.get('hostLanguage') || 'en'), revision: languageRevision })
   const imageScale = Math.max(1, Math.min(4, Number(params.get('imageScale')) || 1))
   const defaults: IConfig = {
     showImageTypes: IMAGE_FILE_PATTERNS.map((pattern) => pattern.slice(1)),
@@ -88,6 +93,20 @@ export function installGalleryMock(): void {
   const transport: GalleryTransport = (request: GalleryMessage, callback) => {
     let value: unknown
     switch (request.cmd) {
+      case MESSAGE_CMD.GET_UI_LANGUAGE:
+        value = { ok: true, snapshot: languageSnapshot() }
+        break
+      case MESSAGE_CMD.SET_UI_LANGUAGE: {
+        const preference = (request.data as { preference?: unknown })?.preference
+        if (isLanguagePreference(preference)) {
+          languagePreference = preference
+          localStorage.setItem(`${key}:language`, preference)
+          languageRevision++
+          window.postMessage({ cmd: MESSAGE_CMD.UI_LANGUAGE_CHANGED, data: languageSnapshot() }, '*')
+        }
+        value = { ok: isLanguagePreference(preference), snapshot: languageSnapshot() }
+        break
+      }
       case MESSAGE_CMD.GET_CONFIG:
         value = { ...config, hostUiLanguage: 'en' }
         break

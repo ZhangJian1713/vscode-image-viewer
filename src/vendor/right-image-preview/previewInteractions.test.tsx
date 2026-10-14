@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom'
 import { act } from 'react-dom/test-utils'
 import { ImagePreview } from './ImagePreview'
 import type { ImagePreviewRef } from './types'
+import { resolveStrings } from './locale'
 
 let root: HTMLDivElement
 let ref: React.RefObject<ImagePreviewRef>
@@ -92,4 +93,28 @@ test('Space in controls does not trigger image zoom, and arbitrary toolbar zoom 
   act(() => { ref.current!.setNative(800) })
   space()
   expect(ref.current!.getState().mode).toBe('fit')
+})
+
+test('hot language changes preserve the image DOM, zoom, pan, rotation, flip and lock state', async () => {
+  const media = await readyImage(3200, 2400)
+  const down = new MouseEvent('pointerdown', { bubbles: true, cancelable: true, button: 0, buttons: 1, clientX: 600, clientY: 300 })
+  Object.defineProperties(down, { pointerType: { value: 'mouse' }, pointerId: { value: 1 }, isPrimary: { value: true } })
+  act(() => { media.dispatchEvent(down) })
+  act(() => { ref.current!.rotateCW(); ref.current!.flipHorizontal() })
+  act(() => { root.querySelector<HTMLButtonElement>('button[aria-label="Lock zoom (preserve zoom when switching images)"]')!.click() })
+  const transform = media.style.transform
+  const state = ref.current!.getState()
+  const image = media.querySelector('img')
+  for (const language of ['zh-CN', 'zh-TW', 'en']) {
+    act(() => { ReactDOM.render(<ImagePreview ref={ref} src='mock:test' visible progressiveMain={false}
+      language={language} clickZoomEnabled doubleClickEnabled={false} closeOnMaskClick
+      stops={[10,25,50,75,100,150,200,800]} />, root) })
+    expect(root.querySelector('[data-preview-media]')).toBe(media)
+    expect(media.querySelector('img')).toBe(image)
+    expect(media.style.transform).toBe(transform)
+    expect(ref.current!.getState()).toEqual(state)
+    expect(root.querySelector(`button[aria-label="${resolveStrings(language).unlockZoom}"]`)).not.toBeNull()
+    expect(root.querySelector('[role="dialog"]')!.getAttribute('aria-label'))
+      .toBe(language === 'zh-CN' ? '图片预览' : language === 'zh-TW' ? '圖片預覽' : 'Image preview')
+  }
 })

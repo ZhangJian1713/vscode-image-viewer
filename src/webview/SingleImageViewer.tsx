@@ -5,6 +5,7 @@ import type { ImageGroup } from '../vendor/right-image-preview'
 import { callVscode } from '@easy_vscode/webview'
 import { MESSAGE_CMD } from '../constants'
 import { useResourceCacheSlot } from './resourceCache/ResourceCacheBoundary'
+import { useI18n } from '../i18n/react'
 
 type SingleImageViewerArgs = {
   src?: string
@@ -41,7 +42,9 @@ function readSingleImageViewerArgs(): SingleImageViewerArgs {
 }
 
 const SingleImageViewer: React.FC = () => {
-  const { src, name, images, currentIndex } = readSingleImageViewerArgs()
+  const { t, language } = useI18n()
+  // Bootstrap data is immutable for this editor session. Translation renders must not rebuild it.
+  const [{ src, name, images, currentIndex }] = useState(readSingleImageViewerArgs)
   const resolvedImages = useMemo(() => {
     if (images && images.length > 0) {
       return images
@@ -49,8 +52,7 @@ const SingleImageViewer: React.FC = () => {
     if (!src) {
       return []
     }
-    const imageName = name || 'Image'
-    return [{ id: src, src, name: imageName }]
+    return [{ id: src, src, name: name || '' }]
   }, [images, src, name])
   const groupedImages = useMemo<ImageGroup[] | undefined>(() => {
     if (resolvedImages.length === 0) {
@@ -69,11 +71,12 @@ const SingleImageViewer: React.FC = () => {
   useResourceCacheSlot('single-editor-main-image', resolvedImages[activeIndex]?.src)
 
   if (!groupedImages) {
-    return <div style={{ padding: 20, color: 'var(--vscode-errorForeground)' }}>Unable to open this image.</div>
+    return <div style={{ padding: 20, color: 'var(--vscode-errorForeground)' }}>{t('single.openFailed')}</div>
   }
 
   return (
     <ImagePreview
+      language={language}
       groupedImages={groupedImages}
       visible
       defaultGroupedSelection={{ defaultGroupIndex: 0, defaultIndexInGroup: initialIndex }}

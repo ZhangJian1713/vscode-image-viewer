@@ -1,3 +1,4 @@
+import { useI18n } from '../../i18n/react'
 import React, { useEffect, useState } from 'react'
 import type { IImage } from './imageTypes'
 import { galleryThumbnailKey, GalleryThumbnailStore, ThumbnailSnapshot } from './galleryThumbnailStore'
@@ -28,6 +29,7 @@ export const GalleryThumbnail: React.FC<{
   fill: boolean
   background: string
 }> = ({ image, snapshot, store, tier, fill, background }) => {
+  const { t } = useI18n()
   useRetainedResourceUrl(snapshot.src, snapshot.status === 'ready')
   return (
     <div className='iv-gallery-thumbnail' style={thumbPadStyle(background)}>
@@ -47,13 +49,13 @@ export const GalleryThumbnail: React.FC<{
             event.stopPropagation()
             store.retry(image, tier, true)
           }}
-          aria-label={`Retry ${image.fileName}`}
-          title='Unable to load image. Retry'
+          aria-label={t('thumbnail.retry', { fileName: image.fileName })}
+          title={t('thumbnail.loadFailed')}
         >
-          Retry
+          {t('common.retry')}
         </button>
       ) : (
-        <span className='iv-thumbnail-placeholder' aria-label='Loading thumbnail'>
+        <span className='iv-thumbnail-placeholder' aria-label={t('thumbnail.loading')}>
           ···
         </span>
       )}

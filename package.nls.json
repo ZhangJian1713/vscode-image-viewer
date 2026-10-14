@@ -1,0 +1,8 @@
+{
+  "command.viewImages": "View Images 🌄",
+  "command.setDefault": "Use as Default Image Editor",
+  "command.restoreDefault": "Restore VS Code's Default Image Editor",
+  "command.cleanCache": "Clean Gallery WebView Image Cache",
+  "language.follow": "Follow VS Code",
+  "language.description": "Display language for all Image Viewer panels. Follow VS Code uses English when the editor language is unsupported."
+}

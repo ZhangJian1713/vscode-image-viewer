@@ -2,6 +2,12 @@
 
 [English README](../README.md) · [中文 README](../README.zh-CN.md)
 
+## Language / 语言
+
+Open the gallery's bottom-right gear → General → Language. Options are Follow VS Code, English, 简体中文, and 繁體中文. The default follows the editor; unsupported editor languages use English. Your choice is saved in the user setting `imageViewer.language` (`auto`, `en`, `zh-CN`, `zh-TW`) and updates all open Image Viewer panels without resetting their browsing state. VS Code's own command titles follow the editor language.
+
+打开图库右下角齿轮 → 常规 → 语言，依次提供“跟随 VS Code”、English、简体中文、繁體中文。默认跟随编辑器，不支持的语言回退英文。选择保存在用户设置 `imageViewer.language`，并同步到所有已打开的 Image Viewer 面板，保留当前浏览状态；VS Code 原生命令标题继续跟随编辑器语言。
+
 ## Default editor associations
 
 Run **Image Viewer: Use as Default Image Editor** to open supported image files with this viewer by default. Installing or updating the extension leaves your editor choice unchanged.

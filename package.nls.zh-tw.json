@@ -1,0 +1,8 @@
+{
+  "command.viewImages": "檢視圖片 🌄",
+  "command.setDefault": "設為預設圖片編輯器",
+  "command.restoreDefault": "還原 VS Code 預設圖片編輯器",
+  "command.cleanCache": "清理圖庫 WebView 圖片快取",
+  "language.follow": "跟隨 VS Code",
+  "language.description": "所有 Image Viewer 面板的顯示語言。跟隨 VS Code 時，不支援的編輯器語言使用英文。"
+}

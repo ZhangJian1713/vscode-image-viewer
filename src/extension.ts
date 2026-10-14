@@ -5,6 +5,7 @@ import { initGridThumbGlobalStorage } from './webviewController/imagesViewer/thu
 import { registerCustomImageEditor } from './customImageEditor'
 import * as path from 'path'
 import { EXTENSION_COMMANDS, RESOURCE_CACHE_CLEANUP_ARG } from './constants'
+import { registerLanguageService } from './i18n/languageHost'
 
 const {envVars} = utils
 
@@ -16,6 +17,7 @@ export function activate(context: vscode.ExtensionContext) {
   console.log('Congratulations, your extension "Image Viewer" is now active!')
   envVars.extensionPath = path.join(context.extensionPath, './')
   initGridThumbGlobalStorage(context)
+  registerLanguageService(context)
   registryAllWebviews(context)
   registerCustomImageEditor(context)
   context.subscriptions.push(

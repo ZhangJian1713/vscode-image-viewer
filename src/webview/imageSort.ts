@@ -12,15 +12,15 @@ export interface SortableImage {
 // Reuse the collator: constructing locale options for every comparison dominates large flat galleries.
 const imageNameCollator = new Intl.Collator(undefined, { sensitivity: 'base', numeric: true })
 
-export const IMAGE_SORT_OPTIONS: { value: ImageSortMode; label: string }[] = [
-  { value: 'nameAsc', label: 'Name (A–Z)' },
-  { value: 'nameDesc', label: 'Name (Z–A)' },
-  { value: 'mtimeAsc', label: 'Modified (oldest first)' },
-  { value: 'mtimeDesc', label: 'Modified (newest first)' },
-  { value: 'sizeAsc', label: 'Size (smallest first)' },
-  { value: 'sizeDesc', label: 'Size (largest first)' },
-  { value: 'typeAsc', label: 'Format (A–Z)' },
-  { value: 'typeDesc', label: 'Format (Z–A)' }
+export const IMAGE_SORT_OPTIONS: { value: ImageSortMode }[] = [
+  { value: 'nameAsc' },
+  { value: 'nameDesc' },
+  { value: 'mtimeAsc' },
+  { value: 'mtimeDesc' },
+  { value: 'sizeAsc' },
+  { value: 'sizeDesc' },
+  { value: 'typeAsc' },
+  { value: 'typeDesc' },
 ]
 
 function normalizeFsPathForComparison(value: string): string {

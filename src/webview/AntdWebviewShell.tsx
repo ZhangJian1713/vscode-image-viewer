@@ -1,5 +1,9 @@
 import * as React from 'react'
 import { ConfigProvider, theme } from 'antd'
+import enUS from 'antd/locale/en_US'
+import zhCN from 'antd/locale/zh_CN'
+import zhTW from 'antd/locale/zh_TW'
+import { useI18n } from '../i18n/react'
 import './antd-global.css'
 import { readVscodeThemeSnapshot, subscribeVsCodeTheme } from './vscodeTheme'
 import { applyBodySemanticTokens, clearBodySemanticTokens } from './semanticTokens'
@@ -15,6 +19,7 @@ export interface WebviewRootProps {
 
 /** Align Ant Design with VS Code or user-forced light/dark (no webview reload). */
 export const AntdWebviewShell: React.FC<WebviewRootProps> = ({ components }) => {
+  const { language } = useI18n()
   const [hostTheme, setHostTheme] = React.useState(readVscodeThemeSnapshot)
   const vscodeIsDark = hostTheme.dark
   const [uiThemePreference, setUiThemePreference] = React.useState<WebviewUiThemePreference>('follow')
@@ -77,6 +82,7 @@ export const AntdWebviewShell: React.FC<WebviewRootProps> = ({ components }) => 
   return (
     <WebviewThemeProvider value={themeCtx}>
       <ConfigProvider
+        locale={language === 'zh-CN' ? zhCN : language === 'zh-TW' ? zhTW : enUS}
         theme={{
           algorithm: effectiveIsDark ? theme.darkAlgorithm : theme.defaultAlgorithm,
           token: {

@@ -11,7 +11,7 @@ import { resolveThumbForGrid, cacheFsPathToThumbResourceUri } from './thumbGridC
 import { readLocalConfigFile, writeLocalConfigFile } from './config'
 import { createGalleryEntry, imageViewerPanelInstanceKey, imageViewerPanelTitle } from '../imageViewerPanelScope'
 import { GalleryScanResult, galleryEntryToArg, galleryEntryFromArg } from '../../galleryEntry'
-
+import { hostText, languageRequest, trackLanguageWebview } from '../../i18n/languageHost'
 
 /** Webview payload returned by `GET_THUMB_FOR_GRID`. */
 export type GridThumbWirePayload = { kind: 'thumb'; thumbSrc: string } | { kind: 'original' }
@@ -54,7 +54,9 @@ const webviewProps: IWebviewProps = {
     const entry = galleryEntryFromArg(args[0])
     if (!entry) { throw new Error('A host-resolved gallery entry is required.') }
     panelRoots.set(panel.webview, path.resolve(entry.rootPath))
+    const languageSubscription = trackLanguageWebview(panel.webview)
     return { dispose: () => {
+      languageSubscription.dispose()
       const scan = scanRequests.get(panel.webview)
       if (scan) { scan.cancelled = true }
       scanRequests.delete(panel.webview)
@@ -75,6 +77,13 @@ const webviewProps: IWebviewProps = {
 }
 
 const messageHandlers = new Map([
+  ...[MESSAGE_CMD.GET_UI_LANGUAGE, MESSAGE_CMD.SET_UI_LANGUAGE].map((cmd) => [
+    cmd,
+    async (message: IMessage, webview: Webview) => {
+      const result = await languageRequest(cmd, message.data?.preference)
+      invokeCallback(viewType, message, result, webview)
+    }
+  ] as [string, (message: IMessage, webview: Webview) => Promise<void>]),
   [
     MESSAGE_CMD.GET_ALL_IMGS,
     async (message: IMessage, webview: Webview) => {
@@ -253,16 +262,16 @@ const messageHandlers = new Map([
       }
       if (!data?.ok) {
         void vscodeWindow.showWarningMessage(
-          `Image Viewer could not clean the WebView image cache: ${data?.error || "Unknown error"}`
+          hostText('host.cacheFailed', { detail: data?.error || hostText('host.unknownError') })
         )
         return
       }
       const matched = Number(data.matchedCaches ?? 0)
       const deleted = Number(data.deletedCaches ?? 0)
       const failed = Number(data.failedCaches ?? 0)
-      const suffix = failed > 0 ? ' ' + `${failed} cache(s) could not be deleted.` : ''
+      const suffix = failed > 0 ? ' ' + hostText('host.cachePartial', { failed }) : ''
       void vscodeWindow.showInformationMessage(
-        (matched > 0 ? `Image Viewer cleaned ${deleted} of ${matched} gallery WebView resource cache(s). Single-image editor caches are cleaned automatically when that editor is next opened.` : "Image Viewer found no gallery WebView resource cache to clean. Single-image editor caches are cleaned automatically when that editor is next opened.") + suffix
+        (matched > 0 ? hostText('host.cacheCleaned', { deleted, matched }) : hostText('host.cacheNone')) + suffix
       )
     }
   ]

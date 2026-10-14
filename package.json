@@ -40,21 +40,21 @@
     "commands": [
       {
         "command": "vscode-infra.webviewImageViewer",
-        "title": "View Images \ud83c\udf04"
+        "title": "%command.viewImages%"
       },
       {
         "command": "vscode-infra.setAsDefaultImageViewer",
-        "title": "Use as Default Image Editor",
+        "title": "%command.setDefault%",
         "category": "Image Viewer"
       },
       {
         "command": "vscode-infra.restoreBuiltInImageViewer",
-        "title": "Restore VS Code's Default Image Editor",
+        "title": "%command.restoreDefault%",
         "category": "Image Viewer"
       },
       {
         "command": "vscode-infra.cleanWebviewImageCache",
-        "title": "Clean Gallery WebView Image Cache",
+        "title": "%command.cleanCache%",
         "category": "Image Viewer"
       }
     ],
@@ -117,6 +117,29 @@
           "group": "z_commands"
         }
       ]
+    },
+    "configuration": {
+      "title": "Image Viewer",
+      "properties": {
+        "imageViewer.language": {
+          "type": "string",
+          "default": "auto",
+          "scope": "application",
+          "enum": [
+            "auto",
+            "en",
+            "zh-CN",
+            "zh-TW"
+          ],
+          "enumItemLabels": [
+            "%language.follow%",
+            "English",
+            "\u7b80\u4f53\u4e2d\u6587",
+            "\u7e41\u9ad4\u4e2d\u6587"
+          ],
+          "description": "%language.description%"
+        }
+      }
     }
   },
   "scripts": {
@@ -145,7 +168,8 @@
     "test:sharp": "yarn native:build && node scripts/test-sharp.cjs",
     "test:thumbnail-native": "yarn compile && jest src/webviewController/imagesViewer/nativeTests --runInBand",
     "test:imageio": "yarn native:build && node scripts/test-imageio.cjs",
-    "bench:thumbnail-backends": "node scripts/benchmark-imageio-sharp.cjs"
+    "bench:thumbnail-backends": "node scripts/benchmark-imageio-sharp.cjs",
+    "test:i18n": "jest src/i18n src/webview/SingleImageViewer.test.tsx src/webview/notifications.test.tsx --runInBand"
   },
   "repository": {
     "type": "git",

@@ -2,7 +2,7 @@ import { BulbOutlined, GithubOutlined, StarOutlined, ExportOutlined } from '@ant
 import { callGalleryHost } from './galleryBridge'
 import { Button, Modal, Space } from 'antd'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-
+import { useI18n } from '../../i18n/react'
 import type { FeedbackAction } from '../../feedback'
 import { MESSAGE_CMD } from '../../constants'
 import {
@@ -25,7 +25,7 @@ export type AnnouncementBarProps = {
  * Top bar: version + CTA (opens modal); Issues / Star on the right. Unread users get the modal once; after dismiss, open via bar only.
  */
 export const AnnouncementBar: React.FC<AnnouncementBarProps> = ({ hostUiLanguage }) => {
-
+  const { t } = useI18n()
   const [modalOpen, setModalOpen] = useState(false)
   const barTop = useMemo(() => getAnnouncementBarTopStrings(hostUiLanguage), [hostUiLanguage])
   const modalCopy = useMemo(() => getAnnouncementStrings(hostUiLanguage), [hostUiLanguage])
@@ -75,20 +75,20 @@ export const AnnouncementBar: React.FC<AnnouncementBarProps> = ({ hostUiLanguage
             size='small'
             className='iv-community-link'
             icon={<GithubOutlined />}
-            aria-label={"Open GitHub issues"}
+            aria-label={t('feedback.openIssues')}
             onClick={() => openFeedback('issues')}
           >
-            {"Browse issues"} <ExportOutlined className='iv-community-external' />
+            {t('feedback.browse')} <ExportOutlined className='iv-community-external' />
           </Button>
           <Button
             type='text'
             size='small'
             className='iv-community-link'
             icon={<StarOutlined />}
-            aria-label={"Open GitHub repository"}
+            aria-label={t('feedback.openRepository')}
             onClick={() => openFeedback('repository')}
           >
-            {"Star"} <ExportOutlined className='iv-community-external' />
+            {t('feedback.star')} <ExportOutlined className='iv-community-external' />
           </Button>
         </Space>
       </div>

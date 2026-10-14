@@ -5,6 +5,7 @@ import type { IConfig } from '../../types'
 import { MESSAGE_CMD } from '../../constants'
 import { ANNOUNCEMENT_ID } from './announcementConfig'
 import { callGalleryHost } from './galleryBridge'
+import { useI18n, useLanguage } from '../../i18n/react'
 import './gallerySettings.css'
 
 import { FEEDBACK_EMAIL, FeedbackAction } from '../../feedback'
@@ -15,15 +16,17 @@ export const GallerySettingsModal: React.FC<{
   onChange: (_patch: Partial<IConfig>) => void
   onClose: () => void
 }> = ({ config, onChange, onClose }) => {
+  const { t } = useI18n()
+  const language = useLanguage()
   return (
     <Modal
-      title='Settings'
+      title={t('common.settings')}
       open
       onCancel={onClose}
       width={620}
       footer={
         <Button type='primary' onClick={onClose}>
-          Done
+          {t('common.done')}
         </Button>
       }
     >
@@ -31,66 +34,90 @@ export const GallerySettingsModal: React.FC<{
         className='iv-gallery-settings'
         items={[
           {
+            key: 'general',
+            label: t('language.general'),
+            children: <div className='iv-settings-panel'>
+              <div className='iv-settings-row'>
+                <div>
+                  <strong>{t('language.label')}</strong>
+                  <Typography.Paragraph type='secondary'>{t('language.description')}</Typography.Paragraph>
+                </div>
+                <Select
+                  aria-label={t('language.label')}
+                  value={language.preference}
+                  loading={language.saving}
+                  disabled={language.saving}
+                  options={[
+                    { value: 'auto', label: t('language.follow') },
+                    { value: 'en', label: 'English' },
+                    { value: 'zh-CN', label: '简体中文' },
+                    { value: 'zh-TW', label: '繁體中文' }
+                  ]}
+                  onChange={language.setPreference}
+                />
+              </div>
+              {language.saveError && <Typography.Text type='danger' role='alert'>{t('language.saveFailed')}</Typography.Text>}
+            </div>
+          },
+          {
             key: 'gallery',
-            label: 'Gallery',
+            label: t('gallery.tab'),
             children: (
               <div className='iv-settings-panel'>
                 <div className='iv-settings-row'>
                   <div>
-                    <strong>File size</strong>
+                    <strong>{t('settings.fileSize')}</strong>
                     <Typography.Paragraph type='secondary'>
-                      Choose where to show file sizes in Fill and Grid. List keeps its size column; compact mode uses
-                      hover details.
+                      {t('settings.fileSizeDescription')}
                     </Typography.Paragraph>
                   </div>
                   <Select
-                    aria-label='Gallery file size display'
+                    aria-label={t('settings.fileSizeDisplay')}
                     value={config.galleryShowFileSize !== false ? 'caption' : 'hover'}
                     options={[
-                      { value: 'caption', label: 'Below file name' },
-                      { value: 'hover', label: 'On hover' }
+                      { value: 'caption', label: t('settings.belowName') },
+                      { value: 'hover', label: t('settings.onHover') }
                     ]}
                     onChange={(value) => onChange({ galleryShowFileSize: value === 'caption' })}
                   />
                 </div>
                 <Typography.Text type='secondary'>
-                  Changes apply immediately and are saved for this project.
+                  {t('settings.projectChanges')}
                 </Typography.Text>
               </div>
             )
           },
           {
             key: 'feedback',
-            label: 'Feedback',
+            label: t('feedback.tab'),
             children: (
               <div className='iv-settings-panel'>
                 <div className='iv-feedback-card'>
                   <strong>
-                    <GithubOutlined /> Report an issue or request a feature
+                    <GithubOutlined /> {t('feedback.report')}
                   </strong>
                   <Typography.Paragraph type='secondary'>
-                    Check existing issues first. For a bug report, include your VS Code or Cursor version, operating
-                    system, image format, and steps to reproduce it.
+                    {t('feedback.description')}
                   </Typography.Paragraph>
                   <div className='iv-feedback-actions'>
                     <Button icon={<GithubOutlined />} onClick={() => openFeedback('issues')}>
-                      Browse issues
+                      {t('feedback.browse')}
                     </Button>
                     <Button type='primary' icon={<ExportOutlined />} onClick={() => openFeedback('newIssue')}>
-                      Create an issue
+                      {t('feedback.create')}
                     </Button>
                   </div>
                 </div>
                 <div className='iv-feedback-card'>
                   <strong>
-                    <MailOutlined /> Send feedback by email
+                    <MailOutlined /> {t('feedback.email')}
                   </strong>
                   <Typography.Paragraph type='secondary'>{FEEDBACK_EMAIL}</Typography.Paragraph>
                   <Button
                     icon={<MailOutlined />}
                     onClick={() => openFeedback('email')}
                   >
-                    Open email app
+                    {t('feedback.openEmail')}
                   </Button>
                 </div>
                 <Typography.Text type='secondary'>Image Viewer v{ANNOUNCEMENT_ID}</Typography.Text>

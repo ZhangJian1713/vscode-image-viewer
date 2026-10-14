@@ -1,7 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import * as vscode from 'vscode'
-
+import { hostText, languageRequest, trackLanguageWebview } from './i18n/languageHost'
 import { webviewUtils } from '@easy_vscode/core'
 import {
   DIST_WEBVIEW_PATH,
@@ -185,15 +185,21 @@ class ImageViewerEditorProvider implements vscode.CustomReadonlyEditorProvider<I
     }
 
     let disposed = false
+    const languageSubscription = trackLanguageWebview(webviewPanel.webview)
     const messageSubscription = webviewPanel.webview.onDidReceiveMessage(async (message) => {
       if (message?.cmd === MESSAGE_CMD.CLOSE_CUSTOM_IMAGE_EDITOR) {
         webviewPanel.dispose()
-
+      } else if (message?.cmd === MESSAGE_CMD.GET_UI_LANGUAGE || message?.cmd === MESSAGE_CMD.SET_UI_LANGUAGE) {
+        const result = await languageRequest(message.cmd, message.data?.preference)
+        if (!disposed) {
+          webviewUtils.invokeCallback(WEBVIEW_NAMES.SingleImageViewer, message, result, webviewPanel.webview)
+        }
       }
     })
     webviewPanel.onDidDispose(() => {
       disposed = true
       messageSubscription.dispose()
+      languageSubscription.dispose()
     })
 
     const bootstrap = await createSingleImageBootstrap(webviewPanel.webview, document.uri)
@@ -231,7 +237,7 @@ async function setAsDefaultImageViewer(): Promise<void> {
   }
   await writeGlobalEditorAssociations(next)
   void vscode.window.showInformationMessage(
-    "Image Viewer is now the global default editor for supported images. Workspace settings may override this choice."
+    hostText('host.defaultSet')
   )
 }
 
@@ -245,7 +251,7 @@ async function restoreBuiltInImageViewer(): Promise<void> {
   }
   await writeGlobalEditorAssociations(next)
   void vscode.window.showInformationMessage(
-    "Image Viewer's global editor associations were removed. VS Code will use its normal editor selection behavior."
+    hostText('host.defaultRestored')
   )
 }
 

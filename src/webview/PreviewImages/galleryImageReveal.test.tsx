@@ -4,6 +4,8 @@ import ReactDOM from 'react-dom'
 import { act } from 'react-dom/test-utils'
 import { VirtualGallery } from './VirtualGallery'
 import { completeGalleryImages } from './galleryModel'
+import { Modal } from 'antd'
+import { webviewI18n } from '../../i18n/react'
 jest.mock('./scrollbarFolders.css', () => ({}))
 
 jest.mock('./galleryBridge', () => ({ callGalleryHost: jest.fn((_request, callback) => callback?.({ kind: 'original' })) }))
@@ -65,4 +67,23 @@ test('reveal centers and highlights an offscreen image while the preview is open
   expect(area.scrollTop).toBe(1000)
   render(2)
   expect(area.scrollTop).toBeGreaterThan(100000)
+})
+
+test('an open trash confirmation changes language in place without executing or replacing the pending action', async () => {
+  await webviewI18n.changeLanguage('en')
+  render()
+  const card = root.querySelector(`[data-image-id="${images[9500].fullPath}"]`)!
+  const trash = Array.from(card.parentElement!.querySelectorAll('button')).find((button) => button.textContent === 'Move to Trash…')!
+  act(() => { trash.click() })
+  const confirmation = (Modal.confirm as jest.Mock).mock.calls[0][0]
+  const popup = document.createElement('div'); document.body.appendChild(popup)
+  try {
+    act(() => { ReactDOM.render(<div>{confirmation.title}{confirmation.content}{confirmation.okText}{confirmation.cancelText}</div>, popup) })
+    expect(popup.textContent).toContain('Move “')
+    await act(async () => { await webviewI18n.changeLanguage('zh-TW') })
+    expect(popup.textContent).toContain('移至資源回收筒')
+    expect(popup.textContent).toContain(images[9500].fileName)
+    expect(Modal.confirm).toHaveBeenCalledTimes(1)
+    expect((Modal.confirm as jest.Mock).mock.calls[0][0].onOk).toBe(confirmation.onOk)
+  } finally { act(() => { ReactDOM.unmountComponentAtNode(popup) }); popup.remove() }
 })

@@ -10,6 +10,9 @@ export const WEBVIEW_NAMES = {
 }
 
 export const MESSAGE_CMD = {
+  GET_UI_LANGUAGE: 'getUiLanguage',
+  SET_UI_LANGUAGE: 'setUiLanguage',
+  UI_LANGUAGE_CHANGED: 'uiLanguageChanged',
   // image viewer
   GET_ALL_IMGS: 'getAllImgs',
   GALLERY_SCAN_PROGRESS: 'galleryScanProgress',

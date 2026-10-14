@@ -32,3 +32,4 @@ native/build/
 !scripts/test-thumbnail-adapters.cjs
 !scripts/benchmark-imageio-sharp.cjs
 !scripts/vsix.sh
+!docs/internationalization-design.md

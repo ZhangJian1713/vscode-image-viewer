@@ -1,4 +1,12 @@
 import picomatch from 'picomatch'
+import type { TranslationKey } from './i18n/en'
+
+export class FolderFilterError extends Error {
+  constructor(public readonly key: TranslationKey, message: string, public readonly pattern = '') {
+    super(message)
+    Object.setPrototypeOf(this, FolderFilterError.prototype)
+  }
+}
 
 type FolderRule = {
   prefix: string
@@ -41,20 +49,20 @@ export function compileFolderFilters(
   const within = (folder: string, parent: string) => !parent || folder === parent || folder.startsWith(`${parent}/`)
   const compile = (patterns: string[]): FolderRule[] => {
     if (!Array.isArray(patterns) || patterns.length > 64) {
-      throw new Error('Use at most 64 folder rules in each field.')
+      throw new FolderFilterError('filters.tooMany', 'Use at most 64 folder rules in each field.')
     }
     return patterns
       .filter((pattern) => typeof pattern === 'string' && pattern.trim())
       .map((pattern) => {
         const value = normalizeFolder(pattern.trim())
         if (value.length > 512) {
-          throw new Error('Each folder rule must be at most 512 characters.')
+          throw new FolderFilterError('filters.tooLong', 'Each folder rule must be at most 512 characters.')
         }
         if (/^[a-z]:/i.test(value) || value.split('/').includes('..')) {
-          throw new Error(`“${pattern}”: use a project-relative folder path without “..”.`)
+          throw new FolderFilterError('filters.relative', `“${pattern}”: use a project-relative folder path without “..”.`, pattern)
         }
         if (value.startsWith('!') || /[?*+@!]\(/.test(value)) {
-          throw new Error(`“${pattern}”: use the exclude field for exclusions and {a,b} for alternatives.`)
+          throw new FolderFilterError('filters.alternatives', `“${pattern}”: use the exclude field for exclusions and {a,b} for alternatives.`, pattern)
         }
         if (!value || value === '**') {
           return { prefix: '', matches: () => true }
@@ -77,7 +85,7 @@ export function compileFolderFilters(
             matches: scan.isGlob ? match : (folder: string) => folder === prefix
           }
         } catch {
-          throw new Error(`“${pattern}”: invalid Glob expression; check brackets and braces.`)
+          throw new FolderFilterError('filters.invalidGlob', `“${pattern}”: invalid Glob expression; check brackets and braces.`, pattern)
         }
       })
   }

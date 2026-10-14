@@ -5,7 +5,6 @@ import {
   Checkbox,
   Empty,
   Input,
-  message,
   Popover,
   Select,
   Slider,
@@ -48,7 +47,7 @@ import { BUILTIN_MESSAGE_CMD } from '@easy_vscode/core/lib/constants'
 import { useWebviewTheme } from '../WebviewThemeContext'
 import { useResourceCacheSlot } from '../resourceCache/ResourceCacheBoundary'
 import { sameImageFsPath } from '../imageSort'
-import { GALLERY_SORT_OPTIONS, gallerySortSelection, gallerySortFromSelection, sortGalleryImages } from './gallerySort'
+import { gallerySortOptions, gallerySortSelection, gallerySortFromSelection, sortGalleryImages } from './gallerySort'
 import { callGalleryHost } from './galleryBridge'
 import {
   buildGalleryFolderIndex,
@@ -66,7 +65,8 @@ import { MAX_GALLERY_COLUMNS } from './galleryLayout'
 import type { GalleryFolderHighlight } from './galleryViewportFolders'
 import { GallerySettingsModal } from './GallerySettingsModal'
 import { AnnouncementBar } from './AnnouncementBar'
-
+import { useI18n } from '../../i18n/react'
+import { notifyActionResult } from '../notifications'
 import './gallery.css'
 
 export type { IImage } from './imageTypes'
@@ -103,7 +103,7 @@ interface PreviewSession {
 }
 
 const PreviewImages: React.FC = () => {
-
+  const { t, language, formatNumber } = useI18n()
   const theme = useWebviewTheme()
   const setThemePreference = theme.setPreference
   const [config, setConfig] = useState<IConfig>(defaultConfig)
@@ -358,9 +358,9 @@ const PreviewImages: React.FC = () => {
       }
       callGalleryHost({ cmd: MESSAGE_CMD.GALLERY_RESOURCE_ACTION, data: { filePath: key, action } }, (result) => {
         if (result?.ok === false) {
-          message.error(result.error || 'Unable to complete the action')
+          notifyActionResult(result.error || '')
         } else if (action.startsWith('copy')) {
-          message.success('Copied successfully')
+          notifyActionResult()
         }
       })
     },
@@ -392,7 +392,7 @@ const PreviewImages: React.FC = () => {
 
   return (
     <div className='iv-gallery-app'>
-      <AnnouncementBar hostUiLanguage={config.hostUiLanguage} />
+      <AnnouncementBar hostUiLanguage={language} />
       <div className='iv-gallery-body'>
         {config.gallerySidebarVisible && payload.rootPath && (
           <FolderSidebar
@@ -419,11 +419,11 @@ const PreviewImages: React.FC = () => {
         <main className='iv-gallery-main'>
           <div className='iv-gallery-heading'>
             {!config.gallerySidebarVisible && (
-              <Tooltip title={"Show sidebar"}>
+              <Tooltip title={t('gallery.showSidebar')}>
                 <Button
                   type='text'
                   icon={<MenuUnfoldOutlined />}
-                  aria-label={"Show sidebar"}
+                  aria-label={t('gallery.showSidebar')}
                   onClick={() => patchConfig({ gallerySidebarVisible: true })}
                 />
               </Tooltip>
@@ -440,17 +440,17 @@ const PreviewImages: React.FC = () => {
             />
             <span className='iv-gallery-count'>
               {loading && <Spin size='small' />}
-              {!payload.rootPath && loading ? "Scanning…" : `${(visibleImages.length).toLocaleString()} images`}
+              {!payload.rootPath && loading ? t('gallery.scanning') : t('gallery.images', { count: visibleImages.length, value: formatNumber(visibleImages.length) })}
             </span>
           </div>
           <div className='iv-gallery-toolbar'>
             <Input
               prefix={<SearchOutlined />}
-              placeholder={"Search image path or name"}
+              placeholder={t('gallery.searchPlaceholder')}
               value={filterOverride?.keyword ?? config.keyword}
               allowClear
               onChange={(event) => patchViewFilters({ keyword: event.target.value })}
-              aria-label={"Search images"}
+              aria-label={t('gallery.search')}
               className='iv-gallery-search'
             />
             <Popover
@@ -462,7 +462,7 @@ const PreviewImages: React.FC = () => {
                     value={(filterOverride?.showImageTypes || config.showImageTypes).map((type) => type.replace(/^\./, ''))}
                     options={fileTypes.map(([type, count]) => ({
                       value: type,
-                      label: `${type.toUpperCase()} (${(count).toLocaleString()})`
+                      label: `${type.toUpperCase()} (${formatNumber(count)})`
                     }))}
                     onChange={(values) => patchViewFilters({ showImageTypes: values.map(String) })}
                   />
@@ -473,15 +473,15 @@ const PreviewImages: React.FC = () => {
                 type='text'
                 className='iv-gallery-filter-control'
                 icon={<FilterOutlined />}
-                aria-label={"Filter image types"}
+                aria-label={t('gallery.filterTypes')}
               >
-                {"Types"} <DownOutlined />
+                {t('gallery.types')} <DownOutlined />
               </Button>
             </Popover>
             <Select
-              aria-label={"Sort images"}
+              aria-label={t('gallery.sort')}
               value={gallerySortSelection(config.imageSort || 'nameAsc', config.galleryGroupByFolder)}
-              options={GALLERY_SORT_OPTIONS}
+              options={gallerySortOptions(t)}
               onChange={(value) => patchConfig(gallerySortFromSelection(value))}
               popupMatchSelectWidth={false}
               className='iv-gallery-sort'
@@ -497,8 +497,8 @@ const PreviewImages: React.FC = () => {
                       <button
                         key={color}
                         className={config.backgroundColor === color ? 'is-selected' : ''}
-                        title={color === BACKGROUND_TRANSPARENT ? "No background" : color === 'checkerboard' ? "Checkerboard" : color}
-                        aria-label={`Background ${color === BACKGROUND_TRANSPARENT ? "No background" : color === 'checkerboard' ? "Checkerboard" : color}`}
+                        title={color === BACKGROUND_TRANSPARENT ? t('gallery.noBackground') : color === 'checkerboard' ? t('gallery.checkerboard') : color}
+                        aria-label={t('gallery.backgroundValue', { value: color === BACKGROUND_TRANSPARENT ? t('gallery.noBackground') : color === 'checkerboard' ? t('gallery.checkerboard') : color })}
                         aria-pressed={config.backgroundColor === color}
                         style={{
                           background: color.startsWith('#')
@@ -518,31 +518,31 @@ const PreviewImages: React.FC = () => {
                 <Button
                   type='text'
                   icon={<BgColorsOutlined />}
-                  aria-label={"Image background"}
-                  title={"Image background"}
+                  aria-label={t('gallery.background')}
+                  title={t('gallery.background')}
                 />
               </Popover>
               <Button
                 type='text'
                 icon={<ReloadOutlined spin={loading} />}
-                aria-label={"Refresh images"}
-                title={"Refresh images"}
+                aria-label={t('gallery.refresh')}
+                title={t('gallery.refresh')}
                 onClick={refresh}
               />
             </Space>
           </div>
           {(navigationNotice || filterOverride) && (
             <div className='iv-gallery-navigation-notice' role='status'>
-              <span>{navigationNotice || "View filters temporarily relaxed to browse the target folder."}</span>
-              {filterOverride && <Button size='small' onClick={() => setFilterOverride(null)}>{"Restore filters"}</Button>}
-              {navigationNotice && <Button size='small' type='text' aria-label={"Dismiss navigation notice"}
+              <span>{navigationNotice || t('gallery.relaxedFilters')}</span>
+              {filterOverride && <Button size='small' onClick={() => setFilterOverride(null)}>{t('gallery.restoreFilters')}</Button>}
+              {navigationNotice && <Button size='small' type='text' aria-label={t('gallery.dismissNotice')}
                 onClick={clearNavigationNotice}>×</Button>}
             </div>
           )}
           {loadError && (
             <div className='iv-gallery-error' role='alert'>
-              {(loadError.kind === 'timeout' ? "Scanning is taking longer than expected. Try refreshing or use folder filters." : "Unable to read this workspace")}
-              {loadError.detail && <small>{`Technical details: ${loadError.detail}`}</small>}
+              {t(loadError.kind === 'timeout' ? 'gallery.scanTimeout' : 'gallery.readFailed')}
+              {loadError.detail && <small>{t('common.technicalDetail', { detail: loadError.detail })}</small>}
             </div>
           )}
           {visibleImages.length ? (
@@ -571,28 +571,28 @@ const PreviewImages: React.FC = () => {
               {loading ? (
                 <div>
                   <Spin />
-                  <p>{"Scanning images…"}</p>
+                  <p>{t('gallery.scanningImages')}</p>
                 </div>
               ) : (
                 <Empty
                   description={
-                    (payload.images.length ? "No images match this folder and filters" : "No images found in this project")
+                    t(payload.images.length ? 'gallery.noMatches' : 'gallery.noImages')
                   }
                 />
               )}
               {!loading && !config.galleryIncludeSubfolders && folderIndex.folders.get(selectedFolder)?.directCount === 0 &&
                 folderIndex.folders.get(selectedFolder)?.totalCount > 0 && (
-                <Button onClick={() => patchConfig({ galleryIncludeSubfolders: true })}>{"Include subfolders"}</Button>
+                <Button onClick={() => patchConfig({ galleryIncludeSubfolders: true })}>{t('folders.includeSubfolders')}</Button>
               )}
             </div>
           )}
           <footer className='iv-gallery-status'>
-            <div className='iv-gallery-layouts' role='group' aria-label={"Gallery layout"}>
+            <div className='iv-gallery-layouts' role='group' aria-label={t('gallery.layout')}>
               {(
                 [
-                  { key: 'grid', label: "Grid", icon: <AppstoreOutlined /> },
-                  { key: 'fill', label: "Fill", icon: <BorderOuterOutlined /> },
-                  { key: 'list', label: "List", icon: <BarsOutlined /> }
+                  { key: 'grid', label: t('gallery.grid'), icon: <AppstoreOutlined /> },
+                  { key: 'fill', label: t('gallery.fill'), icon: <BorderOuterOutlined /> },
+                  { key: 'list', label: t('gallery.list'), icon: <BarsOutlined /> }
                 ] as const
               ).map((layout) => (
                 <Button
@@ -611,18 +611,18 @@ const PreviewImages: React.FC = () => {
               <Switch
                 size='small'
                 checked={config.galleryCompact}
-                aria-label={"Compact mode"}
+                aria-label={t('gallery.compactMode')}
                 onChange={(galleryCompact) => patchConfig({ galleryCompact })}
               />{' '}
-              {"Compact"}
+              {t('gallery.compact')}
             </label>
             <div className='iv-gallery-density'>
-              <span>{"Thumbnails"}</span>
+              <span>{t('gallery.thumbnails')}</span>
               <svg className='iv-gallery-density-icon' viewBox='0 0 16 16' aria-hidden='true'>
                 <path d='M1 1h3v3H1zm5 0h3v3H6zm5 0h3v3h-3zM1 6h3v3H1zm5 0h3v3H6zm5 0h3v3h-3zM1 11h3v3H1zm5 0h3v3H6zm5 0h3v3h-3z' />
               </svg>
               <Slider
-                ariaLabelForHandle={"Thumbnail size"}
+                ariaLabelForHandle={t('gallery.thumbnailSize')}
                 min={config.galleryLayout === 'list' ? 40 : 1}
                 max={config.galleryLayout === 'list' ? 160 : MAX_GALLERY_COLUMNS}
                 step={config.galleryLayout === 'list' ? 8 : 1}
@@ -633,10 +633,10 @@ const PreviewImages: React.FC = () => {
                 }
                 tooltip={{
                   formatter: () =>
-                    config.galleryLayout === 'list' ? `${Math.round(thumbnailSizing.imageEdge)} px` : `${Math.round(thumbnailSizing.imageEdge)} px · ${(thumbnailSizing.columns).toLocaleString()} columns`
+                    config.galleryLayout === 'list' ? `${Math.round(thumbnailSizing.imageEdge)} px` : t('gallery.thumbnailColumns', { pixels: Math.round(thumbnailSizing.imageEdge), count: thumbnailSizing.columns, value: formatNumber(thumbnailSizing.columns) })
                 }}
                 ariaValueTextFormatterForHandle={() =>
-                  config.galleryLayout === 'list' ? `${Math.round(thumbnailSizing.imageEdge)} pixels` : `${Math.round(thumbnailSizing.imageEdge)} px · ${(thumbnailSizing.columns).toLocaleString()} columns`
+                  config.galleryLayout === 'list' ? t('gallery.thumbnailPixels', { pixels: Math.round(thumbnailSizing.imageEdge) }) : t('gallery.thumbnailColumns', { pixels: Math.round(thumbnailSizing.imageEdge), count: thumbnailSizing.columns, value: formatNumber(thumbnailSizing.columns) })
                 }
                 onChange={(value) =>
                   patchConfig(
@@ -652,7 +652,7 @@ const PreviewImages: React.FC = () => {
               <span>{thumbnailSizing.imageEdge ? `${Math.round(thumbnailSizing.imageEdge)} px` : '—'}</span>
             </div>
             <div className='iv-gallery-footer-actions'>
-              <span className='iv-gallery-total'>{`${(payload.images.length).toLocaleString()} indexed`}</span>
+              <span className='iv-gallery-total'>{t('gallery.indexed', { value: formatNumber(payload.images.length) })}</span>
               <Button
                 type='text'
                 size='small'
@@ -665,16 +665,16 @@ const PreviewImages: React.FC = () => {
                     <SunOutlined />
                   )
                 }
-                aria-label={"Change theme"}
-                title={`Theme: ${(theme.preference === 'follow' ? "Follow VS Code" : (theme.preference === 'dark' ? "Dark" : "Light"))}`}
+                aria-label={t('gallery.changeTheme')}
+                title={t('gallery.theme', { value: t(theme.preference === 'follow' ? 'language.follow' : theme.preference === 'dark' ? 'gallery.dark' : 'gallery.light') })}
                 onClick={theme.cyclePreference}
               />
               <Button
                 type='text'
                 size='small'
                 icon={<SettingOutlined />}
-                aria-label={"Settings"}
-                title={"Settings"}
+                aria-label={t('common.settings')}
+                title={t('common.settings')}
                 onClick={() => setShowSettings(true)}
               />
             </div>
@@ -687,6 +687,7 @@ const PreviewImages: React.FC = () => {
       {session && (
         <ImagePreview
           key={session.id}
+          language={language}
           images={session.items}
           defaultIndex={session.index}
           visible

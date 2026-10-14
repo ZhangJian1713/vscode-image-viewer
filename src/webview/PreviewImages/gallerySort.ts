@@ -1,18 +1,16 @@
+import type { Translate } from '../../i18n/translator'
 import type { ImageSortMode } from '../../types'
 import { compareImagesForSort, IMAGE_SORT_OPTIONS } from '../imageSort'
 import { imageFolder } from './galleryModel'
 import type { IImage } from './imageTypes'
 
-export const GALLERY_SORT_OPTIONS = [
-  {
-    label: 'Folders first · sort within each folder',
-    options: IMAGE_SORT_OPTIONS.map(({ value, label }) => ({ value: `folder:${value}`, label: `Folder → ${label}` }))
-  },
-  {
-    label: 'All images · global sort',
-    options: IMAGE_SORT_OPTIONS.map(({ value, label }) => ({ value, label: `All → ${label}` }))
-  }
-]
+export function gallerySortOptions(t: Translate) {
+  const options = IMAGE_SORT_OPTIONS.map(({ value }) => ({ value, label: t(`sort.${value}`) }))
+  return [
+    { label: t('sort.folders'), options: options.map(({ value, label }) => ({ value: `folder:${value}`, label: t('sort.folderOption', { value: label }) })) },
+    { label: t('sort.global'), options: options.map(({ value, label }) => ({ value, label: t('sort.globalOption', { value: label }) })) }
+  ]
+}
 
 export function gallerySortSelection(imageSort: ImageSortMode, groupByFolder: boolean): string {
   return groupByFolder ? `folder:${imageSort}` : imageSort

@@ -6,6 +6,9 @@ import { callGalleryHost } from './galleryBridge'
 import { completeGalleryImages, GalleryFolderIndex } from './galleryModel'
 import { GalleryNavigationResolution, resolveGalleryNavigation } from './galleryNavigation'
 import type { IImage } from './imageTypes'
+import { useI18n } from '../../i18n/react'
+import type { TranslationKey } from '../../i18n/en'
+import type { TranslationValues } from '../../i18n/translator'
 
 interface NavigationOptions {
   initialEntry?: GalleryEntry
@@ -30,13 +33,13 @@ interface PendingNavigation {
 
 /** Explicit intent stages keep scan completion, directory selection and preview opening separate. */
 export function useGalleryEntryNavigation(options: NavigationOptions) {
-
+  const { t } = useI18n()
   const current = useRef(options)
   current.current = options
   const sequence = useRef(0)
   const initialized = useRef(false)
   const [pending, setPending] = useState<PendingNavigation | null>(null)
-  const [notice, setNotice] = useState<{ key: string; values?: { folderName?: string }; detail?: string } | null>(null)
+  const [notice, setNotice] = useState<{ key: TranslationKey; values?: TranslationValues; detail?: string } | null>(null)
   useEffect(() => () => { sequence.current++ }, [])
   const navigate = useCallback((entry: GalleryEntry) => {
     initialized.current = true
@@ -79,10 +82,6 @@ export function useGalleryEntryNavigation(options: NavigationOptions) {
     }
   }, [pending, options.ready, options.complete, options.root, options.index, options.images, options.visibleIndexes])
   const clearNotice = useCallback(() => setNotice(null), [])
-  const text = !notice ? '' : notice.key === 'gallery.previewOnly'
-    ? 'This image is not in the current gallery. Opened in preview only; refresh or check folder filters.'
-    : notice.key === 'gallery.folderFallback'
-      ? `No images in the requested folder. Showing ${notice.values?.folderName}.`
-      : `Unable to locate the requested resource${notice.detail ? ` · ${notice.detail}` : ''}`
+  const text = notice ? t(notice.key, notice.values) + (notice.detail ? ` · ${t('common.technicalDetail', { detail: notice.detail })}` : '') : ''
   return { navigate, notice: text, clearNotice }
 }

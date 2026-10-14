@@ -5,7 +5,7 @@ import { FolderFilterFields } from './FolderFilterFields'
 import { folderAncestors, GalleryFolderIndex, isPathWithinFolder, visibleFolderRows } from './galleryModel'
 import type { GalleryFolderHighlight } from './galleryViewportFolders'
 import { centeredFolderScrollTop, FOLDER_TREE_ROW_HEIGHT } from './folderTreePosition'
-
+import { useI18n } from '../../i18n/react'
 import type { GalleryRevealRequest } from './galleryNavigation'
 
 /* eslint-disable no-unused-vars -- callback signatures */
@@ -52,7 +52,7 @@ export const FolderSidebar: React.FC<FolderSidebarProps> = ({
   onRecursive,
   onAction
 }) => {
-
+  const { t, formatNumber } = useI18n()
   const [query, setQuery] = useState('')
   const [filtersOpen, setFiltersOpen] = useState(false)
   const hasFilters = includeFolders.length > 0 || excludeFolders.length > 0
@@ -190,15 +190,15 @@ export const FolderSidebar: React.FC<FolderSidebarProps> = ({
 
   const menuFor = (key: string) => ({
     items: [
-      { key: 'revealInExplorer', label: "Reveal in Explorer" },
-      { key: 'revealInFileManager', label: "Reveal in File Manager" },
-      { key: 'copyFullPath', label: "Copy folder path" },
-      { key: 'copyRelativePath', label: "Copy project-relative path" },
+      { key: 'revealInExplorer', label: t('actions.revealExplorer') },
+      { key: 'revealInFileManager', label: t('actions.revealFileManager') },
+      { key: 'copyFullPath', label: t('actions.copyFolderPath') },
+      { key: 'copyRelativePath', label: t('actions.copyRelativePath') },
       { type: 'divider' as const },
-      { key: 'expand', label: "Expand all subfolders", disabled: !index.folders.get(key)?.children.length },
-      { key: 'collapse', label: "Collapse all subfolders", disabled: !index.folders.get(key)?.children.length },
+      { key: 'expand', label: t('folders.expandSubfolders'), disabled: !index.folders.get(key)?.children.length },
+      { key: 'collapse', label: t('folders.collapseSubfolders'), disabled: !index.folders.get(key)?.children.length },
       { type: 'divider' as const },
-      { key: 'exclude', label: "Exclude folder from scanning", disabled: key === index.root }
+      { key: 'exclude', label: t('folders.exclude'), disabled: key === index.root }
     ],
     onClick: ({ key: action, domEvent }) => {
       domEvent.stopPropagation()
@@ -230,9 +230,9 @@ export const FolderSidebar: React.FC<FolderSidebarProps> = ({
   }
 
   return (
-    <aside className='iv-folder-sidebar' aria-label={"Image folders sidebar"} style={{ width }}>
+    <aside className='iv-folder-sidebar' aria-label={t('folders.sidebar')} style={{ width }}>
       <div className='iv-folder-heading'>
-        <strong>{"Image folders"}</strong>
+        <strong>{t('folders.title')}</strong>
         <Dropdown
           menu={{
             items: [
@@ -244,14 +244,14 @@ export const FolderSidebar: React.FC<FolderSidebarProps> = ({
                     onChange={(event) => onRecursive(event.target.checked)}
                     onClick={(event) => event.stopPropagation()}
                   >
-                    {"Include subfolders"}
+                    {t('folders.includeSubfolders')}
                   </Checkbox>
                 )
               },
               { type: 'divider' },
-              { key: 'expand', label: "Expand all" },
-              { key: 'collapse', label: "Collapse all" },
-              { key: 'refresh', label: "Refresh images" }
+              { key: 'expand', label: t('folders.expandAll') },
+              { key: 'collapse', label: t('folders.collapseAll') },
+              { key: 'refresh', label: t('gallery.refresh') }
             ],
             onClick: ({ key }) => {
               if (key === 'recursive') {
@@ -266,14 +266,14 @@ export const FolderSidebar: React.FC<FolderSidebarProps> = ({
           trigger={['click']}
           getPopupContainer={() => document.body}
         >
-          <Button type='text' size='small' icon={<MoreOutlined />} aria-label={"Image folder options"} />
+          <Button type='text' size='small' icon={<MoreOutlined />} aria-label={t('folders.options')} />
         </Dropdown>
         <Button
           type='text'
           size='small'
           icon={<MenuFoldOutlined />}
-          aria-label={"Hide sidebar"}
-          title={"Hide sidebar"}
+          aria-label={t('gallery.hideSidebar')}
+          title={t('gallery.hideSidebar')}
           onClick={onHide}
         />
       </div>
@@ -282,21 +282,21 @@ export const FolderSidebar: React.FC<FolderSidebarProps> = ({
           className='iv-folder-search'
           size='small'
           prefix={<SearchOutlined />}
-          placeholder={"Find folder"}
+          placeholder={t('folders.find')}
           value={query}
           allowClear
           onChange={(event) => setQuery(event.target.value)}
-          aria-label={"Find folder"}
+          aria-label={t('folders.find')}
         />
         <Button
           type='text'
           size='small'
           icon={<FilterOutlined />}
-          aria-label={"Folder filters"}
+          aria-label={t('folders.filters')}
           aria-expanded={filtersOpen}
           aria-pressed={hasFilters}
           className={hasFilters ? 'iv-filter-active' : ''}
-          title={(hasFilters ? "Folder filters (active)" : "Folder filters")}
+          title={t(hasFilters ? 'folders.filtersActive' : 'folders.filters')}
           onClick={() => setFiltersOpen((open) => !open)}
         />
       </div>
@@ -350,15 +350,15 @@ export const FolderSidebar: React.FC<FolderSidebarProps> = ({
                 <span
                   className={`iv-folder-title${highlightedPaths.has(folder.key) ? ' is-in-viewport' : ''}`}
                   data-folder-path={folder.key}
-                  title={`${folder.key}\n${`${(folder.directCount).toLocaleString()} directly · ${(folder.totalCount).toLocaleString()} including subfolders`}${countsPending ? `\n${"Indexing remaining project folders…"}` : ''}`}
+                  title={`${folder.key}\n${t('folders.counts', { direct: formatNumber(folder.directCount), total: formatNumber(folder.totalCount) })}${countsPending ? `\n${t('folders.indexing')}` : ''}`}
                 >
                   <FolderOutlined />
                   <span className='iv-folder-name'>{folder.name}</span>
-                  <span className='iv-folder-count'>{(recursive ? folder.totalCount : folder.directCount).toLocaleString()}{countsPending ? '+' : ''}</span>
+                  <span className='iv-folder-count'>{formatNumber(recursive ? folder.totalCount : folder.directCount)}{countsPending ? '+' : ''}</span>
                   <Dropdown menu={menu} trigger={['click']} getPopupContainer={() => document.body}>
                     <button
                       className='iv-folder-menu'
-                      aria-label={`Actions for folder ${folder.name}`}
+                      aria-label={t('folders.actions', { folderName: folder.name })}
                       onClick={(event) => event.stopPropagation()}
                     >
                       <MoreOutlined />
@@ -370,11 +370,11 @@ export const FolderSidebar: React.FC<FolderSidebarProps> = ({
           }}
         />
       </div>
-      <div className='iv-folder-footer'>{(recursive ? "Counts include subfolders" : "Counts show direct images")}</div>
+      <div className='iv-folder-footer'>{t(recursive ? 'folders.countsRecursive' : 'folders.countsDirect')}</div>
       <div
         className='iv-sidebar-resizer'
         role='separator'
-        aria-label={"Resize sidebar"}
+        aria-label={t('folders.resize')}
         aria-orientation='vertical'
         onPointerDown={resizeStart}
       />

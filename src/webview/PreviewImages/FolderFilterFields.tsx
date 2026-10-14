@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react'
 import { Button, Input } from 'antd'
-import { compileFolderFilters, parseFolderFilterInput } from '../../folderFilterRules'
+import { compileFolderFilters, FolderFilterError, parseFolderFilterInput } from '../../folderFilterRules'
+import { useI18n } from '../../i18n/react'
 
 /** Draft mounted on expand; keyed by applied rules so external changes cannot leave a stale form. */
 export const FolderFilterFields: React.FC<{
@@ -8,6 +9,7 @@ export const FolderFilterFields: React.FC<{
   excludeFolders: string[]
   onApply: (_include: string[], _exclude: string[]) => void
 }> = ({ includeFolders, excludeFolders, onApply }) => {
+  const { t } = useI18n()
   const [includeDraft, setIncludeDraft] = useState(includeFolders.join('\n'))
   const [excludeDraft, setExcludeDraft] = useState(excludeFolders.join('\n'))
   const draft = useMemo(() => {
@@ -15,9 +17,9 @@ export const FolderFilterFields: React.FC<{
     const exclude = parseFolderFilterInput(excludeDraft)
     try {
       compileFolderFilters(include, exclude)
-      return { include, exclude, error: '' }
+      return { include, exclude, error: null as Error | null }
     } catch (error) {
-      return { include, exclude, error: error instanceof Error ? error.message : String(error) }
+      return { include, exclude, error: error instanceof Error ? error : new Error(String(error)) }
     }
   }, [includeDraft, excludeDraft])
   const dirty = JSON.stringify([draft.include, draft.exclude]) !== JSON.stringify([includeFolders, excludeFolders])
@@ -33,37 +35,39 @@ export const FolderFilterFields: React.FC<{
     }
   }
   return (
-    <div className='iv-folder-filter-fields' aria-label='Folder scan filters'>
+    <div className='iv-folder-filter-fields' aria-label={t('filters.region')}>
       <label>
-        <span>folders to include</span>
+        <span>{t('filters.include')}</span>
         <Input.TextArea
-          aria-label='Folders to include'
+          aria-label={t('filters.include')}
           value={includeDraft}
           onChange={(event) => setIncludeDraft(event.target.value)}
           onKeyDown={onKeyDown}
           autoSize={{ minRows: 1, maxRows: 3 }}
-          placeholder='e.g. assets/**'
+          placeholder={t('filters.includeHint')}
           spellCheck={false}
           status={draft.error ? 'error' : undefined}
         />
       </label>
       <label>
-        <span>folders to exclude</span>
+        <span>{t('filters.exclude')}</span>
         <Input.TextArea
-          aria-label='Folders to exclude'
+          aria-label={t('filters.exclude')}
           value={excludeDraft}
           onChange={(event) => setExcludeDraft(event.target.value)}
           onKeyDown={onKeyDown}
           autoSize={{ minRows: 1, maxRows: 3 }}
-          placeholder='e.g. **/{dist,build}'
+          placeholder={t('filters.excludeHint')}
           spellCheck={false}
           status={draft.error ? 'error' : undefined}
         />
       </label>
-      <small>Project-relative folders. One rule per line; Shift+Enter adds a line.</small>
+      <small>{t('filters.help')}</small>
       {draft.error && (
         <small role='alert' className='iv-folder-filter-error'>
-          {draft.error}
+          {draft.error instanceof FolderFilterError
+            ? t(draft.error.key, { pattern: draft.error.pattern })
+            : t('common.actionFailed')}
         </small>
       )}
       <div className='iv-folder-filter-actions'>
@@ -76,10 +80,10 @@ export const FolderFilterFields: React.FC<{
             setExcludeDraft('')
           }}
         >
-          Clear
+          {t('common.clear')}
         </Button>
         <Button size='small' type='primary' disabled={!dirty || Boolean(draft.error)} onClick={apply}>
-          Apply
+          {t('common.apply')}
         </Button>
       </div>
     </div>

@@ -1,5 +1,7 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { Dropdown, Modal, message } from 'antd'
+import { Dropdown, Modal } from 'antd'
+import { TranslatedText, useI18n } from '../../i18n/react'
+import { notifyActionResult } from '../notifications'
 import { MoreOutlined } from '@ant-design/icons'
 import type { GalleryLayoutMode } from '../../types'
 import type { IImage } from './imageTypes'
@@ -14,7 +16,6 @@ import { useGalleryScrollbarGesture } from './useGalleryScrollbarGesture'
 import { visibleGalleryFolders, GalleryFolderHighlight } from './galleryViewportFolders'
 import { ScrollbarFolderHud } from './ScrollbarFolderHud'
 import { useLogicalGalleryScroll } from './useLogicalGalleryScroll'
-
 import type { GalleryRevealRequest } from './galleryNavigation'
 
 type ImageAction = 'copyFullPath' | 'copyRelativePath' | 'copyName' | 'copyBase64' | 'revealInExplorer' | 'deleteFile'
@@ -27,14 +28,14 @@ function runImageAction(image: IImage, action: ImageAction, onDeleted: (_path: s
         { cmd: MESSAGE_CMD.GALLERY_RESOURCE_ACTION, data: { filePath: image.fullPath, action } },
         (result) => {
           if (result?.ok === false) {
-            message.error(result.error || 'Unable to complete the action')
+            notifyActionResult(result.error || '')
             reject(new Error(result.error))
             return
           }
           if (action === 'deleteFile') {
             onDeleted(image.fullPath)
           } else if (action.startsWith('copy')) {
-            message.success('Copied successfully')
+            notifyActionResult()
           }
           resolve()
         }
@@ -42,11 +43,10 @@ function runImageAction(image: IImage, action: ImageAction, onDeleted: (_path: s
     })
   if (action === 'deleteFile') {
     Modal.confirm({
-      title: `Move “${image.fileName}” to Trash?`,
-      content:
-        'The original file will be moved to the system Trash or Recycle Bin. Some remote file systems may not support this operation.',
-      okText: 'Move to Trash',
-      cancelText: 'Cancel',
+      title: <TranslatedText message='actions.trashTitle' values={{ fileName: image.fileName }} />,
+      content: <TranslatedText message='actions.trashDescription' />,
+      okText: <TranslatedText message='actions.trashConfirm' />,
+      cancelText: <TranslatedText message='common.cancel' />,
       okButtonProps: { danger: true },
       onOk: execute
     })
@@ -79,6 +79,7 @@ interface GalleryCardProps {
 
 /* eslint-disable no-unused-vars -- callback signatures above */
 const GalleryCard = React.memo(function GalleryCard(props: GalleryCardProps) {
+  const { t, formatDate } = useI18n()
   const {
     image,
     store,
@@ -106,15 +107,15 @@ const GalleryCard = React.memo(function GalleryCard(props: GalleryCardProps) {
   const pixels = snapshot.dimensions ? `${snapshot.dimensions.width} × ${snapshot.dimensions.height}` : '—'
   const menu = {
     items: [
-      { key: 'revealInExplorer', label: 'Reveal in Explorer' },
-      { key: 'browseFolder', label: 'Reveal in Image folders' },
+      { key: 'revealInExplorer', label: t('actions.revealExplorer') },
+      { key: 'browseFolder', label: t('gallery.browseFolder') },
       { type: 'divider' as const },
-      { key: 'copyFullPath', label: 'Copy full path' },
-      { key: 'copyRelativePath', label: 'Copy project-relative path' },
-      { key: 'copyName', label: 'Copy file name' },
-      { key: 'copyBase64', label: 'Copy Base64 data' },
+      { key: 'copyFullPath', label: t('actions.copyFullPath') },
+      { key: 'copyRelativePath', label: t('actions.copyRelativePath') },
+      { key: 'copyName', label: t('actions.copyName') },
+      { key: 'copyBase64', label: t('actions.copyBase64') },
       { type: 'divider' as const },
-      { key: 'deleteFile', label: 'Move to Trash…', danger: true }
+      { key: 'deleteFile', label: t('actions.trash'), danger: true }
     ],
     onClick: ({ key, domEvent }) => {
       domEvent.stopPropagation()
@@ -135,8 +136,8 @@ const GalleryCard = React.memo(function GalleryCard(props: GalleryCardProps) {
         data-image-id={image.fullPath}
         role='button'
         tabIndex={0}
+        aria-label={t('gallery.preview', { fileName: image.fileName })}
         aria-pressed={selected}
-        aria-label={`Preview ${image.fileName}`}
         title={`${relative}\n${formatImageBytes(image.size)}${snapshot.dimensions ? ` · ${pixels}` : ''}`}
         style={{
           position: 'absolute',
@@ -176,7 +177,7 @@ const GalleryCard = React.memo(function GalleryCard(props: GalleryCardProps) {
             {narrow < 3 && <span className='iv-list-value'>{formatImageBytes(image.size)}</span>}
             {narrow < 2 && <span className='iv-list-value'>{pixels}</span>}
             {narrow < 1 && (
-              <span className='iv-list-value'>{image.mtimeMs ? new Date(image.mtimeMs).toLocaleString() : '—'}</span>
+              <span className='iv-list-value'>{image.mtimeMs ? formatDate(image.mtimeMs) : '—'}</span>
             )}
           </>
         ) : !compact ? (
@@ -190,7 +191,7 @@ const GalleryCard = React.memo(function GalleryCard(props: GalleryCardProps) {
         <Dropdown menu={menu} trigger={['click']} getPopupContainer={() => document.body}>
           <button
             className='iv-image-menu'
-            aria-label={`Actions for ${image.fileName}`}
+            aria-label={t('common.actions', { fileName: image.fileName })}
             onClick={(event) => event.stopPropagation()}
           >
             <MoreOutlined />
@@ -241,6 +242,7 @@ export const VirtualGallery: React.FC<{
   onFolder,
   onDeleted
 }) => {
+  const { t } = useI18n()
   const scrollRef = useRef<HTMLDivElement>(null)
   const liveScrollTop = useRef(0)
   const currentGeometry = useRef<GalleryGeometry>()
@@ -398,10 +400,10 @@ export const VirtualGallery: React.FC<{
           style={{ gridTemplateColumns: listColumns, padding: `0 ${geometry.padding + 8}px` }}
         >
           <span />
-          <span>Name</span>
-          {narrow < 3 && <span>Size</span>}
-          {narrow < 2 && <span>Pixels</span>}
-          {narrow < 1 && <span>Modified</span>}
+          <span>{t('gallery.name')}</span>
+          {narrow < 3 && <span>{t('gallery.size')}</span>}
+          {narrow < 2 && <span>{t('gallery.pixels')}</span>}
+          {narrow < 1 && <span>{t('gallery.modified')}</span>}
           <span />
         </div>
       )}
@@ -416,7 +418,7 @@ export const VirtualGallery: React.FC<{
         }}
         role='region'
         tabIndex={0}
-        aria-label='Image gallery'
+        aria-label={t('gallery.region')}
       >
         <div
           className='iv-gallery-virtual-space'
@@ -445,8 +447,8 @@ export const VirtualGallery: React.FC<{
                 y={y - viewport.scrollTop + galleryPhysicalScrollTop(viewport.scrollTop, geometry.totalHeight, viewport.height)}
                 width={mode === 'list' ? Math.max(1, viewport.width - geometry.padding * 2) : geometry.imageEdge}
                 height={geometry.rowHeight}
-                selected={revealImage?.path === image.fullPath}
                 priority={visible ? 1000 : 500}
+                selected={revealImage?.path === image.fullPath}
                 narrow={narrow}
                 onOpen={onOpen}
                 onFolder={onFolder}

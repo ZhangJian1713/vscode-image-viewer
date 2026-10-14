@@ -1,6 +1,6 @@
 import type { ImageSortMode } from '../../types'
 import { completeGalleryImages, imageFolder } from './galleryModel'
-import { GALLERY_SORT_OPTIONS, gallerySortFromSelection, gallerySortSelection, sortGalleryImages } from './gallerySort'
+import { gallerySortOptions, gallerySortFromSelection, gallerySortSelection, sortGalleryImages } from './gallerySort'
 
 function image(path: string, size = 0, mtimeMs = 0) {
   return completeGalleryImages([{ path, vscodePath: path, size, mtimeMs }], '/project')[0]
@@ -49,7 +49,7 @@ test('equal metadata has deterministic natural-name and path ties, independent o
 })
 
 test('every UI option persists both sorting levels and restores the selected label', () => {
-  for (const group of GALLERY_SORT_OPTIONS) {
+  for (const group of gallerySortOptions((key) => key)) {
     for (const option of group.options) {
       const state = gallerySortFromSelection(option.value)
       expect(gallerySortSelection(state.imageSort, state.galleryGroupByFolder)).toBe(option.value)

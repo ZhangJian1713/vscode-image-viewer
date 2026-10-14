@@ -55,6 +55,8 @@
 
 ## 筛选、设置与反馈
 
+界面语言与热切换协议见 [国际化设计](internationalization-design.md)。
+
 Folder filters 位于 Find folder 右侧，展开后以 VS Code Search 风格直接显示 folders to include / exclude。Types 与 Sort 使用有底色的图库控件，社群入口使用无边框文字外链及跳转图标。搜索框下不再显示重复路径和独立子目录开关；标题的 breadcrumb 保留用于返回上级目录。Include subfolders 位于 Image folders 菜单内，切换时同时更新目录计数与当前结果。
 
 底栏最右侧为主题切换与齿轮 Settings。设置弹窗仅保留 Gallery / Feedback：主题继续使用底栏按钮，图库背景使用工具栏入口，不在设置中重复；图库文件大小可选择名称下方或仅悬停显示，List 大小列不受影响。主题状态继续由 WebviewThemeContext 唯一持有，配置保存时带入当前偏好。
