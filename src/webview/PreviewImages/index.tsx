@@ -81,7 +81,7 @@ const defaultConfig: IConfig = {
   imageSort: 'nameAsc',
   galleryGroupByFolder: true,
   imageGridColumns: 8,
-  galleryLayout: 'fill',
+  galleryLayout: 'grid',
   galleryCompact: false,
   gallerySidebarVisible: true,
   gallerySidebarWidth: 230,
@@ -590,8 +590,8 @@ const PreviewImages: React.FC = () => {
             <div className='iv-gallery-layouts' role='group' aria-label={"Gallery layout"}>
               {(
                 [
-                  { key: 'fill', label: "Fill", icon: <BorderOuterOutlined /> },
                   { key: 'grid', label: "Grid", icon: <AppstoreOutlined /> },
+                  { key: 'fill', label: "Fill", icon: <BorderOuterOutlined /> },
                   { key: 'list', label: "List", icon: <BarsOutlined /> }
                 ] as const
               ).map((layout) => (

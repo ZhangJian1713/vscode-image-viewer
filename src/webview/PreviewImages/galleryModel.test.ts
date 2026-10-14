@@ -48,7 +48,9 @@ test('tree expansion affects only visible descendants and supports collapsing th
 })
 
 test('legacy preferences migrate without losing deliberate empty expansion or hidden sidebar', () => {
-  expect(normalizedGalleryConfig({}).galleryLayout).toBe('fill')
+  expect(normalizedGalleryConfig({}).galleryLayout).toBe('grid')
+  expect(normalizedGalleryConfig({ galleryLayout: 'fill' }).galleryLayout).toBe('fill')
+  expect(normalizedGalleryConfig({ galleryLayout: 'list' }).galleryLayout).toBe('list')
   expect(normalizedGalleryConfig({}).galleryGroupByFolder).toBe(true)
   expect(normalizedGalleryConfig({ galleryGroupByFolder: false }).galleryGroupByFolder).toBe(false)
   expect(normalizedGalleryConfig({}).galleryShowFileSize).toBe(true)

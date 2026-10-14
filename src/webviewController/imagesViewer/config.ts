@@ -18,7 +18,7 @@ const DEFAULT_CONFIG: IConfig = {
   uiTheme: 'follow',
   imageSort: 'nameAsc',
   galleryGroupByFolder: true,
-  galleryLayout: 'fill'
+  galleryLayout: 'grid'
 }
 
 const PROJECTS_CONFIG_DIRECTORY = 'projectsConfig'

@@ -148,7 +148,7 @@ export function normalizedGalleryConfig(config: Partial<IConfig>): Partial<IConf
     ...config,
     galleryGroupByFolder: config.galleryGroupByFolder !== false,
     imageGridColumns: columns,
-    galleryLayout: ['fill', 'grid', 'list'].includes(config.galleryLayout) ? config.galleryLayout : 'fill',
+    galleryLayout: ['grid', 'fill', 'list'].includes(config.galleryLayout) ? config.galleryLayout : 'grid',
     galleryCompact: Boolean(config.galleryCompact),
     galleryShowFileSize: config.galleryShowFileSize !== false,
     gallerySidebarVisible: config.gallerySidebarVisible !== false,

@@ -2,6 +2,8 @@ import { BulbOutlined, GithubOutlined, StarOutlined, ExportOutlined } from '@ant
 import { callGalleryHost } from './galleryBridge'
 import { Button, Modal, Space } from 'antd'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
+
+import type { FeedbackAction } from '../../feedback'
 import { MESSAGE_CMD } from '../../constants'
 import {
   ANNOUNCEMENT_DISMISS_STORAGE_KEY,
@@ -10,12 +12,12 @@ import {
   getAnnouncementStrings,
 } from './announcementConfig'
 
-function openFeedback(action: 'issues' | 'repository'): void {
+function openFeedback(action: FeedbackAction): void {
   callGalleryHost({ cmd: MESSAGE_CMD.OPEN_FEEDBACK, data: { action } })
 }
 
 export type AnnouncementBarProps = {
-  /** Host `vscode.env.language` (overrides `navigator` for the modal). */
+  /** Resolved application language shared by the bar and modal. */
   hostUiLanguage?: string
 }
 
@@ -23,8 +25,9 @@ export type AnnouncementBarProps = {
  * Top bar: version + CTA (opens modal); Issues / Star on the right. Unread users get the modal once; after dismiss, open via bar only.
  */
 export const AnnouncementBar: React.FC<AnnouncementBarProps> = ({ hostUiLanguage }) => {
+
   const [modalOpen, setModalOpen] = useState(false)
-  const barTop = useMemo(() => getAnnouncementBarTopStrings(), [])
+  const barTop = useMemo(() => getAnnouncementBarTopStrings(hostUiLanguage), [hostUiLanguage])
   const modalCopy = useMemo(() => getAnnouncementStrings(hostUiLanguage), [hostUiLanguage])
 
   const persistDismiss = useCallback(() => {
@@ -72,20 +75,20 @@ export const AnnouncementBar: React.FC<AnnouncementBarProps> = ({ hostUiLanguage
             size='small'
             className='iv-community-link'
             icon={<GithubOutlined />}
-            aria-label='Open GitHub issues'
+            aria-label={"Open GitHub issues"}
             onClick={() => openFeedback('issues')}
           >
-            Issues <ExportOutlined className='iv-community-external' />
+            {"Browse issues"} <ExportOutlined className='iv-community-external' />
           </Button>
           <Button
             type='text'
             size='small'
             className='iv-community-link'
             icon={<StarOutlined />}
-            aria-label='Open GitHub repository'
+            aria-label={"Open GitHub repository"}
             onClick={() => openFeedback('repository')}
           >
-            Star <ExportOutlined className='iv-community-external' />
+            {"Star"} <ExportOutlined className='iv-community-external' />
           </Button>
         </Space>
       </div>
@@ -101,11 +104,17 @@ export const AnnouncementBar: React.FC<AnnouncementBarProps> = ({ hostUiLanguage
         ]}
         width={560}
       >
-        <ul className='iv-announcement-feature-list'>
-          {modalCopy.features.map((text) => (
-            <li key={text}>{text}</li>
-          ))}
-        </ul>
+        <div className='iv-announcement-details'>
+          <ul className='iv-announcement-feature-list'>
+            {modalCopy.updates.map(({ kind, text }, index) => (
+              <li key={index}>
+                <strong className='iv-announcement-category'>{modalCopy.categoryLabels[kind]}</strong>
+                {text}
+              </li>
+            ))}
+          </ul>
+          <p className='iv-announcement-feedback'>{modalCopy.feedbackInvitation}</p>
+        </div>
       </Modal>
     </>
   )

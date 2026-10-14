@@ -147,6 +147,11 @@ div.webview-app-root {
   flex-shrink: 0;
 }
 
+.iv-announcement-details {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
 .iv-announcement-feature-list {
   margin: 0;
   padding-left: 1.25rem;
@@ -155,6 +160,19 @@ div.webview-app-root {
 .iv-announcement-feature-list li {
   margin-bottom: 8px;
   line-height: 1.45;
+}
+
+.iv-announcement-category {
+  display: block;
+  margin-bottom: 2px;
+}
+
+.iv-announcement-feedback {
+  margin: 16px 0 0;
+  padding: 12px;
+  border: 1px solid var(--iv-border);
+  border-radius: 6px;
+  line-height: 1.5;
 }
 
 /** Ant Design Spin wrappers must participate in flex so the column can shrink (min-height: 0). */

@@ -4,7 +4,7 @@ export type WebviewUiThemePreference = 'follow' | 'light' | 'dark'
 /** Secondary order when grouped by folder, or the order of the entire gallery. */
 export type ImageSortMode = 'nameAsc' | 'nameDesc' | 'mtimeAsc' | 'mtimeDesc' | 'sizeAsc' | 'sizeDesc' | 'typeAsc' | 'typeDesc'
 
-export type GalleryLayoutMode = 'fill' | 'grid' | 'list'
+export type GalleryLayoutMode = 'grid' | 'fill' | 'list'
 
 export interface IConfig {
   showImageTypes: string[]
@@ -21,6 +21,7 @@ export interface IConfig {
   imageSort?: ImageSortMode
   /** Defaults to true for new and legacy configs; folders keep ascending tree order. */
   galleryGroupByFolder?: boolean
+  /** Defaults to Grid when absent; preserve the user's saved layout. */
   galleryLayout?: GalleryLayoutMode
   galleryCompact?: boolean
   gallerySidebarVisible?: boolean

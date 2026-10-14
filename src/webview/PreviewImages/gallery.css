@@ -334,6 +334,21 @@
   height: 100%;
   pointer-events: none;
   user-select: none;
+  transform: scale(1);
+  transform-origin: center;
+  transition: transform 260ms ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  .iv-gallery-card:hover .iv-gallery-thumbnail img {
+    transform: scale(1.03);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .iv-gallery-thumbnail img,
+  .iv-gallery-card:hover .iv-gallery-thumbnail img {
+    transform: none;
+    transition: none;
+  }
 }
 .iv-thumbnail-placeholder {
   opacity: 0.3;
