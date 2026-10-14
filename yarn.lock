@@ -1401,10 +1401,10 @@
   resolved "https://registry.npmmirror.com/@easy_vscode/core/-/core-2.0.1.tgz#acb03a4688d00923a452f0255d797de00cb9ee3d"
   integrity sha512-1d59QXT+CozTSI6ubVLDNiABjPiqqfm/4GHtrMG8esM/FPJy9X8IV4zJ74KJiPXYBykEgVf1QseQAr47u9fANA==
 
-"@easy_vscode/webview@2.0.1":
-  version "2.0.1"
-  resolved "https://registry.npmmirror.com/@easy_vscode/webview/-/webview-2.0.1.tgz#91bccc7d406713c0e68726e629679a91dc6906f5"
-  integrity sha512-uUwVC2ib1VomIm5oZ3WjqM4uDhDtF40rlV3PiuaLSSP5Q1IzD7Qw+NhDjC/CrlZfimJA7lLYxxliIOuMh0ciUQ==
+"@easy_vscode/webview@2.0.2":
+  version "2.0.2"
+  resolved "https://registry.npmjs.org/@easy_vscode/webview/-/webview-2.0.2.tgz#8cc75f1507b8107019447b91af62329f507f9145"
+  integrity sha512-E9LDlHk6SyJ95prvJE0TMadQyyy4wQ9G0YlDUv7+xgDBLMHpsPoZZvDxsqiaiwjTZCoXj32E6J9hBhL7Yw01vQ==
 
 "@emotion/hash@^0.8.0":
   version "0.8.0"

@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Upgrade `@easy_vscode/webview` to 2.0.2 so HTTP(S) WebViews, including code-server, initialize host messaging instead of leaving the gallery stuck at “Scanning…”. Preserve the existing host command, resource and CSP restrictions.
+
 ### Added
 
 - **Adaptive preview zoom:** Space and a primary-mouse click share a two/three-state cycle, with pointer/viewport-center anchoring, click-versus-pan arbitration, and short zoom hints.
