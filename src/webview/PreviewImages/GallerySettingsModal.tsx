@@ -3,12 +3,12 @@ import { Button, Modal, Select, Tabs, Typography } from 'antd'
 import { ExportOutlined, GithubOutlined, MailOutlined } from '@ant-design/icons'
 import type { IConfig } from '../../types'
 import { MESSAGE_CMD } from '../../constants'
-import { ANNOUNCEMENT_ID, ISSUES_URL } from './announcementConfig'
+import { ANNOUNCEMENT_ID } from './announcementConfig'
 import { callGalleryHost } from './galleryBridge'
 import './gallerySettings.css'
 
-const FEEDBACK_EMAIL = 'zhangjian1713@gmail.com'
-const openExternal = (url: string) => callGalleryHost({ cmd: MESSAGE_CMD.OPEN_EXTERNAL_URI, data: { url } })
+import { FEEDBACK_EMAIL, FeedbackAction } from '../../feedback'
+const openFeedback = (action: FeedbackAction) => callGalleryHost({ cmd: MESSAGE_CMD.OPEN_FEEDBACK, data: { action } })
 
 export const GallerySettingsModal: React.FC<{
   config: IConfig
@@ -73,10 +73,10 @@ export const GallerySettingsModal: React.FC<{
                     system, image format, and steps to reproduce it.
                   </Typography.Paragraph>
                   <div className='iv-feedback-actions'>
-                    <Button icon={<GithubOutlined />} onClick={() => openExternal(ISSUES_URL)}>
+                    <Button icon={<GithubOutlined />} onClick={() => openFeedback('issues')}>
                       Browse issues
                     </Button>
-                    <Button type='primary' icon={<ExportOutlined />} onClick={() => openExternal(`${ISSUES_URL}/new`)}>
+                    <Button type='primary' icon={<ExportOutlined />} onClick={() => openFeedback('newIssue')}>
                       Create an issue
                     </Button>
                   </div>
@@ -88,13 +88,7 @@ export const GallerySettingsModal: React.FC<{
                   <Typography.Paragraph type='secondary'>{FEEDBACK_EMAIL}</Typography.Paragraph>
                   <Button
                     icon={<MailOutlined />}
-                    onClick={() =>
-                      openExternal(
-                        `mailto:${FEEDBACK_EMAIL}?subject=${encodeURIComponent(
-                          `Image Viewer v${ANNOUNCEMENT_ID} feedback`
-                        )}`
-                      )
-                    }
+                    onClick={() => openFeedback('email')}
                   >
                     Open email app
                   </Button>

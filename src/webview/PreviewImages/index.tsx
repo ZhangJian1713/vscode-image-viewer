@@ -34,6 +34,9 @@ import { ImagePreview } from '../../vendor/right-image-preview'
 import { PREVIEW_ZOOM_STOPS } from '../previewZoomStops'
 import type { ImageItem } from '../../vendor/right-image-preview'
 import type { IConfig } from '../../types'
+import { commandArgToFsPath, GalleryEntry, GalleryScanResult, galleryEntryFromArg } from '../../galleryEntry'
+import { GalleryNavigationResolution, GalleryRevealRequest, galleryNavigationFilters, includeGalleryEntryImage, nearestGalleryFolder } from './galleryNavigation'
+import { useGalleryEntryNavigation } from './useGalleryEntryNavigation'
 import {
   BACKGROUND_COLOR_OPTIONS,
   BACKGROUND_TRANSPARENT,
@@ -54,11 +57,8 @@ import {
   galleryRelativePath,
   imageFolder,
   isPathWithinFolder,
-  normalizeGalleryPath,
-  normalizedGalleryConfig,
-  RawWorkspaceImage
+  normalizedGalleryConfig
 } from './galleryModel'
-import type { GalleryRevealRequest } from './galleryNavigation'
 import type { IImage } from './imageTypes'
 import { FolderSidebar } from './FolderSidebar'
 import { VirtualGallery } from './VirtualGallery'
@@ -66,6 +66,7 @@ import { MAX_GALLERY_COLUMNS } from './galleryLayout'
 import type { GalleryFolderHighlight } from './galleryViewportFolders'
 import { GallerySettingsModal } from './GallerySettingsModal'
 import { AnnouncementBar } from './AnnouncementBar'
+
 import './gallery.css'
 
 export type { IImage } from './imageTypes'
@@ -89,21 +90,11 @@ const defaultConfig: IConfig = {
   galleryShowFileSize: true
 }
 
-function commandPath(arg: unknown): string {
-  if (typeof arg === 'string') {
-    return arg
-  }
-  if (!arg || typeof arg !== 'object') {
-    return ''
-  }
-  const value = arg as { fsPath?: string; path?: string }
-  return value.fsPath || (value.path?.replace(/^\/([a-zA-Z]:\/)/, '$1') ?? '')
-}
-
 interface GalleryPayload {
   images: IImage[]
   projectPath: string
   rootPath: string
+  complete: boolean
 }
 interface PreviewSession {
   id: number
@@ -112,23 +103,19 @@ interface PreviewSession {
 }
 
 const PreviewImages: React.FC = () => {
+
   const theme = useWebviewTheme()
   const setThemePreference = theme.setPreference
   const [config, setConfig] = useState<IConfig>(defaultConfig)
   const [hydrated, setHydrated] = useState(false)
-  const [payload, setPayload] = useState<GalleryPayload>({ images: [], projectPath: '', rootPath: '' })
+  const [payload, setPayload] = useState<GalleryPayload>({ images: [], projectPath: '', rootPath: '', complete: false })
   const [loading, setLoading] = useState(true)
-  const [loadError, setLoadError] = useState('')
+  const [loadError, setLoadError] = useState<{ kind: 'read' | 'timeout'; detail?: string } | null>(null)
   const [showSettings, setShowSettings] = useState(false)
   const [session, setSession] = useState<PreviewSession | null>(null)
   const [previewIndex, setPreviewIndex] = useState(0)
   const [thumbnailSizing, setThumbnailSizing] = useState({ imageEdge: 0, columns: 8 })
   const [viewportFolders, setViewportFolders] = useState<GalleryFolderHighlight | null>(null)
-  const [filterOverride, setFilterOverride] = useState<{ keyword: string; showImageTypes: string[] } | null>(null)
-  const [folderReveal, setFolderReveal] = useState<GalleryRevealRequest>()
-  const [imageReveal, setImageReveal] = useState<GalleryRevealRequest>()
-  const folderRevealSequence = useRef(0)
-  const imageRevealSequence = useRef(0)
   const requestSequence = useRef(0)
   const previewSequence = useRef(0)
   const loadTimer = useRef<ReturnType<typeof setTimeout>>()
@@ -136,55 +123,64 @@ const PreviewImages: React.FC = () => {
   currentConfig.current = { ...config, uiTheme: theme.preference }
   const hydrationRef = useRef(false)
   const initialArg = (window as Window & { commandArgs?: unknown[] }).commandArgs?.[0]
-  const scopeHint = useRef(commandPath(initialArg))
-  const pendingPreview = useRef(scopeHint.current)
+  const scopeHint = useRef(commandArgToFsPath(initialArg))
+  const initialEntry = useRef(galleryEntryFromArg(initialArg))
+  const projectRoot = useRef(initialEntry.current?.rootPath || '')
+  const [filterOverride, setFilterOverride] = useState<{ keyword: string; showImageTypes: string[] } | null>(null)
+  const [folderReveal, setFolderReveal] = useState<GalleryRevealRequest>()
+  const [imageReveal, setImageReveal] = useState<GalleryRevealRequest>()
+  const folderRevealSequence = useRef(0)
+  const imageRevealSequence = useRef(0)
+  const scanState = useRef({ loading, loadError })
+  scanState.current = { loading, loadError }
 
   const patchConfig = useCallback((patch: Partial<IConfig>) => setConfig((previous) => ({ ...previous, ...patch })), [])
 
+  const applyScanResult = useCallback((result: GalleryScanResult) => {
+    if (result.requestId !== undefined && result.requestId !== requestSequence.current) { return }
+    const complete = result.complete !== false
+    if (complete) { clearTimeout(loadTimer.current); setLoading(false) }
+    if (result.error || !result.projectPath) {
+      setLoadError({ kind: 'read', detail: result.error })
+      if (result.projectPath) {
+        setPayload((previous) => ({ ...previous, projectPath: result.projectPath,
+          rootPath: result.projectPath, complete: true }))
+      }
+      return
+    }
+    setLoadError(null)
+    projectRoot.current = result.projectPath
+    setPayload((previous) => !complete && previous.complete ? previous : {
+      images: completeGalleryImages(result.imgs || [], result.projectPath),
+      projectPath: result.projectPath, rootPath: result.projectPath, complete
+    })
+  }, [])
   const refresh = useCallback(() => {
-    const sequence = ++requestSequence.current
+    const requestId = ++requestSequence.current
     setLoading(true)
-    setLoadError('')
+    setLoadError(null)
     clearTimeout(loadTimer.current)
     loadTimer.current = setTimeout(() => {
-      if (sequence === requestSequence.current) {
+      if (requestId === requestSequence.current) {
         setLoading(false)
-        setLoadError('Scanning is taking longer than expected. Try refreshing or scan a smaller folder.')
+        setLoadError({ kind: 'timeout' })
       }
     }, 60_000)
-    callGalleryHost(
-      { cmd: MESSAGE_CMD.GET_ALL_IMGS, data: { scopeHintFsPath: scopeHint.current } },
-      (result: { imgs?: RawWorkspaceImage[]; projectPath?: string; scopePath?: string; error?: string }) => {
-        if (sequence !== requestSequence.current) {
-          return
-        }
-        clearTimeout(loadTimer.current)
-        setLoading(false)
-        if (result.error || !result.projectPath) {
-          setLoadError(result.error || 'Unable to read this workspace')
-          // 规则错误时仍提供目录侧栏，允许用户修正已保存的筛选表达式。
-          if (result.projectPath) {
-            setPayload({
-              images: [],
-              projectPath: result.projectPath,
-              rootPath: result.scopePath || result.projectPath
-            })
-          }
-          return
-        }
-        setPayload({
-          images: completeGalleryImages(result.imgs || [], result.projectPath),
-          projectPath: result.projectPath,
-          rootPath: result.scopePath || result.projectPath
-        })
-      }
-    )
-  }, [])
+    callGalleryHost({ cmd: MESSAGE_CMD.GET_ALL_IMGS,
+      data: { projectRoot: projectRoot.current, priorityPath: scopeHint.current, requestId } }, applyScanResult)
+  }, [applyScanResult])
+  useEffect(() => {
+    const onProgress = (event: MessageEvent) => {
+      if (event.data?.cmd === MESSAGE_CMD.GALLERY_SCAN_PROGRESS) { applyScanResult(event.data.data) }
+    }
+    window.addEventListener('message', onProgress)
+    return () => window.removeEventListener('message', onProgress)
+  }, [applyScanResult])
 
   useEffect(() => {
     let active = true
     const sequenceState = requestSequence
-    callGalleryHost({ cmd: MESSAGE_CMD.GET_CONFIG }, (stored: IConfig) => {
+    callGalleryHost({ cmd: MESSAGE_CMD.GET_CONFIG, data: { projectRoot: projectRoot.current } }, (stored: IConfig) => {
       if (!active) {
         return
       }
@@ -217,53 +213,30 @@ const PreviewImages: React.FC = () => {
     []
   )
 
-  useEffect(() => {
-    const onReveal = (event: MessageEvent) => {
-      if (event.data?.cmd !== BUILTIN_MESSAGE_CMD.REVEAL_WEBVIEW) {
-        return
-      }
-      const nextPath = commandPath(event.data.data?.commandArgs?.[0])
-      // An explicit cache cleanup reveals the existing panel without changing its browse scope.
-      if (event.data.data?.commandArgs?.[0]?.__imageViewerCleanResourceCache) {
-        return
-      }
-      scopeHint.current = nextPath
-      pendingPreview.current = nextPath
-      refresh()
-    }
-    window.addEventListener('message', onReveal)
-    return () => window.removeEventListener('message', onReveal)
-  }, [refresh])
-
   const fileTypes = useMemo(() => {
     const counts = new Map<string, number>()
     payload.images.forEach((image) => counts.set(image.fileType, (counts.get(image.fileType) || 0) + 1))
     return Array.from(counts).sort(([one], [other]) => one.localeCompare(other))
   }, [payload.images])
   const types = useMemo(
-    () => new Set(config.showImageTypes.map((type) => type.replace(/^\./, '').toLowerCase())),
-    [config.showImageTypes]
+    () => new Set((filterOverride?.showImageTypes || config.showImageTypes).map((type) => type.replace(/^\./, '').toLowerCase())),
+    [config.showImageTypes, filterOverride]
   )
   const typedImages = useMemo(
     () => payload.images.filter((image) => types.has(image.fileType)),
     [payload.images, types]
   )
+  const resourceIndex = useMemo(() => buildGalleryFolderIndex(payload.images, payload.rootPath || '/'),
+    [payload.images, payload.rootPath])
   const folderIndex = useMemo(
-    () => buildGalleryFolderIndex(typedImages, payload.rootPath || '/'),
-    [typedImages, payload.rootPath]
+    () => typedImages.length === payload.images.length ? resourceIndex : buildGalleryFolderIndex(typedImages, payload.rootPath || '/'),
+    [typedImages, payload.images.length, payload.rootPath, resourceIndex]
   )
-  const selectedFolder = useMemo(() => {
-    let key = normalizeGalleryPath(config.gallerySelectedFolder || folderIndex.root)
-    while (isPathWithinFolder(key, folderIndex.root) && !folderIndex.folders.has(key)) {
-      const parent = key.slice(0, key.lastIndexOf('/')) || '/'
-      if (parent === key) {
-        break
-      }
-      key = parent
-    }
-    return folderIndex.folders.has(key) ? key : folderIndex.root
-  }, [config.gallerySelectedFolder, folderIndex])
-  const selectFolder = useCallback(
+  const selectedFolder = useMemo(
+    () => nearestGalleryFolder(folderIndex, config.gallerySelectedFolder || folderIndex.root),
+    [config.gallerySelectedFolder, folderIndex]
+  )
+  const setSelectedFolder = useCallback(
     (key: string) => {
       setViewportFolders(null)
       setFolderReveal(undefined)
@@ -299,17 +272,16 @@ const PreviewImages: React.FC = () => {
   )
 
   const openPreview = useCallback(
-    (image: IImage, thumbnail?: string) => {
+    (image: IImage, thumbnail?: string, previewOnly = false) => {
       const index = visibleIndexes.get(image.fullPath)
-      if (index === undefined) {
-        return
-      }
-      setImageReveal({ id: ++imageRevealSequence.current, path: image.fullPath })
-      setPreviewIndex(index)
+      if (index === undefined && !previewOnly) { return }
+      const position = index ?? 0
+      setImageReveal(previewOnly ? undefined : { id: ++imageRevealSequence.current, path: image.fullPath })
+      setPreviewIndex(position)
       setSession({
         id: ++previewSequence.current,
-        index,
-        items: visibleImages.map((item) => ({
+        index: position,
+        items: (previewOnly ? [image] : visibleImages).map((item) => ({
           id: item.fullPath,
           src: item.vscodePath,
           minimapSrc: item.fullPath === image.fullPath && thumbnail !== item.vscodePath ? thumbnail : undefined,
@@ -320,28 +292,43 @@ const PreviewImages: React.FC = () => {
     },
     [visibleImages, visibleIndexes]
   )
+  const locateEntry = useCallback((resolution: GalleryNavigationResolution) => {
+    setFilterOverride(galleryNavigationFilters(resolution, payload.images, currentConfig.current))
+    patchConfig({ gallerySelectedFolder: resolution.folder, gallerySidebarVisible: true,
+      galleryExpandedFolders: Array.from(new Set([...(currentConfig.current.galleryExpandedFolders || []),
+        ...folderAncestors(resourceIndex, resolution.folder)])) })
+    setFolderReveal({ id: ++folderRevealSequence.current, path: resolution.folder })
+  }, [patchConfig, resourceIndex, payload.images])
+  const includeRequestedImage = useCallback((image: IImage) => {
+    setPayload((previous) => {
+      if (!previous.complete) { return previous }
+      const images = includeGalleryEntryImage(previous.images, image, previous.rootPath, currentConfig.current)
+      return images === previous.images ? previous : { ...previous, images }
+    })
+  }, [])
+  const { navigate: navigateEntry, notice: navigationNotice, clearNotice: clearNavigationNotice } = useGalleryEntryNavigation({ initialEntry: initialEntry.current, ready: hydrated && !!payload.rootPath,
+    complete: payload.complete && !loading, root: payload.rootPath, index: resourceIndex, images: payload.images,
+    visibleIndexes, onLocate: locateEntry, onImageResolved: includeRequestedImage,
+    onOpen: (image, previewOnly) => openPreview(image, undefined, previewOnly),
+    onReset: () => { setSession(null); setViewportFolders(null); setImageReveal(undefined); setFilterOverride(null) } })
+  const selectFolder = useCallback((key: string) => {
+    clearNavigationNotice()
+    setSelectedFolder(key)
+  }, [clearNavigationNotice, setSelectedFolder])
   useEffect(() => {
-    const pending = pendingPreview.current
-    if (!pending || loading || !hydrated) {
-      return
+    const onReveal = (event: MessageEvent) => {
+      if (event.data?.cmd !== BUILTIN_MESSAGE_CMD.REVEAL_WEBVIEW) { return }
+      const arg = event.data.data?.commandArgs?.[0]
+      if (arg?.__imageViewerCleanResourceCache) { return }
+      const entry = galleryEntryFromArg(arg) || { __imageViewerEntry: true,
+        rootPath: projectRoot.current, targetPath: commandArgToFsPath(arg), kind: 'folder' } as GalleryEntry
+      scopeHint.current = entry.targetPath
+      navigateEntry(entry)
+      if (!scanState.current.loading && scanState.current.loadError) { refresh() }
     }
-    const image = payload.images.find((item) => sameImageFsPath(item.fullPath, pending))
-    if (!image) {
-      pendingPreview.current = ''
-      return
-    }
-    if (!visibleIndexes.has(image.fullPath)) {
-      patchConfig({
-        gallerySelectedFolder: imageFolder(image),
-        galleryIncludeSubfolders: false,
-        keyword: '',
-        showImageTypes: Array.from(new Set([...config.showImageTypes, image.fileType]))
-      })
-      return
-    }
-    pendingPreview.current = ''
-    openPreview(image)
-  }, [payload.images, loading, hydrated, visibleIndexes, config.showImageTypes, patchConfig, openPreview])
+    window.addEventListener('message', onReveal)
+    return () => window.removeEventListener('message', onReveal)
+  }, [navigateEntry, refresh])
   const patchViewFilters = (patch: Partial<IConfig>) => {
     patchConfig({ keyword: filterOverride?.keyword ?? config.keyword,
       showImageTypes: filterOverride?.showImageTypes || config.showImageTypes, ...patch })
@@ -382,7 +369,7 @@ const PreviewImages: React.FC = () => {
   const revealFolder = useCallback((image: IImage) => {
     const folder = imageFolder(image)
     selectFolder(folder)
-    // Browse neighboring images without losing the saved search.
+    // Browse neighboring images without losing the saved search or an Explorer type override.
     const showImageTypes = filterOverride?.showImageTypes || currentConfig.current.showImageTypes
     setFilterOverride(currentConfig.current.keyword || showImageTypes !== currentConfig.current.showImageTypes
       ? { keyword: '', showImageTypes } : null)
@@ -412,6 +399,7 @@ const PreviewImages: React.FC = () => {
             index={folderIndex}
             selected={selectedFolder}
             revealRequest={folderReveal}
+            countsPending={!payload.complete}
             viewportHighlight={config.galleryGroupByFolder ? viewportFolders : null}
             expanded={config.galleryExpandedFolders ?? [folderIndex.root]}
             recursive={config.galleryIncludeSubfolders}
@@ -431,11 +419,11 @@ const PreviewImages: React.FC = () => {
         <main className='iv-gallery-main'>
           <div className='iv-gallery-heading'>
             {!config.gallerySidebarVisible && (
-              <Tooltip title='Show sidebar'>
+              <Tooltip title={"Show sidebar"}>
                 <Button
                   type='text'
                   icon={<MenuUnfoldOutlined />}
-                  aria-label='Show sidebar'
+                  aria-label={"Show sidebar"}
                   onClick={() => patchConfig({ gallerySidebarVisible: true })}
                 />
               </Tooltip>
@@ -452,17 +440,17 @@ const PreviewImages: React.FC = () => {
             />
             <span className='iv-gallery-count'>
               {loading && <Spin size='small' />}
-              {!payload.rootPath && loading ? 'Scanning…' : `${visibleImages.length.toLocaleString()} images`}
+              {!payload.rootPath && loading ? "Scanning…" : `${(visibleImages.length).toLocaleString()} images`}
             </span>
           </div>
           <div className='iv-gallery-toolbar'>
             <Input
               prefix={<SearchOutlined />}
-              placeholder='Search image path or name'
+              placeholder={"Search image path or name"}
               value={filterOverride?.keyword ?? config.keyword}
               allowClear
               onChange={(event) => patchViewFilters({ keyword: event.target.value })}
-              aria-label='Search images'
+              aria-label={"Search images"}
               className='iv-gallery-search'
             />
             <Popover
@@ -471,10 +459,10 @@ const PreviewImages: React.FC = () => {
               content={
                 <div className='iv-gallery-types'>
                   <Checkbox.Group
-                    value={config.showImageTypes.map((type) => type.replace(/^\./, ''))}
+                    value={(filterOverride?.showImageTypes || config.showImageTypes).map((type) => type.replace(/^\./, ''))}
                     options={fileTypes.map(([type, count]) => ({
                       value: type,
-                      label: `${type.toUpperCase()} (${count})`
+                      label: `${type.toUpperCase()} (${(count).toLocaleString()})`
                     }))}
                     onChange={(values) => patchViewFilters({ showImageTypes: values.map(String) })}
                   />
@@ -485,13 +473,13 @@ const PreviewImages: React.FC = () => {
                 type='text'
                 className='iv-gallery-filter-control'
                 icon={<FilterOutlined />}
-                aria-label='Filter image types'
+                aria-label={"Filter image types"}
               >
-                Types <DownOutlined />
+                {"Types"} <DownOutlined />
               </Button>
             </Popover>
             <Select
-              aria-label='Sort images'
+              aria-label={"Sort images"}
               value={gallerySortSelection(config.imageSort || 'nameAsc', config.galleryGroupByFolder)}
               options={GALLERY_SORT_OPTIONS}
               onChange={(value) => patchConfig(gallerySortFromSelection(value))}
@@ -509,8 +497,8 @@ const PreviewImages: React.FC = () => {
                       <button
                         key={color}
                         className={config.backgroundColor === color ? 'is-selected' : ''}
-                        title={color === BACKGROUND_TRANSPARENT ? 'No background' : color}
-                        aria-label={`Background ${color === BACKGROUND_TRANSPARENT ? 'none' : color}`}
+                        title={color === BACKGROUND_TRANSPARENT ? "No background" : color === 'checkerboard' ? "Checkerboard" : color}
+                        aria-label={`Background ${color === BACKGROUND_TRANSPARENT ? "No background" : color === 'checkerboard' ? "Checkerboard" : color}`}
                         aria-pressed={config.backgroundColor === color}
                         style={{
                           background: color.startsWith('#')
@@ -530,28 +518,31 @@ const PreviewImages: React.FC = () => {
                 <Button
                   type='text'
                   icon={<BgColorsOutlined />}
-                  aria-label='Image background'
-                  title='Image background'
+                  aria-label={"Image background"}
+                  title={"Image background"}
                 />
               </Popover>
               <Button
                 type='text'
                 icon={<ReloadOutlined spin={loading} />}
-                aria-label='Refresh images'
-                title='Refresh images'
+                aria-label={"Refresh images"}
+                title={"Refresh images"}
                 onClick={refresh}
               />
             </Space>
           </div>
-          {filterOverride && (
+          {(navigationNotice || filterOverride) && (
             <div className='iv-gallery-navigation-notice' role='status'>
-              <span>View filters temporarily relaxed to browse the target folder.</span>
-              <Button size='small' onClick={() => setFilterOverride(null)}>Restore filters</Button>
+              <span>{navigationNotice || "View filters temporarily relaxed to browse the target folder."}</span>
+              {filterOverride && <Button size='small' onClick={() => setFilterOverride(null)}>{"Restore filters"}</Button>}
+              {navigationNotice && <Button size='small' type='text' aria-label={"Dismiss navigation notice"}
+                onClick={clearNavigationNotice}>×</Button>}
             </div>
           )}
           {loadError && (
             <div className='iv-gallery-error' role='alert'>
-              {loadError}
+              {(loadError.kind === 'timeout' ? "Scanning is taking longer than expected. Try refreshing or use folder filters." : "Unable to read this workspace")}
+              {loadError.detail && <small>{`Technical details: ${loadError.detail}`}</small>}
             </div>
           )}
           {visibleImages.length ? (
@@ -580,24 +571,28 @@ const PreviewImages: React.FC = () => {
               {loading ? (
                 <div>
                   <Spin />
-                  <p>Scanning images…</p>
+                  <p>{"Scanning images…"}</p>
                 </div>
               ) : (
                 <Empty
                   description={
-                    payload.images.length ? 'No images match this folder and filters' : 'No images found in this folder'
+                    (payload.images.length ? "No images match this folder and filters" : "No images found in this project")
                   }
                 />
+              )}
+              {!loading && !config.galleryIncludeSubfolders && folderIndex.folders.get(selectedFolder)?.directCount === 0 &&
+                folderIndex.folders.get(selectedFolder)?.totalCount > 0 && (
+                <Button onClick={() => patchConfig({ galleryIncludeSubfolders: true })}>{"Include subfolders"}</Button>
               )}
             </div>
           )}
           <footer className='iv-gallery-status'>
-            <div className='iv-gallery-layouts' role='group' aria-label='Gallery layout'>
+            <div className='iv-gallery-layouts' role='group' aria-label={"Gallery layout"}>
               {(
                 [
-                  { key: 'fill', label: 'Fill', icon: <BorderOuterOutlined /> },
-                  { key: 'grid', label: 'Grid', icon: <AppstoreOutlined /> },
-                  { key: 'list', label: 'List', icon: <BarsOutlined /> }
+                  { key: 'fill', label: "Fill", icon: <BorderOuterOutlined /> },
+                  { key: 'grid', label: "Grid", icon: <AppstoreOutlined /> },
+                  { key: 'list', label: "List", icon: <BarsOutlined /> }
                 ] as const
               ).map((layout) => (
                 <Button
@@ -616,18 +611,18 @@ const PreviewImages: React.FC = () => {
               <Switch
                 size='small'
                 checked={config.galleryCompact}
-                aria-label='Compact mode'
+                aria-label={"Compact mode"}
                 onChange={(galleryCompact) => patchConfig({ galleryCompact })}
               />{' '}
-              Compact
+              {"Compact"}
             </label>
             <div className='iv-gallery-density'>
-              <span>Thumbnails</span>
+              <span>{"Thumbnails"}</span>
               <svg className='iv-gallery-density-icon' viewBox='0 0 16 16' aria-hidden='true'>
                 <path d='M1 1h3v3H1zm5 0h3v3H6zm5 0h3v3h-3zM1 6h3v3H1zm5 0h3v3H6zm5 0h3v3h-3zM1 11h3v3H1zm5 0h3v3H6zm5 0h3v3h-3z' />
               </svg>
               <Slider
-                ariaLabelForHandle='Thumbnail size'
+                ariaLabelForHandle={"Thumbnail size"}
                 min={config.galleryLayout === 'list' ? 40 : 1}
                 max={config.galleryLayout === 'list' ? 160 : MAX_GALLERY_COLUMNS}
                 step={config.galleryLayout === 'list' ? 8 : 1}
@@ -638,14 +633,10 @@ const PreviewImages: React.FC = () => {
                 }
                 tooltip={{
                   formatter: () =>
-                    `${Math.round(thumbnailSizing.imageEdge)} px${
-                      config.galleryLayout === 'list' ? '' : ` · ${thumbnailSizing.columns} ${thumbnailSizing.columns === 1 ? 'column' : 'columns'}`
-                    }`
+                    config.galleryLayout === 'list' ? `${Math.round(thumbnailSizing.imageEdge)} px` : `${Math.round(thumbnailSizing.imageEdge)} px · ${(thumbnailSizing.columns).toLocaleString()} columns`
                 }}
                 ariaValueTextFormatterForHandle={() =>
-                  `${Math.round(thumbnailSizing.imageEdge)} pixels${
-                    config.galleryLayout === 'list' ? '' : `, ${thumbnailSizing.columns} ${thumbnailSizing.columns === 1 ? 'column' : 'columns'}`
-                  }`
+                  config.galleryLayout === 'list' ? `${Math.round(thumbnailSizing.imageEdge)} pixels` : `${Math.round(thumbnailSizing.imageEdge)} px · ${(thumbnailSizing.columns).toLocaleString()} columns`
                 }
                 onChange={(value) =>
                   patchConfig(
@@ -661,7 +652,7 @@ const PreviewImages: React.FC = () => {
               <span>{thumbnailSizing.imageEdge ? `${Math.round(thumbnailSizing.imageEdge)} px` : '—'}</span>
             </div>
             <div className='iv-gallery-footer-actions'>
-              <span className='iv-gallery-total'>{payload.images.length.toLocaleString()} indexed</span>
+              <span className='iv-gallery-total'>{`${(payload.images.length).toLocaleString()} indexed`}</span>
               <Button
                 type='text'
                 size='small'
@@ -674,16 +665,16 @@ const PreviewImages: React.FC = () => {
                     <SunOutlined />
                   )
                 }
-                aria-label='Change theme'
-                title={`Theme: ${theme.preference === 'follow' ? 'Follow VS Code' : theme.preference === 'dark' ? 'Dark' : 'Light'}`}
+                aria-label={"Change theme"}
+                title={`Theme: ${(theme.preference === 'follow' ? "Follow VS Code" : (theme.preference === 'dark' ? "Dark" : "Light"))}`}
                 onClick={theme.cyclePreference}
               />
               <Button
                 type='text'
                 size='small'
                 icon={<SettingOutlined />}
-                aria-label='Settings'
-                title='Settings'
+                aria-label={"Settings"}
+                title={"Settings"}
                 onClick={() => setShowSettings(true)}
               />
             </div>

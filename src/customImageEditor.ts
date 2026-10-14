@@ -1,6 +1,8 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import * as vscode from 'vscode'
+
+import { webviewUtils } from '@easy_vscode/core'
 import {
   DIST_WEBVIEW_PATH,
   DIST_WEBVIEW_SINGLE_INDEX_HTML,
@@ -132,12 +134,7 @@ async function createSingleImageBootstrap(
   }
 }
 
-function serializeForInlineScript(value: unknown): string {
-  return JSON.stringify(value)
-    .replace(/</g, '\\u003c')
-    .replace(/\u2028/g, '\\u2028')
-    .replace(/\u2029/g, '\\u2029')
-}
+const { serializeForInlineScript, secureWebviewHtml } = webviewUtils
 
 function createCustomEditorHtml(
   context: vscode.ExtensionContext,
@@ -152,7 +149,7 @@ function createCustomEditorHtml(
     .replace('$vscodeEnv$', () => serializeForInlineScript({ language: vscode.env.language }))
     .replace('$commandArgs$', () => serializeForInlineScript([bootstrap]))
 
-  return html.replace(
+  return secureWebviewHtml(html.replace(
     /\b(src|href)=(["'])\/([^"']+)\2/g,
     (_match, attribute: string, quote: string, assetPath: string) => {
       const assetUri = webview.asWebviewUri(
@@ -160,7 +157,7 @@ function createCustomEditorHtml(
       )
       return `${attribute}=${quote}${assetUri.toString()}${quote}`
     }
-  )
+  ), webview)
 }
 
 class ImageViewerEditorProvider implements vscode.CustomReadonlyEditorProvider<ImageViewerDocument> {
@@ -183,13 +180,15 @@ class ImageViewerEditorProvider implements vscode.CustomReadonlyEditorProvider<I
 
     webviewPanel.webview.options = {
       enableScripts: true,
+      enableCommandUris: false,
       localResourceRoots: [distRoot, documentFolder]
     }
 
     let disposed = false
-    const messageSubscription = webviewPanel.webview.onDidReceiveMessage((message) => {
+    const messageSubscription = webviewPanel.webview.onDidReceiveMessage(async (message) => {
       if (message?.cmd === MESSAGE_CMD.CLOSE_CUSTOM_IMAGE_EDITOR) {
         webviewPanel.dispose()
+
       }
     })
     webviewPanel.onDidDispose(() => {
@@ -232,7 +231,7 @@ async function setAsDefaultImageViewer(): Promise<void> {
   }
   await writeGlobalEditorAssociations(next)
   void vscode.window.showInformationMessage(
-    'Image Viewer is now the global default editor for supported images. Workspace settings may override this choice.'
+    "Image Viewer is now the global default editor for supported images. Workspace settings may override this choice."
   )
 }
 
@@ -256,7 +255,7 @@ export function registerCustomImageEditor(context: vscode.ExtensionContext): voi
       IMAGE_EDITOR_VIEW_TYPE,
       new ImageViewerEditorProvider(context),
       {
-        webviewOptions: { retainContextWhenHidden: false },
+        webviewOptions: { retainContextWhenHidden: true },
         supportsMultipleEditorsPerDocument: false
       }
     ),

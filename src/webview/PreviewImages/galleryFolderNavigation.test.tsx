@@ -81,7 +81,8 @@ test('a search result reveals its directory and neighbors, retains filters, and 
   act(() => { restore.click() })
   expect(mockGalleryProps.images.map((image) => image.fileName)).toEqual(['target.jpg'])
   expect(host.mock.calls.filter(([request]) => request.cmd === MESSAGE_CMD.GET_ALL_IMGS)).toHaveLength(1)
-  expect(host.mock.calls.some(([request]) => request.cmd === MESSAGE_CMD.GALLERY_RESOURCE_ACTION)).toBe(false)
+  expect(host.mock.calls.some(([request]) => request.cmd === MESSAGE_CMD.GALLERY_RESOURCE_ACTION ||
+    request.cmd === MESSAGE_CMD.RESOLVE_GALLERY_ENTRY)).toBe(false)
 })
 
 test('repeated reveal within the selected folder still locates the image and preserves nonrecursive scope', () => {

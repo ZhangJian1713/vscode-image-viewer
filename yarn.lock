@@ -1396,10 +1396,10 @@
   resolved "https://registry.npmmirror.com/@discoveryjs/json-ext/-/json-ext-0.5.7.tgz#1d572bfbbe14b7704e0ba0f39b74815b84870d70"
   integrity sha512-dBVuXR082gk3jsFp7Rd/JI4kytwGHecnCoTtXFb7DB6CNHp4rg5k1bhg0nWdLGLnOV71lmDzGQaLMy8iPLY0pw==
 
-"@easy_vscode/core@2.0.1":
-  version "2.0.1"
-  resolved "https://registry.npmmirror.com/@easy_vscode/core/-/core-2.0.1.tgz#acb03a4688d00923a452f0255d797de00cb9ee3d"
-  integrity sha512-1d59QXT+CozTSI6ubVLDNiABjPiqqfm/4GHtrMG8esM/FPJy9X8IV4zJ74KJiPXYBykEgVf1QseQAr47u9fANA==
+"@easy_vscode/core@3.0.0":
+  version "3.0.0"
+  resolved "https://registry.npmjs.org/@easy_vscode/core/-/core-3.0.0.tgz#b744245a348e677f91d2cf6673cb5ba69327181f"
+  integrity sha512-HzeWFIFHFJQzGRi+REs026J8w7sFoqvTGXeL2YS79r/VCAU+dN2jHfsGUqZwI24tUrJjAU0vaq1eddEOmPTz9w==
 
 "@easy_vscode/webview@2.0.2":
   version "2.0.2"
@@ -4181,11 +4181,6 @@ cheerio@^1.0.0-rc.9:
     parse5-parser-stream "^7.1.2"
     undici "^7.19.0"
     whatwg-mimetype "^4.0.0"
-
-child_process@^1.0.2:
-  version "1.0.2"
-  resolved "https://registry.npmmirror.com/child_process/-/child_process-1.0.2.tgz#b1f7e7fc73d25e7fd1d455adc94e143830182b5a"
-  integrity sha512-Wmza/JzL0SiWz7kl6MhIKT5ceIlnFPJX+lwUGj7Clhy5MMldsSoJR0+uvRzOS5Kv45Mq7t1PoE8TsOA9bzvb6g==
 
 chokidar@3.5.1:
   version "3.5.1"

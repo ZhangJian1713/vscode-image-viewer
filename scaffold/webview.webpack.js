@@ -52,6 +52,8 @@ module.exports = (env, argv) => {
   if (env && env.WEBPACK_SERVE) {
     // Host placeholders are replaced by VS Code in the extension. Give browser-only dev valid scripts.
     htmlOptions.templateContent = () => fs.readFileSync(htmlOptions.template, 'utf8')
+      .replace(/<meta\b[^>]*http-equiv=["']Content-Security-Policy["'][^>]*>/i,
+        `<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' ws: wss:;">`)
       .replace('$vscodeEnv$', '{"language":"en"}')
       .replace('$commandArgs$', '[]')
   }

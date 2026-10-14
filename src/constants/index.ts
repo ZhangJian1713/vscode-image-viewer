@@ -12,10 +12,8 @@ export const WEBVIEW_NAMES = {
 export const MESSAGE_CMD = {
   // image viewer
   GET_ALL_IMGS: 'getAllImgs',
-  RENAME_FILE: 'renameFile',
-  DELETE_FILE: 'deleteFile',
-  OPEN_IMAGE_DIRECTORY: 'openImageDirectory',
-  GET_IMAGE_BASE64: 'getImageBase64',
+  GALLERY_SCAN_PROGRESS: 'galleryScanProgress',
+  RESOLVE_GALLERY_ENTRY: 'resolveGalleryEntry',
   GET_IMAGE_SIZE: 'getImageSize',
   /** Explicit gallery file/folder menu action; extension validates workspace boundaries. */
   GALLERY_RESOURCE_ACTION: 'galleryResourceAction',
@@ -23,8 +21,8 @@ export const MESSAGE_CMD = {
   GET_THUMB_FOR_GRID: 'getThumbForGrid',
   SAVE_CONFIG: 'saveConfig',
   GET_CONFIG: 'getConfig',
-  /** Open https URL or other URI in system browser (extension host `openExternal`). */
-  OPEN_EXTERNAL_URI: 'openExternalUri',
+  /** Host-owned GitHub and email feedback destinations only. */
+  OPEN_FEEDBACK: 'openFeedback',
   /** Close the custom-editor tab when the direct image viewer is dismissed. */
   CLOSE_CUSTOM_IMAGE_EDITOR: 'closeCustomImageEditor',
   /** Result of a user-requested same-origin CacheStorage cleanup. */

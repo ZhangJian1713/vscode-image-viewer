@@ -6,7 +6,13 @@
 
 - Upgrade `@easy_vscode/webview` to 2.0.2 so HTTP(S) WebViews, including code-server, initialize host messaging instead of leaving the gallery stuck at “Scanning…”. Preserve the existing host command, resource and CSP restrictions.
 
+### Security
+
+- Restrict WebView commands, scripts, feedback links and file access; validate configuration writes and bind each gallery to its host-resolved workspace root.
+
 ### Added
+
+- Reuse one project-root gallery for Explorer entries and prioritize the requested subtree during scanning, with explicit navigation and temporary view filters.
 
 - **Adaptive preview zoom:** Space and a primary-mouse click share a two/three-state cycle, with pointer/viewport-center anchoring, click-versus-pan arbitration, and short zoom hints.
 - **Scrollbar folder indication:** viewport folder HUD and temporary tree reveal/highlight while dragging; landing highlights persist without changing selection or saved expansion.

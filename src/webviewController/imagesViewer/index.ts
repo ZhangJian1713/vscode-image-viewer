@@ -1,23 +1,35 @@
-import * as fs from 'fs'
 import * as path from 'path'
+import { assertProjectResource } from './projectResource'
+import { feedbackUrl } from '../../feedback'
 import { Uri, ViewColumn, Webview, commands, workspace, env as vscodeEnv, window as vscodeWindow } from 'vscode'
-import { utils, webviewUtils } from '@easy_vscode/core'
+import { webviewUtils } from '@easy_vscode/core'
 import { IWebview, IWebviewProps, IMessage } from '@easy_vscode/core/lib/types'
-import { DIST_WEBVIEW_INDEX_HTML, EXTENSION_COMMANDS, MESSAGE_CMD, WEBVIEW_NAMES } from '../../constants'
-import { getAllImgs, getImageBase64, getImageSize, SUPPORT_IMG_TYPES } from './utils'
-import { normalizeThumbTierEdge } from '../../config/gridThumb'
+import { DIST_WEBVIEW_INDEX_HTML, DIST_WEBVIEW_PATH, EXTENSION_COMMANDS, MESSAGE_CMD, WEBVIEW_NAMES } from '../../constants'
+import { getAllImgs, getImageBase64, getImageSize } from './utils'
+import { GRID_THUMB_GLOBAL_SUBDIR, normalizeThumbTierEdge } from '../../config/gridThumb'
 import { resolveThumbForGrid, cacheFsPathToThumbResourceUri } from './thumbGridCache'
 import { readLocalConfigFile, writeLocalConfigFile } from './config'
-import { imageViewerPanelInstanceKey, imageViewerPanelTitle } from '../imageViewerPanelScope'
+import { createGalleryEntry, imageViewerPanelInstanceKey, imageViewerPanelTitle } from '../imageViewerPanelScope'
+import { GalleryScanResult, galleryEntryToArg, galleryEntryFromArg } from '../../galleryEntry'
+
 
 /** Webview payload returned by `GET_THUMB_FOR_GRID`. */
 export type GridThumbWirePayload = { kind: 'thumb'; thumbSrc: string } | { kind: 'original' }
 
-const { getProjectPath } = utils
 const { invokeCallback, successResp } = webviewUtils
 
 const viewType = WEBVIEW_NAMES.PreviewImages
 const scanRequests = new WeakMap<Webview, { cancelled: boolean }>()
+const panelRoots = new WeakMap<Webview, string>()
+
+/** Bind once: panel messages cannot change to a different workspace root. */
+function panelRoot(webview: Webview): string {
+  const root = panelRoots.get(webview)
+  if (!root || !workspace.workspaceFolders?.some((folder) => path.resolve(folder.uri.fsPath) === root)) {
+    throw new Error('The gallery workspace folder is no longer open.')
+  }
+  return root
+}
 const webviewProps: IWebviewProps = {
   command: EXTENSION_COMMANDS.OPEN_WEBVIEW_IMAGE_VIEWER,
   htmlPath: DIST_WEBVIEW_INDEX_HTML,
@@ -32,8 +44,32 @@ const webviewProps: IWebviewProps = {
     }
   },
   iconPath: 'assets/logo.png',
+  resolvePanelOptions: (args, _projectPath, context) => {
+    const entry = galleryEntryFromArg(args[0])
+    if (!entry) { throw new Error('A host-resolved gallery entry is required.') }
+    return { localResourceRoots: [Uri.joinPath(context.extensionUri, DIST_WEBVIEW_PATH),
+      Uri.joinPath(context.globalStorageUri, GRID_THUMB_GLOBAL_SUBDIR), Uri.file(entry.rootPath)] }
+  },
+  onDidCreatePanel: (panel, args) => {
+    const entry = galleryEntryFromArg(args[0])
+    if (!entry) { throw new Error('A host-resolved gallery entry is required.') }
+    panelRoots.set(panel.webview, path.resolve(entry.rootPath))
+    return { dispose: () => {
+      const scan = scanRequests.get(panel.webview)
+      if (scan) { scan.cancelled = true }
+      scanRequests.delete(panel.webview)
+      panelRoots.delete(panel.webview)
+    } }
+  },
   multiPanel: {
-    instanceKeyFromCommandArgs: imageViewerPanelInstanceKey,
+    instanceKeyFromCommandArgs: (args, projectPath) => {
+      // Adapt before the registry serializes commandArgs or posts a reveal message.
+      const entry = createGalleryEntry(args[0], projectPath, workspace.workspaceFolders?.map((folder) => folder.uri.fsPath))
+      // Explorer can also supply a multiselection array. Only the clicked entry is used;
+      // do not leave unused raw paths in the HTML commandArgs script.
+      args.splice(0, args.length, galleryEntryToArg(entry))
+      return imageViewerPanelInstanceKey(args, projectPath)
+    },
     resolvePanelTitle: imageViewerPanelTitle
   }
 }
@@ -42,27 +78,8 @@ const messageHandlers = new Map([
   [
     MESSAGE_CMD.GET_ALL_IMGS,
     async (message: IMessage, webview: Webview) => {
-      const basePath = path.resolve(getProjectPath())
-      const hint = (message.data as { scopeHintFsPath?: string } | undefined)?.scopeHintFsPath
-      let listScopeAbs: string | null = null
-      if (hint && typeof hint === 'string') {
-        const trimmed = hint.trim()
-        if (trimmed.length > 0) {
-          try {
-            const resolved = path.resolve(trimmed)
-            if (fs.existsSync(resolved)) {
-              const st = fs.statSync(resolved)
-              const folderAbs = st.isDirectory() ? resolved : path.dirname(resolved)
-              const baseNorm = path.resolve(basePath)
-              if (folderAbs === baseNorm || folderAbs.startsWith(baseNorm + path.sep)) {
-                listScopeAbs = folderAbs
-              }
-            }
-          } catch {
-            //
-          }
-        }
-      }
+      const { priorityPath, requestId } = message.data || {}
+      let basePath = ''
       const previous = scanRequests.get(webview)
       if (previous) {
         previous.cancelled = true
@@ -70,16 +87,27 @@ const messageHandlers = new Map([
       const request = { cancelled: false }
       scanRequests.set(webview, request)
       try {
-        const imgs = await getAllImgs(webview, listScopeAbs, request)
-        invokeCallback(viewType, message, { imgs, projectPath: basePath, scopePath: listScopeAbs || basePath }, webview)
+        basePath = panelRoot(webview)
+        const response = (imgs, complete): GalleryScanResult => ({ imgs, complete, requestId,
+          projectPath: basePath, scopePath: basePath })
+        const imgs = await getAllImgs(webview, null, request, { basePath, priorityPath,
+          onFirstImages: (images) => {
+            if (!request.cancelled) {
+              void webview.postMessage({ cmd: MESSAGE_CMD.GALLERY_SCAN_PROGRESS, data: response(images, false) })
+            }
+          } })
+        if (!request.cancelled) { invokeCallback(viewType, message, response(imgs, true), webview) }
       } catch (error) {
+        if (request.cancelled) { return }
         invokeCallback(
           viewType,
           message,
           {
             imgs: [],
             projectPath: basePath,
-            scopePath: listScopeAbs || basePath,
+            scopePath: basePath,
+            requestId,
+            complete: true,
             error: error instanceof Error ? error.message : String(error)
           },
           webview
@@ -88,22 +116,33 @@ const messageHandlers = new Map([
     }
   ],
   [
+    MESSAGE_CMD.RESOLVE_GALLERY_ENTRY,
+    async (message: IMessage, webview: Webview) => {
+      try {
+        const root = panelRoot(webview)
+        const entry = createGalleryEntry(message.data?.targetPath, root, [root])
+        let image
+        if (entry.targetPath) {
+          const resource = await assertProjectResource(root, entry.targetPath, entry.kind === 'image')
+          if (entry.kind === 'image') {
+            image = { path: '/' + path.relative(root, entry.targetPath).replace(/\\/g, '/'),
+              fullPath: entry.targetPath, vscodePath: webview.asWebviewUri(Uri.file(entry.targetPath)).toString(),
+              size: resource.stat.size, mtimeMs: resource.stat.mtimeMs }
+          }
+        }
+        invokeCallback(viewType, message, { entry, image }, webview)
+      } catch (error) {
+        invokeCallback(viewType, message, { error: error instanceof Error ? error.message : String(error) }, webview)
+      }
+    }
+  ],
+  [
     MESSAGE_CMD.GALLERY_RESOURCE_ACTION,
     async (message: IMessage, webview: Webview) => {
       try {
         const { filePath, action } = message.data as { filePath: string; action: string }
-        const root = await fs.promises.realpath(getProjectPath())
-        const target = await fs.promises.realpath(path.resolve(filePath))
-        const relative = path.relative(root, target)
-        if (relative === '..' || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
-          throw new Error('This resource is outside the current workspace.')
-        }
-        if (action === 'deleteFile' || action === 'copyBase64') {
-          const stat = await fs.promises.stat(target)
-          if (!stat.isFile() || !SUPPORT_IMG_TYPES.includes(path.extname(target).toLowerCase())) {
-            throw new Error('This action requires a supported image file.')
-          }
-        }
+        const { target, relative } = await assertProjectResource(panelRoot(webview), filePath,
+          action === 'deleteFile' || action === 'copyBase64')
         const uri = Uri.file(target)
         switch (action) {
           case 'copyFullPath':
@@ -143,43 +182,42 @@ const messageHandlers = new Map([
   ],
   [
     MESSAGE_CMD.GET_IMAGE_SIZE,
-    (message: IMessage, w: Webview) => {
-      const dimensions = getImageSize(message.data.filePath)
+    async (message: IMessage, w: Webview) => {
+      const { target } = await assertProjectResource(panelRoot(w), message.data?.filePath, true)
+      const dimensions = getImageSize(target)
       invokeCallback(viewType, message, dimensions, w)
     }
   ],
   [
     MESSAGE_CMD.GET_THUMB_FOR_GRID,
-    (message: IMessage, panelWebview: Webview) => {
+    async (message: IMessage, panelWebview: Webview) => {
       const callbackId = message.callbackId
       const filePathIn = String(message.data?.filePath ?? '')
       const targetEdge = normalizeThumbTierEdge(Number(message.data?.targetMaxEdgePx))
       const reply = (payload: GridThumbWirePayload) => {
         invokeCallback(viewType, { ...message, callbackId } as IMessage, payload, panelWebview)
       }
-      void (async () => {
-        try {
-          const res = await resolveThumbForGrid(filePathIn, targetEdge)
-          if (res.kind === 'thumb') {
-            const resourceUri = cacheFsPathToThumbResourceUri(res.cacheFsPath) ?? Uri.file(res.cacheFsPath)
-            reply({
-              kind: 'thumb',
-              thumbSrc: panelWebview.asWebviewUri(resourceUri).toString()
-            })
-          } else {
-            reply({ kind: 'original' })
-          }
-        } catch (e) {
-          console.error(e)
+      try {
+        const { target } = await assertProjectResource(panelRoot(panelWebview), filePathIn, true)
+        const res = await resolveThumbForGrid(target, targetEdge)
+        if (res.kind === 'thumb') {
+          const resourceUri = cacheFsPathToThumbResourceUri(res.cacheFsPath) ?? Uri.file(res.cacheFsPath)
+          reply({
+            kind: 'thumb',
+            thumbSrc: panelWebview.asWebviewUri(resourceUri).toString()
+          })
+        } else {
           reply({ kind: 'original' })
         }
-      })()
+      } catch {
+        reply({ kind: 'original' })
+      }
     }
   ],
   [
     MESSAGE_CMD.SAVE_CONFIG,
     (message: IMessage, w: Webview) => {
-      writeLocalConfigFile(message.data)
+      writeLocalConfigFile(message.data, panelRoot(w))
       invokeCallback(viewType, message, successResp, w)
     }
   ],
@@ -190,19 +228,17 @@ const messageHandlers = new Map([
         viewType,
         message,
         {
-          ...readLocalConfigFile(),
+          ...readLocalConfigFile(panelRoot(w)),
           hostUiLanguage: vscodeEnv.language
         },
         w
       )
   ],
   [
-    MESSAGE_CMD.OPEN_EXTERNAL_URI,
+    MESSAGE_CMD.OPEN_FEEDBACK,
     (message: IMessage) => {
-      const raw = String((message.data as { url?: string } | undefined)?.url ?? '').trim()
-      if (raw) {
-        void vscodeEnv.openExternal(Uri.parse(raw))
-      }
+      const version = require('../../../package.json').version as string
+      return vscodeEnv.openExternal(Uri.parse(feedbackUrl(message.data?.action, version)))
     }
   ],
   [
@@ -217,18 +253,16 @@ const messageHandlers = new Map([
       }
       if (!data?.ok) {
         void vscodeWindow.showWarningMessage(
-          `Image Viewer could not clean the WebView image cache: ${data?.error || 'unknown error'}`
+          `Image Viewer could not clean the WebView image cache: ${data?.error || "Unknown error"}`
         )
         return
       }
       const matched = Number(data.matchedCaches ?? 0)
       const deleted = Number(data.deletedCaches ?? 0)
       const failed = Number(data.failedCaches ?? 0)
-      const suffix = failed > 0 ? ` ${failed} cache(s) could not be deleted.` : ''
+      const suffix = failed > 0 ? ' ' + `${failed} cache(s) could not be deleted.` : ''
       void vscodeWindow.showInformationMessage(
-        matched > 0
-          ? `Image Viewer cleaned ${deleted} of ${matched} gallery WebView resource cache(s).${suffix} Single-image editor caches are cleaned automatically when that editor is next opened.`
-          : 'Image Viewer found no gallery WebView resource cache to clean. Single-image editor caches are cleaned automatically when that editor is next opened.'
+        (matched > 0 ? `Image Viewer cleaned ${deleted} of ${matched} gallery WebView resource cache(s). Single-image editor caches are cleaned automatically when that editor is next opened.` : "Image Viewer found no gallery WebView resource cache to clean. Single-image editor caches are cleaned automatically when that editor is next opened.") + suffix
       )
     }
   ]

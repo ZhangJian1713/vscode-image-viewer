@@ -8,12 +8,10 @@ import {
   ANNOUNCEMENT_ID,
   getAnnouncementBarTopStrings,
   getAnnouncementStrings,
-  ISSUES_URL,
-  REPOSITORY_URL
 } from './announcementConfig'
 
-function openExternalUrl(url: string): void {
-  callGalleryHost({ cmd: MESSAGE_CMD.OPEN_EXTERNAL_URI, data: { url } })
+function openFeedback(action: 'issues' | 'repository'): void {
+  callGalleryHost({ cmd: MESSAGE_CMD.OPEN_FEEDBACK, data: { action } })
 }
 
 export type AnnouncementBarProps = {
@@ -75,7 +73,7 @@ export const AnnouncementBar: React.FC<AnnouncementBarProps> = ({ hostUiLanguage
             className='iv-community-link'
             icon={<GithubOutlined />}
             aria-label='Open GitHub issues'
-            onClick={() => openExternalUrl(ISSUES_URL)}
+            onClick={() => openFeedback('issues')}
           >
             Issues <ExportOutlined className='iv-community-external' />
           </Button>
@@ -85,7 +83,7 @@ export const AnnouncementBar: React.FC<AnnouncementBarProps> = ({ hostUiLanguage
             className='iv-community-link'
             icon={<StarOutlined />}
             aria-label='Open GitHub repository'
-            onClick={() => openExternalUrl(REPOSITORY_URL)}
+            onClick={() => openFeedback('repository')}
           >
             Star <ExportOutlined className='iv-community-external' />
           </Button>

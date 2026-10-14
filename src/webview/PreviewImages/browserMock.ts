@@ -6,6 +6,7 @@ import { IMAGE_FILE_PATTERNS, MESSAGE_CMD } from '../../constants'
 import { GalleryMessage, GalleryTransport } from './galleryBridge'
 import type { RawWorkspaceImage } from './galleryModel'
 
+
 /** Explicit development-only fixture. No external images, local file access, or real deletions. */
 export function installGalleryMock(): void {
   const params = new URLSearchParams(location.search)
@@ -25,6 +26,7 @@ export function installGalleryMock(): void {
     imageGridColumns: 8,
     imageSort: 'nameAsc',
     galleryGroupByFolder: true,
+    galleryLayout: 'grid',
     uiTheme: 'dark'
   }
   let config = defaults
@@ -68,6 +70,12 @@ export function installGalleryMock(): void {
     }
   })
   const byPath = new Map(images.map((image) => [image.fullPath, image]))
+  const requestedEntry = params.get('entry')
+  if (requestedEntry) {
+    const targetPath = projectPath + '/' + requestedEntry.replace(/^\/+/, '')
+    ;(window as any).commandArgs = [{ __imageViewerEntry: true, rootPath: projectPath, targetPath,
+      kind: byPath.has(targetPath) ? 'image' : /\.[^/]+$/.test(targetPath) ? 'file' : 'folder' }]
+  }
   const stats = {
     thumbnails: 0,
     dimensions: 0,
@@ -91,23 +99,16 @@ export function installGalleryMock(): void {
         break
       case MESSAGE_CMD.GET_ALL_IMGS: {
         stats.scans++
-        const hint = (request.data as { scopeHintFsPath?: string })?.scopeHintFsPath
-        const scope =
-          hint && hint.startsWith(projectPath)
-            ? byPath.has(hint)
-              ? hint.slice(0, hint.lastIndexOf('/'))
-              : hint
-            : projectPath
+        const requestId = (request.data as { requestId?: number })?.requestId
         try {
           const filters = compileFolderFilters(config.includeFolders, config.excludeFolders)
           const folders = new Map<string, boolean>()
           value = {
             projectPath,
-            scopePath: scope,
+            scopePath: projectPath,
+            requestId,
+            complete: true,
             imgs: images.filter((image) => {
-              if (scope !== projectPath && !image.fullPath.startsWith(scope + '/')) {
-                return false
-              }
               const directory = image.path.slice(1, image.path.lastIndexOf('/'))
               if (!folders.has(directory)) {
                 folders.set(directory, filters.includes(directory) && !filters.excludes(directory))
@@ -116,8 +117,16 @@ export function installGalleryMock(): void {
             })
           }
         } catch (error) {
-          value = { projectPath, scopePath: scope, error: error instanceof Error ? error.message : String(error) }
+          value = { projectPath, scopePath: projectPath, requestId, complete: true,
+            error: error instanceof Error ? error.message : String(error) }
         }
+        break
+      }
+      case MESSAGE_CMD.RESOLVE_GALLERY_ENTRY: {
+        const targetPath = (request.data as { targetPath: string }).targetPath
+        const image = byPath.get(targetPath)
+        value = { entry: { __imageViewerEntry: true, rootPath: projectPath, targetPath,
+          kind: image ? 'image' : /\.[^/]+$/.test(targetPath) ? 'file' : 'folder' }, image }
         break
       }
       case MESSAGE_CMD.GET_THUMB_FOR_GRID: {

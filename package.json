@@ -179,7 +179,6 @@
     "babel-loader": "^8.2.2",
     "babel-plugin-import": "^1.13.3",
     "babel-plugin-styled-components": "^1.13.2",
-    "child_process": "^1.0.2",
     "clean-webpack-plugin": "^4.0.0-alpha.0",
     "connect-history-api-fallback": "^1.6.0",
     "conventional-changelog-conventionalcommits": "^4.6.0",
@@ -233,7 +232,7 @@
   },
   "dependencies": {
     "@ant-design/icons": "^5.5.0",
-    "@easy_vscode/core": "2.0.1",
+    "@easy_vscode/core": "3.0.0",
     "@easy_vscode/webview": "2.0.2",
     "@jsquash/webp": "1.5.0",
     "ahooks": "^3.7.5",

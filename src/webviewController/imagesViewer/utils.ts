@@ -27,13 +27,19 @@ function isAppleDoubleSidecarFile(absPath: string): boolean {
   return path.basename(absPath).startsWith('._')
 }
 
-interface IImage {
+export interface ScannedImage {
   path: string
   /** Absolute filesystem path; used for disk cache / RPC (same as dfs `filePath`). */
   fullPath: string
   vscodePath: string
   size: number
   mtimeMs: number
+}
+
+export interface GalleryScanOptions {
+  basePath?: string
+  priorityPath?: string
+  onFirstImages?: (_images: ScannedImage[]) => void
 }
 
 /** Async traversal avoids blocking the shared extension host; directory symlinks are not followed. */
@@ -43,9 +49,10 @@ async function searchImgs(
   excludeFolders: string[],
   webview: Webview,
   listScopeAbsPath: string | null,
-  cancellation: { cancelled: boolean }
-): Promise<IImage[]> {
-  const imgs: IImage[] = []
+  cancellation: { cancelled: boolean },
+  options: GalleryScanOptions
+): Promise<ScannedImage[]> {
+  const imgs: ScannedImage[] = []
   const directories = new Set<string>()
   const filters = compileFolderFilters(includeFolders, excludeFolders, process.platform === 'win32')
   const scope = listScopeAbsPath ? path.relative(basePath, listScopeAbsPath) : ''
@@ -53,19 +60,50 @@ async function searchImgs(
     throw new Error('The selected folder is outside the project.')
   }
   const stack = filters.scanRoots(scope).map((folder) => path.resolve(basePath, folder))
-  const rootDirectories = new Set(stack)
+  if (options.priorityPath) {
+    try {
+      const priority = path.resolve(options.priorityPath)
+      const fromBase = path.relative(basePath, priority)
+      if (fromBase === '..' || fromBase.startsWith(`..${path.sep}`) || path.isAbsolute(fromBase)) {
+        throw new Error('Priority target is outside the project')
+      }
+      let directory = (await fs.promises.stat(priority)).isDirectory() ? priority : path.dirname(priority)
+      const scopeRoot = listScopeAbsPath || basePath
+      const fromScope = path.relative(scopeRoot, directory)
+      if (fromScope === '..' || fromScope.startsWith(`..${path.sep}`) || path.isAbsolute(fromScope)) {
+        const toScope = path.relative(directory, scopeRoot)
+        if (toScope === '..' || toScope.startsWith(`..${path.sep}`) || path.isAbsolute(toScope)) {
+          throw new Error('Priority target is outside the selected scope')
+        }
+        directory = scopeRoot
+      }
+      const relative = path.relative(basePath, directory)
+      if (relative !== '..' && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative)) {
+        const priorityRoots = filters.scanRoots(relative).map((folder) => path.resolve(basePath, folder))
+        // Finish the requested subtree before publishing it, then continue the same traversal.
+        // The empty marker is not a filesystem path; visited directories are still read only once.
+        if (priorityRoots.length && relative) { stack.push('', ...priorityRoots) }
+      }
+    } catch { /* Missing targets still resolve against the completed root index. */ }
+  }
+  const rootDirectories = new Set(stack.filter(Boolean))
   let unreadableRoots = 0
   const canonicalBase = await fs.promises.realpath(basePath)
   while (stack.length) {
     if (cancellation.cancelled) {
       throw new Error('Scan cancelled')
     }
-    const directory = path.normalize(stack.pop()!)
+    const nextDirectory = stack.pop()!
+    if (!nextDirectory) {
+      if (imgs.length && !cancellation.cancelled) { options.onFirstImages?.(imgs.slice()) }
+      continue
+    }
+    const directory = path.normalize(nextDirectory)
     const relativeDirectory = path.relative(basePath, directory).replace(/\\/g, '/')
     if (
       directories.has(directory) ||
       filters.excludes(relativeDirectory) ||
-      path.basename(directory) === 'node_modules'
+      (directory !== basePath && ['node_modules', '.git'].includes(path.basename(directory)))
     ) {
       continue
     }
@@ -107,6 +145,8 @@ async function searchImgs(
         files.push(filePath)
       }
     }
+    const requested = options.priorityPath ? files.indexOf(path.resolve(options.priorityPath)) : -1
+    if (requested > 0) { files.unshift(...files.splice(requested, 1)) }
     for (let start = 0; start < files.length; start += 16) {
       if (cancellation.cancelled) {
         throw new Error('Scan cancelled')
@@ -143,16 +183,19 @@ async function searchImgs(
 export const getAllImgs = async (
   webview: Webview,
   listScopeAbsPath: string | null = null,
-  cancellation = { cancelled: false }
-): Promise<IImage[]> => {
-  const { includeFolders, excludeFolders } = readLocalConfigFile()
+  cancellation = { cancelled: false },
+  options: GalleryScanOptions = {}
+): Promise<ScannedImage[]> => {
+  const basePath = path.resolve(options.basePath || getProjectPath())
+  const { includeFolders, excludeFolders } = readLocalConfigFile(basePath)
   return searchImgs(
-    path.resolve(getProjectPath()),
+    basePath,
     includeFolders,
     excludeFolders,
     webview,
     listScopeAbsPath,
-    cancellation
+    cancellation,
+    options
   )
 }
 

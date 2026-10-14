@@ -111,3 +111,40 @@ test('include prefixes cannot follow a directory symlink outside the workspace',
     fs.rmSync(outside, { recursive: true, force: true })
   }
 })
+
+test('root scan publishes the complete priority subtree before reading siblings, without repeating directories', async () => {
+  const readdir = jest.spyOn(fs.promises, 'readdir')
+  const early: any[] = []
+  try {
+    const images = await getAllImgs(webview, null, { cancelled: false }, {
+      basePath: mockProjectRoot, priorityPath: path.join(mockProjectRoot, 'assets/icons/a.svg'),
+      onFirstImages: (snapshot) => {
+        early.push(snapshot)
+        expect(snapshot.map((image) => image.path).sort()).toEqual(['/assets/icons/a.svg', '/assets/icons/child/b.png'])
+        expect(readdir.mock.calls.map(([directory]) => String(directory))).not.toContain(path.join(mockProjectRoot, 'assets/photos'))
+      }
+    })
+    expect(early).toHaveLength(1)
+    expect(images).toHaveLength(4)
+    const directories = readdir.mock.calls.map(([directory]) => String(directory))
+    expect(new Set(directories).size).toBe(directories.length)
+  } finally { readdir.mockRestore() }
+})
+test('priority requests honor excludes and explicit base roots; .git is not traversed', async () => {
+  fs.mkdirSync(path.join(mockProjectRoot, '.git'), { recursive: true })
+  fs.writeFileSync(path.join(mockProjectRoot, '.git/hidden.jpg'), 'fixture')
+  mockConfig.mockReturnValue({ includeFolders: [], excludeFolders: ['assets/icons'] })
+  const early = jest.fn()
+  const images = await getAllImgs(webview, null, { cancelled: false }, { basePath: mockProjectRoot,
+    priorityPath: path.join(mockProjectRoot, 'assets/icons/a.svg'), onFirstImages: early })
+  expect(early).not.toHaveBeenCalled()
+  expect(images.map((image) => image.path).sort()).toEqual(['/assets/photos/c.jpg', '/root.JPG'])
+  expect(mockConfig).toHaveBeenLastCalledWith(mockProjectRoot)
+})
+
+test('priority traversal cannot broaden a caller-provided subtree scope', async () => {
+  const scope = path.join(mockProjectRoot, 'assets/icons')
+  const images = await getAllImgs(webview, scope, { cancelled: false }, { basePath: mockProjectRoot,
+    priorityPath: path.join(mockProjectRoot, 'assets/photos/c.jpg') })
+  expect(images.map((image) => image.path).sort()).toEqual(['/assets/icons/a.svg', '/assets/icons/child/b.png'])
+})
