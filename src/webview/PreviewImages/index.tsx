@@ -58,6 +58,7 @@ import {
   normalizedGalleryConfig,
   RawWorkspaceImage
 } from './galleryModel'
+import type { GalleryRevealRequest } from './galleryNavigation'
 import type { IImage } from './imageTypes'
 import { FolderSidebar } from './FolderSidebar'
 import { VirtualGallery } from './VirtualGallery'
@@ -123,6 +124,11 @@ const PreviewImages: React.FC = () => {
   const [previewIndex, setPreviewIndex] = useState(0)
   const [thumbnailSizing, setThumbnailSizing] = useState({ imageEdge: 0, columns: 8 })
   const [viewportFolders, setViewportFolders] = useState<GalleryFolderHighlight | null>(null)
+  const [filterOverride, setFilterOverride] = useState<{ keyword: string; showImageTypes: string[] } | null>(null)
+  const [folderReveal, setFolderReveal] = useState<GalleryRevealRequest>()
+  const [imageReveal, setImageReveal] = useState<GalleryRevealRequest>()
+  const folderRevealSequence = useRef(0)
+  const imageRevealSequence = useRef(0)
   const requestSequence = useRef(0)
   const previewSequence = useRef(0)
   const loadTimer = useRef<ReturnType<typeof setTimeout>>()
@@ -260,6 +266,8 @@ const PreviewImages: React.FC = () => {
   const selectFolder = useCallback(
     (key: string) => {
       setViewportFolders(null)
+      setFolderReveal(undefined)
+      setImageReveal(undefined)
       const expanded = Array.from(
         new Set([...(currentConfig.current.galleryExpandedFolders || []), ...folderAncestors(folderIndex, key)])
       )
@@ -282,9 +290,9 @@ const PreviewImages: React.FC = () => {
     [typedImages, selectedFolder, config.galleryIncludeSubfolders, config.imageSort, config.galleryGroupByFolder]
   )
   const visibleImages = useMemo(() => {
-    const query = config.keyword.toLowerCase()
+    const query = (filterOverride?.keyword ?? config.keyword).toLowerCase()
     return query ? scopedImages.filter((image) => image.path.toLowerCase().includes(query)) : scopedImages
-  }, [scopedImages, config.keyword])
+  }, [scopedImages, config.keyword, filterOverride])
   const visibleIndexes = useMemo(
     () => new Map(visibleImages.map((image, index) => [image.fullPath, index])),
     [visibleImages]
@@ -296,6 +304,7 @@ const PreviewImages: React.FC = () => {
       if (index === undefined) {
         return
       }
+      setImageReveal({ id: ++imageRevealSequence.current, path: image.fullPath })
       setPreviewIndex(index)
       setSession({
         id: ++previewSequence.current,
@@ -333,6 +342,11 @@ const PreviewImages: React.FC = () => {
     pendingPreview.current = ''
     openPreview(image)
   }, [payload.images, loading, hydrated, visibleIndexes, config.showImageTypes, patchConfig, openPreview])
+  const patchViewFilters = (patch: Partial<IConfig>) => {
+    patchConfig({ keyword: filterOverride?.keyword ?? config.keyword,
+      showImageTypes: filterOverride?.showImageTypes || config.showImageTypes, ...patch })
+    setFilterOverride(null)
+  }
   const activePreview = session?.items[previewIndex]
   useResourceCacheSlot('gallery-main-image', activePreview?.src)
   useResourceCacheSlot('gallery-minimap-image', activePreview?.minimapSrc)
@@ -365,7 +379,17 @@ const PreviewImages: React.FC = () => {
     },
     [config.includeFolders, config.excludeFolders, folderIndex.root, payload.projectPath, saveScopeSettings]
   )
-  const revealFolder = useCallback((image: IImage) => selectFolder(imageFolder(image)), [selectFolder])
+  const revealFolder = useCallback((image: IImage) => {
+    const folder = imageFolder(image)
+    selectFolder(folder)
+    // Browse neighboring images without losing the saved search.
+    const showImageTypes = filterOverride?.showImageTypes || currentConfig.current.showImageTypes
+    setFilterOverride(currentConfig.current.keyword || showImageTypes !== currentConfig.current.showImageTypes
+      ? { keyword: '', showImageTypes } : null)
+    patchConfig({ gallerySidebarVisible: true })
+    setFolderReveal({ id: ++folderRevealSequence.current, path: folder })
+    setImageReveal({ id: ++imageRevealSequence.current, path: image.fullPath })
+  }, [selectFolder, patchConfig, filterOverride])
   const onDeleted = useCallback(
     (fullPath: string) =>
       setPayload((previous) => ({
@@ -375,7 +399,7 @@ const PreviewImages: React.FC = () => {
     []
   )
   const breadcrumbKeys = folderAncestors(folderIndex, selectedFolder)
-  const scopeKey = `${selectedFolder}\0${config.galleryIncludeSubfolders}\0${config.keyword}\0${Array.from(types)
+  const scopeKey = `${selectedFolder}\0${config.galleryIncludeSubfolders}\0${filterOverride?.keyword ?? config.keyword}\0${Array.from(types)
     .sort()
     .join(',')}`
 
@@ -387,6 +411,7 @@ const PreviewImages: React.FC = () => {
           <FolderSidebar
             index={folderIndex}
             selected={selectedFolder}
+            revealRequest={folderReveal}
             viewportHighlight={config.galleryGroupByFolder ? viewportFolders : null}
             expanded={config.galleryExpandedFolders ?? [folderIndex.root]}
             recursive={config.galleryIncludeSubfolders}
@@ -434,9 +459,9 @@ const PreviewImages: React.FC = () => {
             <Input
               prefix={<SearchOutlined />}
               placeholder='Search image path or name'
-              value={config.keyword}
+              value={filterOverride?.keyword ?? config.keyword}
               allowClear
-              onChange={(event) => patchConfig({ keyword: event.target.value })}
+              onChange={(event) => patchViewFilters({ keyword: event.target.value })}
               aria-label='Search images'
               className='iv-gallery-search'
             />
@@ -451,7 +476,7 @@ const PreviewImages: React.FC = () => {
                       value: type,
                       label: `${type.toUpperCase()} (${count})`
                     }))}
-                    onChange={(values) => patchConfig({ showImageTypes: values.map(String) })}
+                    onChange={(values) => patchViewFilters({ showImageTypes: values.map(String) })}
                   />
                 </div>
               }
@@ -518,6 +543,12 @@ const PreviewImages: React.FC = () => {
               />
             </Space>
           </div>
+          {filterOverride && (
+            <div className='iv-gallery-navigation-notice' role='status'>
+              <span>View filters temporarily relaxed to browse the target folder.</span>
+              <Button size='small' onClick={() => setFilterOverride(null)}>Restore filters</Button>
+            </div>
+          )}
           {loadError && (
             <div className='iv-gallery-error' role='alert'>
               {loadError}
@@ -526,6 +557,7 @@ const PreviewImages: React.FC = () => {
           {visibleImages.length ? (
             <VirtualGallery
               images={visibleImages}
+              revealImage={imageReveal}
               root={payload.rootPath}
               scopeKey={scopeKey}
               mode={config.galleryLayout}

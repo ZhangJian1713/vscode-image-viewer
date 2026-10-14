@@ -3,6 +3,7 @@ import { Button, Checkbox, Dropdown, Input, Tree } from 'antd'
 import { FolderOutlined, MoreOutlined, SearchOutlined, MenuFoldOutlined, FilterOutlined } from '@ant-design/icons'
 import { FolderFilterFields } from './FolderFilterFields'
 import { folderAncestors, GalleryFolderIndex, isPathWithinFolder, visibleFolderRows } from './galleryModel'
+import type { GalleryRevealRequest } from './galleryNavigation'
 import type { GalleryFolderHighlight } from './galleryViewportFolders'
 import { centeredFolderScrollTop, FOLDER_TREE_ROW_HEIGHT } from './folderTreePosition'
 
@@ -13,6 +14,7 @@ export interface FolderSidebarProps {
   onApplyFilters: (include: string[], exclude: string[]) => void
   index: GalleryFolderIndex
   selected: string
+  revealRequest?: GalleryRevealRequest
   viewportHighlight: GalleryFolderHighlight | null
   expanded: string[]
   recursive: boolean
@@ -34,6 +36,7 @@ export const FolderSidebar: React.FC<FolderSidebarProps> = ({
   onApplyFilters,
   index,
   selected,
+  revealRequest,
   viewportHighlight,
   expanded,
   recursive,
@@ -52,7 +55,11 @@ export const FolderSidebar: React.FC<FolderSidebarProps> = ({
   const [height, setHeight] = useState(0)
   const treeSlot = useRef<HTMLDivElement>(null)
   const treeRef = useRef<React.ElementRef<typeof Tree>>(null)
+  const revealed = useRef('')
   const [spyCollapsed, setSpyCollapsed] = useState<Set<string>>(() => new Set())
+  useEffect(() => {
+    if (revealRequest) { setQuery(''); setSpyCollapsed(new Set()) }
+  }, [revealRequest])
   useEffect(() => setSpyCollapsed(new Set()), [viewportHighlight?.live, index.root])
   useLayoutEffect(() => {
     const element = treeSlot.current!
@@ -115,6 +122,20 @@ export const FolderSidebar: React.FC<FolderSidebarProps> = ({
     const frame = requestAnimationFrame(() => treeRef.current?.scrollTo(centeredScrollTop))
     return () => cancelAnimationFrame(frame)
   }, [centeredScrollTop, resolvedExpanded])
+
+  useLayoutEffect(() => {
+    if (!revealRequest || viewportLive || search || revealRequest.path !== selected) { return }
+    const signature = `${revealRequest.id}\0${index.folders.size}\0${height}`
+    if (signature === revealed.current) { return }
+    const rows = visibleFolderRows(index, new Set(resolvedExpanded))
+    const top = centeredFolderScrollTop(rows, [revealRequest.path], height || 300)
+    if (top === undefined) { return }
+    const frame = requestAnimationFrame(() => {
+      treeRef.current?.scrollTo(top)
+      revealed.current = signature
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [revealRequest, viewportLive, search, selected, index, height, resolvedExpanded])
 
   const setSubtreeExpanded = useCallback(
     (key: string, open: boolean) => {
@@ -206,9 +227,9 @@ export const FolderSidebar: React.FC<FolderSidebarProps> = ({
   }
 
   return (
-    <aside className='iv-folder-sidebar' aria-label='Folders sidebar' style={{ width }}>
+    <aside className='iv-folder-sidebar' aria-label='Image folders sidebar' style={{ width }}>
       <div className='iv-folder-heading'>
-        <strong>Folders</strong>
+        <strong>Image folders</strong>
         <Dropdown
           menu={{
             items: [
@@ -242,7 +263,7 @@ export const FolderSidebar: React.FC<FolderSidebarProps> = ({
           trigger={['click']}
           getPopupContainer={() => document.body}
         >
-          <Button type='text' size='small' icon={<MoreOutlined />} aria-label='Folder options' />
+          <Button type='text' size='small' icon={<MoreOutlined />} aria-label='Image folder options' />
         </Dropdown>
         <Button
           type='text'

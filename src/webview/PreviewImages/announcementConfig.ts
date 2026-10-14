@@ -60,7 +60,7 @@ export type AnnouncementStrings = {
 const ANNOUNCEMENT_COPY_EN: AnnouncementStrings = {
   modalTitle: `What’s new in Image Viewer v${ANNOUNCEMENT_ID}`,
   features: [
-    'Folders sidebar with image counts, directory search, collapsible branches, and folder context menus.',
+    'Image folders sidebar with image counts, directory search, collapsible branches, and folder context menus.',
     'One continuous image wall with Fill, Grid, List, and compact layouts.',
     'Virtual scrolling and bounded thumbnail requests for large collections; older disk thumbnails are cleaned automatically.',
     'Open individual images in a read-only editor with zoom, pan, rotate, flip, minimap, and same-folder navigation.',
@@ -76,7 +76,7 @@ const ANNOUNCEMENT_COPY_EN: AnnouncementStrings = {
 const ANNOUNCEMENT_COPY_ZH_HANS: AnnouncementStrings = {
   modalTitle: `Image Viewer v${ANNOUNCEMENT_ID} 更新说明`,
   features: [
-    '新增 Folders 侧栏：图片计数、目录搜索、展开与折叠，以及文件夹右键菜单。',
+    '新增 Image folders 侧栏：图片计数、目录搜索、展开与折叠，以及文件夹右键菜单。',
     '连续图片墙支持 Fill、Grid、List 和紧凑模式。',
     '目录树与图片墙采用虚拟滚动，缩略图请求有并发和缓存预算，旧磁盘缩略图自动清理。',
     '单张图片可在只读编辑器中缩放、拖动、旋转、翻转，并使用小地图和同目录切换。',
@@ -92,7 +92,7 @@ const ANNOUNCEMENT_COPY_ZH_HANS: AnnouncementStrings = {
 const ANNOUNCEMENT_COPY_ZH_HANT: AnnouncementStrings = {
   modalTitle: `Image Viewer v${ANNOUNCEMENT_ID} 更新說明`,
   features: [
-    '新增 Folders 側欄：圖片計數、目錄搜尋、展開與摺疊，以及資料夾右鍵選單。',
+    '新增 Image folders 側欄：圖片計數、目錄搜尋、展開與摺疊，以及資料夾右鍵選單。',
     '連續圖片牆支援 Fill、Grid、List 和緊湊模式。',
     '目錄樹與圖片牆採用虛擬捲動，縮圖請求有並行和快取預算，舊磁碟縮圖自動清理。',
     '單張圖片可在唯讀編輯器中縮放、拖曳、旋轉、翻轉，並使用小地圖和同目錄切換。',

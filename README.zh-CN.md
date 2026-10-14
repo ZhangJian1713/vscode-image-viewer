@@ -96,7 +96,8 @@ Blue Marble 2012 图片署名：NASA/NOAA/GSFC/Suomi NPP/VIIRS/Norman Kuring；[
 
 ### 查找与整理图片
 
-- **Folders 目录树：** 查看图片数量、搜索目录、包含子目录、展开或折叠分支；支持收起侧栏、调整宽度；同一项目的 Explorer 入口复用一个图库标签页，不同工作区根目录分别打开。
+- **Image folders（图片目录）：** 展示含图片的目录及其祖先，查看图片数量，展开或折叠分支；支持收起侧栏、调整宽度。
+- **从搜索结果返回目录：** 右键图片 → **Reveal in Image folders**，展开、选中并居中所在目录，临时清空图片搜索，在相邻图片中定位并高亮原图；通过 **Restore filters** 恢复搜索，Types 与 Include subfolders 设置继续生效。
 - **搜索与筛选：** 文件名/路径搜索、格式筛选和目录 include/exclude 规则可以组合使用。
 - **排序与定位：** 按文件夹分组，或对全部图片统一按名称、修改时间、大小、格式排序；文件夹优先模式下，拖动滚动条会在目录树中高亮当前可见图片的文件夹。
 - **文件操作：** 定位文件、复制路径/文件名/Base64，确认后移入系统回收站；右键目录可定位、复制路径或排除该目录。
@@ -119,7 +120,7 @@ Blue Marble 2012 图片署名：NASA/NOAA/GSFC/Suomi NPP/VIIRS/Norman Kuring；[
 
 Glob 支持 `*`、`**`、`?`、`[ab]` 等字符集合，以及 `{photos,icons}` 等多选匹配。规则针对**文件夹**，匹配后包含整个子树。Exclude 优先于 Include；Include 留空表示浏览项目中的全部目录。收起输入区后，已应用的规则继续生效。
 
-**Folders → Include subfolders** 控制图片墙是否包含当前选中目录的子目录图片，与 Include/Exclude 扫描规则独立。
+**Image folders → Include subfolders** 控制图片墙是否包含当前选中目录的子目录图片，与 Include/Exclude 扫描规则独立。
 
 ## 性能与使用要求
 

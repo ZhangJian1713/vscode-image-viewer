@@ -15,6 +15,8 @@ import { visibleGalleryFolders, GalleryFolderHighlight } from './galleryViewport
 import { ScrollbarFolderHud } from './ScrollbarFolderHud'
 import { useLogicalGalleryScroll } from './useLogicalGalleryScroll'
 
+import type { GalleryRevealRequest } from './galleryNavigation'
+
 type ImageAction = 'copyFullPath' | 'copyRelativePath' | 'copyName' | 'copyBase64' | 'revealInExplorer' | 'deleteFile'
 
 function runImageAction(image: IImage, action: ImageAction, onDeleted: (_path: string) => void): void {
@@ -68,6 +70,7 @@ interface GalleryCardProps {
   width: number
   height: number
   priority: number
+  selected: boolean
   narrow: number
   onOpen: (_image: IImage, _thumbnail?: string) => void
   onFolder: (_image: IImage) => void
@@ -91,6 +94,7 @@ const GalleryCard = React.memo(function GalleryCard(props: GalleryCardProps) {
     width,
     height,
     priority,
+    selected,
     narrow,
     onOpen,
     onFolder,
@@ -103,7 +107,7 @@ const GalleryCard = React.memo(function GalleryCard(props: GalleryCardProps) {
   const menu = {
     items: [
       { key: 'revealInExplorer', label: 'Reveal in Explorer' },
-      { key: 'browseFolder', label: 'Browse containing folder' },
+      { key: 'browseFolder', label: 'Reveal in Image folders' },
       { type: 'divider' as const },
       { key: 'copyFullPath', label: 'Copy full path' },
       { key: 'copyRelativePath', label: 'Copy project-relative path' },
@@ -127,10 +131,11 @@ const GalleryCard = React.memo(function GalleryCard(props: GalleryCardProps) {
   return (
     <Dropdown menu={menu} trigger={['contextMenu']} getPopupContainer={() => document.body}>
       <div
-        className={`iv-gallery-card ${list ? 'iv-gallery-list-row' : ''} ${compact ? 'is-compact' : ''}`}
+        className={`iv-gallery-card ${list ? 'iv-gallery-list-row' : ''} ${compact ? 'is-compact' : ''} ${selected ? 'is-selected' : ''}`}
         data-image-id={image.fullPath}
         role='button'
         tabIndex={0}
+        aria-pressed={selected}
         aria-label={`Preview ${image.fileName}`}
         title={`${relative}\n${formatImageBytes(image.size)}${snapshot.dimensions ? ` · ${pixels}` : ''}`}
         style={{
@@ -199,6 +204,7 @@ const GalleryCard = React.memo(function GalleryCard(props: GalleryCardProps) {
 
 export const VirtualGallery: React.FC<{
   images: IImage[]
+  revealImage?: GalleryRevealRequest
   root: string
   scopeKey: string
   mode: GalleryLayoutMode
@@ -217,6 +223,7 @@ export const VirtualGallery: React.FC<{
   onDeleted: (_path: string) => void
 }> = ({
   images,
+  revealImage,
   root,
   scopeKey,
   mode,
@@ -288,6 +295,7 @@ export const VirtualGallery: React.FC<{
     onThumbnailSizing({ imageEdge: geometry.imageEdge, columns: geometry.columns })
   }, [geometry.imageEdge, geometry.columns, onThumbnailSizing])
   const indexes = useMemo(() => new Map(images.map((image, index) => [image.fullPath, index])), [images])
+  const lastReveal = useRef<number>()
   const previous = useRef<{ images: IImage[]; geometry: typeof geometry; scopeKey: string }>()
   const savedPositions = useRef(new Map<string, { path?: string; index: number; fraction: number; atTop: boolean }>())
 
@@ -329,6 +337,22 @@ export const VirtualGallery: React.FC<{
     }
     previous.current = { images, geometry, scopeKey }
   }, [images, geometry, scopeKey, indexes, measure, suppressLayoutScroll])
+
+  useLayoutEffect(() => {
+    const element = scrollRef.current
+    if (!revealImage || lastReveal.current === revealImage.id || !element?.clientHeight) { return }
+    if (viewport.width !== element.clientWidth) { measure(); return }
+    const index = indexes.get(revealImage.path)
+    if (index === undefined) { return }
+    const row = Math.floor(index / geometry.columns)
+    const top = Math.max(0, Math.min(geometry.totalHeight - element.clientHeight,
+      geometry.padding + row * geometry.rowStride + (geometry.rowHeight - element.clientHeight) / 2))
+    suppressLayoutScroll()
+    element.scrollTop = galleryPhysicalScrollTop(top, geometry.totalHeight, element.clientHeight)
+    liveScrollTop.current = top
+    lastReveal.current = revealImage.id
+    measure()
+  }, [revealImage, indexes, geometry, viewport.width, viewport.height, measure, suppressLayoutScroll])
 
   const viewportFolders = useMemo(
     () => groupByFolder && gesture.dragging ? visibleGalleryFolders(images, geometry, viewport.scrollTop, viewport.height) : [],
@@ -421,6 +445,7 @@ export const VirtualGallery: React.FC<{
                 y={y - viewport.scrollTop + galleryPhysicalScrollTop(viewport.scrollTop, geometry.totalHeight, viewport.height)}
                 width={mode === 'list' ? Math.max(1, viewport.width - geometry.padding * 2) : geometry.imageEdge}
                 height={geometry.rowHeight}
+                selected={revealImage?.path === image.fullPath}
                 priority={visible ? 1000 : 500}
                 narrow={narrow}
                 onOpen={onOpen}

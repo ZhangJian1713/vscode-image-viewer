@@ -96,7 +96,8 @@ Switching folders in an open project gallery reuses its index; use **Refresh ima
 
 ### Find and organize images
 
-- **Folders tree:** see image counts, search folders, include subfolders, and expand or collapse branches. Hide or resize the sidebar. Explorer entries in the same project reuse one gallery tab; different workspace roots have separate tabs.
+- **Image folders:** browse image-containing directories and their ancestors, see image counts, and expand or collapse branches. Hide or resize the sidebar.
+- **Return from search to a folder:** right-click an image → **Reveal in Image folders**. The gallery selects and centers its containing folder, temporarily clears image search, and highlights the original image among its neighbors. Use **Restore filters** to recover the search; Types and Include subfolders remain in effect.
 - **Search and filters:** combine image name/path search with type filters and folder include/exclude rules.
 - **Sorting:** keep each folder's images together, or sort the whole collection by name, modified time, size, or format. In folder-first mode, dragging the scrollbar highlights the visible folders in the tree.
 - **File actions:** reveal files, copy paths, names, or Base64, and move images to Trash after confirmation. Right-click folders to reveal, copy paths, or exclude them.
@@ -119,7 +120,7 @@ Use project-relative folder paths or **Glob patterns** (wildcard expressions). E
 
 Glob supports `*`, `**`, `?`, character sets such as `[ab]`, and alternatives such as `{photos,icons}`. Rules target **folders**, and a matching folder includes its descendants. Exclude takes priority over Include. Leave Include empty to browse all project folders; collapsing the fields keeps applied rules active.
 
-Use **Folders → Include subfolders** to choose whether the wall shows the selected folder's descendants. This is independent of Include/Exclude scan rules.
+Use **Image folders → Include subfolders** to choose whether the wall shows the selected folder's descendants. This is independent of Include/Exclude scan rules.
 
 ## Performance and requirements
 

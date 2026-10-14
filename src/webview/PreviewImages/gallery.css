@@ -306,7 +306,8 @@
   border-radius: 5px;
   cursor: pointer;
 }
-.iv-gallery-card:focus-visible {
+.iv-gallery-card:focus-visible,
+.iv-gallery-card.is-selected {
   outline: 2px solid var(--iv-focus-border);
   outline-offset: -2px;
 }
@@ -317,6 +318,16 @@
   border-radius: 4px;
   background: transparent;
 }
+.iv-gallery-navigation-notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  font-size: 12px;
+  color: var(--iv-secondary-fg);
+  border-bottom: 1px solid var(--gallery-border);
+}
+.iv-gallery-navigation-notice > span { flex: 1; }
 .iv-gallery-thumbnail img {
   display: block;
   width: 100%;

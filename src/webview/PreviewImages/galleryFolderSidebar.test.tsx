@@ -106,3 +106,30 @@ test('live tracking overrides search expansion without clearing the folder searc
   render(null)
   expect(mockTreeProps.expandedKeys).toContain('/project/a/b')
 })
+
+test('explicit navigation clears folder search and prior collapses, reveals selection, and does not hijack later expansion', () => {
+  render(null, ['/project', '/project/c'])
+  act(() => { mockTreeProps.onExpand([], { node: { key: '/project/c' }, expanded: false }) })
+  const input = root.querySelector<HTMLInputElement>('input[aria-label="Find folder"]')!
+  act(() => {
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(input, 'deep')
+    input.dispatchEvent(new Event('input', { bubbles: true }))
+  })
+  const request = { id: 1, path: '/project/c/d' }
+  const show = (expanded: string[]) => act(() => {
+    ReactDOM.render(<FolderSidebar index={index} selected={request.path} expanded={expanded}
+      revealRequest={request} viewportHighlight={null} recursive width={230} includeFolders={[]} excludeFolders={[]}
+      onExpanded={onExpanded} onSelect={onSelect} onApplyFilters={() => {}} onWidth={() => {}}
+      onHide={() => {}} onRecursive={() => {}} onRefresh={() => {}} onAction={() => {}} />, root)
+  })
+  show(['/project', '/project/c'])
+  expect(input.value).toBe('')
+  expect(mockTreeProps.selectedKeys).toEqual(['/project/c/d'])
+  expect(mockTreeProps.expandedKeys).toContain('/project/c')
+  act(() => { jest.advanceTimersByTime(16) })
+  expect(mockScrollTo).toHaveBeenCalled()
+  mockScrollTo.mockClear()
+  show(['/project', '/project/c', '/project/a'])
+  act(() => { jest.advanceTimersByTime(16) })
+  expect(mockScrollTo).not.toHaveBeenCalled()
+})

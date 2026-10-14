@@ -2,7 +2,7 @@
 
 ## 当前范围
 
-图库保留 `<img>` 与 `right-image-preview` 的 DOM 图片预览，单图编辑器入口不变。本次替换图库手风琴分组：左侧为可收起、可调整宽度的 Folders tree；右侧为统一虚拟化的 Fill / Grid / List 图片墙。相关文件按职责拆分，不在 App 中维护多套派生列表。
+图库保留 `<img>` 与 `right-image-preview` 的 DOM 图片预览，单图编辑器入口不变。本次替换图库手风琴分组：左侧为可收起、可调整宽度的 Image folders tree；右侧为统一虚拟化的 Fill / Grid / List 图片墙。相关文件按职责拆分，不在 App 中维护多套派生列表。
 
 首版复用现有扫描范围：普通入口使用当前项目根，Explorer 的文件夹入口使用该目录，图片入口使用其父目录。目录树只包含已扫描图片的直属目录及祖先，不额外扫描空目录。多根工作区和虚拟文件系统仍沿用现有宿主范围限制，未在本轮宣称完整支持。
 
@@ -29,15 +29,17 @@
 - 全局模式对当前范围统一按字段排序，允许目录被打散。图片墙与 Preview 共用最终序列；搜索保留该序列的相对顺序。
 - 扫描仅收集路径、大小、mtime 等元数据，不依赖磁盘枚举顺序，也不预排用户选择的第二级字段。排序变更复用已收集快照，不重新扫描、不生成全库位置或缩略图。分桶只提取一次图片父路径，目录段仅拆分一次，逐桶排序后拼接，不在图片比较器中重复解析目录。
 
-## Folders tree 与菜单
+## Image folders tree 与菜单
 
 `FolderSidebar.tsx` 封装已有 Ant Design Tree：虚拟滚动、受控选择/展开、目录搜索、递归计数、侧栏显隐与拖动宽度。所有节点有右键菜单和省略号入口：在 Explorer/系统文件管理器定位、复制完整/项目相对路径、展开/折叠子树、排除扫描。根节点不允许排除。
+
+侧栏标题为 `Image folders`，强调只显示扫描范围内含图片的目录及其祖先。图片右键与省略号菜单提供 `Reveal in Image folders`，与 `Reveal in Explorer` 分开：复用已有快照，显示侧栏、清空目录搜索、展开并居中选中图片的直接目录，临时清空图片名称/路径搜索，再居中并高亮原图；无需打开预览或请求宿主定位。保留当前有效的 Types、Include subfolders 与扫描规则，`Restore filters` 可恢复保存的搜索。目录与图片定位请求使用递增序号；重复定位同一目录仍生效。
 
 菜单复用 `GALLERY_RESOURCE_ACTION`，宿主 canonicalize 目标并校验项目边界。图片菜单保留复制 Base64，并提供有确认的移入系统 Trash 操作；不自动降级成永久删除。文件夹删除/移动/重命名未加入本轮范围。
 
 ## 筛选、设置与反馈
 
-Folder filters 位于 Find folder 右侧，展开后以 VS Code Search 风格直接显示 folders to include / exclude。Types 与 Sort 使用有底色的图库控件，社群入口使用无边框文字外链及跳转图标。搜索框下不再显示重复路径和独立子目录开关；标题的 breadcrumb 保留用于返回上级目录。Include subfolders 位于 Folders 菜单内，切换时同时更新目录计数与当前结果。
+Folder filters 位于 Find folder 右侧，展开后以 VS Code Search 风格直接显示 folders to include / exclude。Types 与 Sort 使用有底色的图库控件，社群入口使用无边框文字外链及跳转图标。搜索框下不再显示重复路径和独立子目录开关；标题的 breadcrumb 保留用于返回上级目录。Include subfolders 位于 Image folders 菜单内，切换时同时更新目录计数与当前结果。
 
 底栏最右侧为主题切换与齿轮 Settings。设置弹窗仅保留 Gallery / Feedback：主题继续使用底栏按钮，图库背景使用工具栏入口，不在设置中重复；图库文件大小可选择名称下方或仅悬停显示，List 大小列不受影响。主题状态继续由 WebviewThemeContext 唯一持有，配置保存时带入当前偏好。
 

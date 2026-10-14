@@ -26,6 +26,8 @@
 
 ### Changed
 
+- Rename the gallery sidebar to **Image folders**. Image menus now offer **Reveal in Image folders**, which shows, selects, and centers the containing directory, temporarily clears image search, and centers/highlights the original image so neighboring images can be browsed. Saved search, type filters, and Include subfolders preferences are preserved.
+
 - During scrollbar tracking, expand only the current viewport's folder ancestors and collapse offscreen branches, temporarily overriding saved/search expansion without persisting it.
 - Default to natural folder order with configurable name, modified-time, size, or format sorting inside each folder. Offer global sorting separately; disable folder HUD/tree tracking in global mode. Sorting changes reuse the scan snapshot.
 - Center viewport folder highlights as a group in the tree, with a uniform subtle background and no overlapping accent bar.
