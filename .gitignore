@@ -13,10 +13,7 @@ github-issues
 ai-*/
 benchmark-out/
 TestPics/
-docs/
-!docs/
-docs/*
-!docs/webview-resource-cache-management-design.md
+/docs/
 scripts/*
 !scripts/build-imageio.cjs
 !scripts/test-imageio.cjs
@@ -34,13 +31,3 @@ scripts/*
 !scripts/release-verify.cjs
 native/build/
 issues/
-
-!docs/gallery-layout-design.md
-!docs/internationalization-design.md
-!docs/open-vsx-publishing.md
-!docs/thumbnail-backend-benchmark-2026-10-14.md
-!docs/thumbnail-backend-benchmark-2026-10-14.json
-!docs/usage-notes.md
-!docs/gallery-scale-validation-2026-10-14.md
-!docs/gallery-scale-validation-2026-10-14.json
-!docs/code-server-compatibility.md
