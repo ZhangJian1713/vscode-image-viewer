@@ -2,6 +2,7 @@
 
 export const DIST_WEBVIEW_PATH = 'distWebview'
 export const DIST_WEBVIEW_INDEX_HTML = `${DIST_WEBVIEW_PATH}/index.html`
+export const DIST_WEBVIEW_SINGLE_INDEX_HTML = `${DIST_WEBVIEW_PATH}/single.html`
 
 export const WEBVIEW_NAMES = {
   PreviewImages: 'PreviewImages',
@@ -16,6 +17,8 @@ export const MESSAGE_CMD = {
   OPEN_IMAGE_DIRECTORY: 'openImageDirectory',
   GET_IMAGE_BASE64: 'getImageBase64',
   GET_IMAGE_SIZE: 'getImageSize',
+  /** Explicit gallery file/folder menu action; extension validates workspace boundaries. */
+  GALLERY_RESOURCE_ACTION: 'galleryResourceAction',
   /** Grid-only thumbnail: disk cache in globalStorage + webview URI, or original. */
   GET_THUMB_FOR_GRID: 'getThumbForGrid',
   SAVE_CONFIG: 'saveConfig',
@@ -60,12 +63,12 @@ export const RESOURCE_CACHE_CLEANUP_ARG = '__imageViewerCleanResourceCache'
 /** Thumbnail pad uses PS-style transparency grid (stored in config). */
 export const BACKGROUND_CHECKERBOARD = 'checkerboard'
 
-/** True transparency — webview background shows through; pad uses inset frame only. */
+/** No thumbnail backdrop or frame — the gallery background shows through. */
 export const BACKGROUND_TRANSPARENT = 'transparent'
 
 export const BACKGROUND_COLOR_OPTIONS = [
-  BACKGROUND_CHECKERBOARD,
   BACKGROUND_TRANSPARENT,
+  BACKGROUND_CHECKERBOARD,
   '#ffffff',
   '#cccccc',
   '#999999',

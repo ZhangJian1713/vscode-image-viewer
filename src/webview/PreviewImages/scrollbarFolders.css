@@ -1,0 +1,19 @@
+.iv-gallery-scroll-host { position: relative; flex: 1; min-height: 0; display: flex; }
+.iv-scroll-folder-hud {
+  position: absolute; right: 23px; z-index: 4; max-width: min(420px, calc(100% - 40px));
+  padding: 8px 12px; box-sizing: border-box; border-radius: 6px;
+  background: var(--iv-popup-background); color: var(--iv-primary-fg);
+  border: 1px solid var(--iv-popup-border); box-shadow: 0 3px 14px #0003;
+  pointer-events: none; opacity: 0; transition: opacity 140ms ease; font-size: 12px;
+}
+.iv-scroll-folder-hud.is-visible { opacity: 1; }
+.iv-scroll-folder-hud strong { display: block; height: 24px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.iv-scroll-folder-hud ol { list-style: none; padding: 0; margin: 0; }
+.iv-scroll-folder-hud li { height: 22px; display: flex; align-items: center; gap: 7px; }
+.iv-scroll-folder-hud li > span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.iv-scroll-folder-hud .iv-scroll-folder-ellipsis { justify-content: center; font-size: 20px; }
+.iv-scroll-folder-caret {
+  position: absolute; right: -6px; width: 10px; height: 10px; transform: translateY(-50%) rotate(45deg);
+  background: var(--iv-popup-background); border-top: 1px solid var(--iv-popup-border); border-right: 1px solid var(--iv-popup-border);
+}
+.iv-folder-title.is-in-viewport { background: color-mix(in srgb, var(--iv-accent) 13%, transparent); }

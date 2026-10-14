@@ -1,0 +1,557 @@
+.iv-gallery-app {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  color: var(--iv-primary-fg);
+  --gallery-border: var(--iv-border);
+  --gallery-hover: var(--iv-hover-background);
+}
+.iv-gallery-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  overflow: hidden;
+}
+.iv-gallery-main {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.iv-folder-sidebar {
+  position: relative;
+  flex-shrink: 0;
+  max-width: 45%;
+  min-width: 140px;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--gallery-border);
+  background: var(--iv-sidebar-background);
+  color: var(--iv-sidebar-fg);
+}
+.iv-folder-heading {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 10px 8px;
+}
+.iv-folder-heading strong {
+  flex: 1;
+  font-size: 13px;
+}
+.iv-folder-search-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0 8px 8px 10px;
+  flex-shrink: 0;
+}
+.iv-folder-search {
+  flex: 1;
+  min-width: 0;
+}
+.iv-folder-search-row > .ant-btn {
+  flex-shrink: 0;
+}
+.iv-folder-filter-fields {
+  padding: 0 10px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-shrink: 0;
+  max-height: 55%;
+  overflow-y: auto;
+  border-bottom: 1px solid var(--gallery-border);
+}
+.iv-folder-filter-fields label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11px;
+}
+.iv-folder-filter-fields textarea {
+  font-size: 12px;
+}
+.iv-folder-filter-fields small {
+  color: var(--iv-secondary-fg);
+  font-size: 10px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.iv-folder-filter-fields .iv-folder-filter-error {
+  color: var(--iv-error-fg);
+}
+.iv-folder-filter-actions {
+  display: flex;
+  gap: 4px;
+  justify-content: flex-end;
+}
+.iv-folder-tree-slot {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.iv-folder-tree-slot .ant-tree {
+  background: transparent;
+  color: inherit;
+}
+.iv-folder-tree-slot .ant-tree-treenode {
+  width: 100%;
+  padding-bottom: 0;
+}
+.iv-folder-tree-slot .ant-tree-node-content-wrapper {
+  min-width: 0;
+  flex: 1;
+}
+.iv-folder-tree-slot .ant-tree-title {
+  display: block;
+}
+.iv-folder-tree-slot .ant-tree-treenode {
+  height: var(--iv-folder-row-height);
+  margin: 0;
+  padding-bottom: 4px;
+  box-sizing: border-box;
+}
+.iv-folder-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  height: calc(var(--iv-folder-row-height, 32px) - 4px);
+  padding: 0 6px;
+  box-sizing: border-box;
+}
+.iv-folder-title > .anticon {
+  color: #d9ad5a;
+  flex-shrink: 0;
+}
+.iv-folder-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 12px;
+}
+.iv-folder-count {
+  font-size: 11px;
+  color: var(--iv-secondary-fg);
+  font-variant-numeric: tabular-nums;
+}
+.iv-folder-menu,
+.iv-image-menu {
+  border: 0;
+  border-radius: 4px;
+  padding: 3px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+  background: transparent;
+  font-size: 17px;
+  flex-shrink: 0;
+}
+.iv-folder-menu {
+  width: 22px;
+  opacity: 0;
+}
+.iv-folder-title:hover .iv-folder-menu,
+.iv-folder-title:focus-within .iv-folder-menu {
+  opacity: 1;
+}
+.iv-folder-menu:hover {
+  background: var(--gallery-hover);
+}
+.iv-folder-footer {
+  border-top: 1px solid var(--gallery-border);
+  padding: 8px 10px;
+  font-size: 10px;
+  color: var(--iv-secondary-fg);
+}
+.iv-sidebar-resizer {
+  position: absolute;
+  width: 6px;
+  right: -3px;
+  top: 0;
+  bottom: 0;
+  z-index: 2;
+  cursor: col-resize;
+  touch-action: none;
+}
+.iv-sidebar-resizer:hover {
+  background: color-mix(in srgb, var(--iv-accent) 40%, transparent);
+}
+.iv-gallery-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px 6px;
+  flex-shrink: 0;
+  min-height: 36px;
+}
+.iv-gallery-breadcrumb {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+.iv-gallery-breadcrumb ol {
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+.iv-gallery-breadcrumb li:last-child {
+  min-width: 0;
+  overflow: hidden;
+}
+.iv-gallery-breadcrumb button {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: inherit;
+  font-size: 12px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  max-width: 200px;
+  overflow: hidden;
+}
+.iv-gallery-breadcrumb button:hover {
+  color: var(--iv-accent);
+}
+.iv-gallery-count {
+  color: var(--iv-secondary-fg);
+  font-size: 11px;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.iv-gallery-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 6px 14px 10px;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--gallery-border);
+}
+.iv-gallery-search {
+  flex: 1 1 180px;
+}
+.iv-gallery-sort {
+  flex: 0 1 205px;
+  min-width: 140px;
+}
+.iv-gallery-types {
+  max-width: 320px;
+}
+.iv-gallery-types .ant-checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.iv-gallery-backgrounds {
+  display: grid;
+  grid-template-columns: repeat(6, 24px);
+  gap: 6px;
+}
+.iv-gallery-backgrounds button {
+  border: 1px solid #888;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--iv-primary-fg);
+  padding: 0;
+}
+.iv-gallery-backgrounds button.is-selected {
+  outline: 2px solid var(--iv-focus-border);
+  outline-offset: 2px;
+}
+.iv-gallery-error {
+  padding: 10px 14px;
+  color: var(--iv-error-fg);
+  font-size: 12px;
+}
+.iv-gallery-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+}
+.iv-gallery-wall {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.iv-gallery-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
+  overflow-anchor: none;
+}
+.iv-gallery-card {
+  box-sizing: border-box;
+  min-width: 0;
+  overflow: hidden;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.iv-gallery-card:focus-visible {
+  outline: 2px solid var(--iv-focus-border);
+  outline-offset: -2px;
+}
+.iv-gallery-image-box {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 4px;
+  background: transparent;
+}
+.iv-gallery-thumbnail img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  user-select: none;
+}
+.iv-thumbnail-placeholder {
+  opacity: 0.3;
+  font-size: 20px;
+}
+.iv-thumbnail-retry {
+  border: 0;
+  padding: 4px;
+  color: inherit;
+  background: var(--gallery-hover);
+  cursor: pointer;
+  font-size: 10px;
+}
+.iv-gallery-caption {
+  height: 40px;
+  padding: 5px 2px 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: left;
+}
+.iv-gallery-caption > span {
+  font-size: 11px;
+  line-height: 14px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.iv-gallery-caption > small {
+  color: var(--iv-secondary-fg);
+  font-size: 10px;
+  line-height: 12px;
+}
+.iv-image-menu {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 24px;
+  height: 24px;
+  background: rgba(22, 22, 22, 0.65);
+  color: #fff;
+  opacity: 0;
+}
+.iv-gallery-card:hover .iv-image-menu,
+.iv-gallery-card:focus-within .iv-image-menu {
+  opacity: 1;
+}
+.iv-compact-caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 4px 6px;
+  background: rgba(0, 0, 0, 0.65);
+  color: #fff;
+  font-size: 11px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+.iv-gallery-card:hover .iv-compact-caption {
+  opacity: 1;
+}
+.iv-gallery-card.is-compact,
+.iv-gallery-card.is-compact .iv-gallery-image-box {
+  border-radius: 0;
+}
+.iv-gallery-list-row {
+  display: grid;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border-bottom: 1px solid var(--gallery-border);
+  border-radius: 0;
+}
+.iv-gallery-list-row:hover {
+  background: var(--gallery-hover);
+}
+.iv-gallery-list-row.is-compact {
+  padding: 4px 8px;
+}
+.iv-gallery-list-row .iv-image-menu {
+  position: static;
+  color: inherit;
+  background: none;
+  opacity: 0.65;
+}
+.iv-list-name {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.iv-list-name strong {
+  font-weight: 500;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.iv-list-name span {
+  font-size: 10px;
+  color: var(--iv-secondary-fg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.iv-list-value {
+  color: var(--iv-secondary-fg);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.iv-gallery-list-header {
+  display: grid;
+  gap: 8px;
+  align-items: center;
+  height: 30px;
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--iv-secondary-fg);
+  border-bottom: 1px solid var(--gallery-border);
+  margin-right: 10px;
+}
+.iv-gallery-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  border-top: 1px solid var(--gallery-border);
+  padding: 7px 12px;
+  min-height: 40px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+.iv-gallery-layouts {
+  display: flex;
+  gap: 3px;
+}
+.iv-gallery-compact {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--iv-secondary-fg);
+}
+.iv-gallery-density {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex: 1 1 140px;
+  max-width: 260px;
+  font-size: 11px;
+  color: var(--iv-secondary-fg);
+}
+.iv-gallery-density .ant-slider {
+  flex: 1;
+  min-width: 60px;
+  margin: 4px;
+}
+.iv-gallery-density > span:last-child {
+  min-width: 48px;
+  font-variant-numeric: tabular-nums;
+}
+.iv-gallery-density-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  fill: currentColor;
+}
+.iv-gallery-total {
+  font-size: 10px;
+  color: var(--iv-secondary-fg);
+  white-space: nowrap;
+}
+@media (max-width: 650px) {
+  .iv-gallery-heading,
+  .iv-gallery-toolbar {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+  .iv-gallery-count,
+  .iv-gallery-total {
+    display: none;
+  }
+  .iv-gallery-status {
+    gap: 8px;
+  }
+  .iv-folder-heading {
+    padding-left: 6px;
+    padding-right: 4px;
+  }
+}
+
+/* 图库筛选控件是有底色的操作区；社群外链使用轻量文字样式。 */
+.iv-gallery-filter-control.ant-btn,
+.iv-gallery-sort .ant-select-selector {
+  background: var(--gallery-hover) !important;
+  border-radius: 6px;
+}
+.iv-gallery-filter-control.ant-btn:hover,
+.iv-gallery-sort:hover .ant-select-selector {
+  background: color-mix(in srgb, currentColor 10%, transparent) !important;
+}
+.iv-gallery-filter-control > .anticon-down {
+  font-size: 10px;
+  margin-left: 4px;
+}
+.iv-gallery-sort.ant-select-focused .ant-select-selector,
+.iv-gallery-filter-control:focus-visible {
+  outline: 2px solid var(--iv-focus-border);
+  outline-offset: 2px;
+}
+.iv-filter-active.ant-btn {
+  color: var(--iv-accent);
+  background: color-mix(in srgb, var(--iv-accent) 12%, transparent);
+}
+.iv-gallery-footer-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.iv-gallery-footer-actions .iv-gallery-total {
+  margin-right: 10px;
+}

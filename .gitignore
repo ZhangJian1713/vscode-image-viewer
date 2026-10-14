@@ -18,3 +18,5 @@ docs/*
 !docs/webview-resource-cache-management-design.md
 scripts/
 issues/
+
+!docs/gallery-layout-design.md

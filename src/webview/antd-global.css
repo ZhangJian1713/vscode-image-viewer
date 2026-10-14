@@ -1,122 +1,52 @@
-/**
- * Secondary / placeholder text tuned for `data-ui-theme` with VS Code light / dark.
- * - Forced light/dark: avoid raw VS Code tokens (avoids unreadable light page + dark token).
- * - Follow: on light UI, color-mix slightly darkens description where themes are too faint.
- */
-.webview-app-root[data-ui-theme='light'] {
-  --iv-primary-fg: rgba(0, 0, 0, 0.88);
-  --iv-secondary-fg: rgba(0, 0, 0, 0.58);
-  --iv-placeholder-fg: rgba(0, 0, 0, 0.55);
-  --iv-icon-muted: rgba(0, 0, 0, 0.52);
-  /** Thumbnail tile edge: blends into page bg (less contrast than --vscode-widget-border). */
-  --iv-thumb-edge: color-mix(in srgb, var(--iv-primary-fg) 7.5%, #ffffff 92.5%);
-}
-
-.webview-app-root[data-ui-theme='dark'] {
-  --iv-primary-fg: rgba(255, 255, 255, 0.85);
-  --iv-secondary-fg: rgba(255, 255, 255, 0.68);
-  --iv-placeholder-fg: rgba(255, 255, 255, 0.48);
-  --iv-icon-muted: rgba(255, 255, 255, 0.58);
-  --iv-thumb-edge: color-mix(in srgb, var(--iv-primary-fg) 8.5%, #141414 91.5%);
-}
-
-.webview-app-root[data-ui-theme='follow'][data-effective-light='true'] {
-  --iv-primary-fg: var(--vscode-editor-foreground);
-  --iv-secondary-fg: color-mix(
-    in srgb,
-    var(--vscode-descriptionForeground) 40%,
-    var(--vscode-foreground) 60%
-  );
-  --iv-placeholder-fg: color-mix(
-    in srgb,
-    var(--vscode-input-placeholderForeground, var(--vscode-descriptionForeground)) 35%,
-    var(--vscode-foreground) 65%
-  );
-  --iv-icon-muted: color-mix(
-    in srgb,
-    var(--vscode-descriptionForeground) 45%,
-    var(--vscode-foreground) 55%
-  );
-  --iv-thumb-edge: color-mix(
-    in srgb,
-    var(--vscode-foreground) 7.5%,
-    var(--vscode-editor-background) 92.5%
-  );
-}
-
-.webview-app-root[data-ui-theme='follow'][data-effective-light='false'] {
-  --iv-primary-fg: var(--vscode-editor-foreground);
-  --iv-secondary-fg: var(--vscode-descriptionForeground);
-  --iv-placeholder-fg: var(
-    --vscode-input-placeholderForeground,
-    var(--vscode-descriptionForeground)
-  );
-  --iv-icon-muted: var(--vscode-descriptionForeground);
-  --iv-thumb-edge: color-mix(
-    in srgb,
-    var(--vscode-foreground) 8.5%,
-    var(--vscode-editor-background) 91.5%
-  );
-}
-
+/** Palette tokens come from webviewPalette.ts; styles use the effective light/dark theme only. */
 /**
  * Image list pane scrollbars: when UI is light, avoid OS / webview default “dark rail”.
  */
-.webview-app-root[data-ui-theme='light'] .iv-image-list-scroll,
-.webview-app-root[data-ui-theme='follow'][data-effective-light='true'] .iv-image-list-scroll {
+.webview-app-root[data-effective-theme='light'] .iv-image-list-scroll {
   scrollbar-width: thin;
   scrollbar-color: rgba(0, 0, 0, 0.35) rgba(0, 0, 0, 0.06);
 }
 
-.webview-app-root[data-ui-theme='light'] .iv-image-list-scroll::-webkit-scrollbar,
-.webview-app-root[data-ui-theme='follow'][data-effective-light='true'] .iv-image-list-scroll::-webkit-scrollbar {
+.webview-app-root[data-effective-theme='light'] .iv-image-list-scroll::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
 
-.webview-app-root[data-ui-theme='light'] .iv-image-list-scroll::-webkit-scrollbar-track,
-.webview-app-root[data-ui-theme='follow'][data-effective-light='true'] .iv-image-list-scroll::-webkit-scrollbar-track {
+.webview-app-root[data-effective-theme='light'] .iv-image-list-scroll::-webkit-scrollbar-track {
   background: rgba(0, 0, 0, 0.06);
   border-radius: 5px;
 }
 
-.webview-app-root[data-ui-theme='light'] .iv-image-list-scroll::-webkit-scrollbar-thumb,
-.webview-app-root[data-ui-theme='follow'][data-effective-light='true'] .iv-image-list-scroll::-webkit-scrollbar-thumb {
+.webview-app-root[data-effective-theme='light'] .iv-image-list-scroll::-webkit-scrollbar-thumb {
   background: rgba(0, 0, 0, 0.28);
   border-radius: 5px;
 }
 
-.webview-app-root[data-ui-theme='light'] .iv-image-list-scroll::-webkit-scrollbar-thumb:hover,
-.webview-app-root[data-ui-theme='follow'][data-effective-light='true'] .iv-image-list-scroll::-webkit-scrollbar-thumb:hover {
+.webview-app-root[data-effective-theme='light'] .iv-image-list-scroll::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.42);
 }
 
-.webview-app-root[data-ui-theme='dark'] .iv-image-list-scroll,
-.webview-app-root[data-ui-theme='follow'][data-effective-light='false'] .iv-image-list-scroll {
+.webview-app-root[data-effective-theme='dark'] .iv-image-list-scroll {
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.38) rgba(255, 255, 255, 0.08);
 }
 
-.webview-app-root[data-ui-theme='dark'] .iv-image-list-scroll::-webkit-scrollbar,
-.webview-app-root[data-ui-theme='follow'][data-effective-light='false'] .iv-image-list-scroll::-webkit-scrollbar {
+.webview-app-root[data-effective-theme='dark'] .iv-image-list-scroll::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
 
-.webview-app-root[data-ui-theme='dark'] .iv-image-list-scroll::-webkit-scrollbar-track,
-.webview-app-root[data-ui-theme='follow'][data-effective-light='false'] .iv-image-list-scroll::-webkit-scrollbar-track {
+.webview-app-root[data-effective-theme='dark'] .iv-image-list-scroll::-webkit-scrollbar-track {
   background: rgba(255, 255, 255, 0.07);
   border-radius: 5px;
 }
 
-.webview-app-root[data-ui-theme='dark'] .iv-image-list-scroll::-webkit-scrollbar-thumb,
-.webview-app-root[data-ui-theme='follow'][data-effective-light='false'] .iv-image-list-scroll::-webkit-scrollbar-thumb {
+.webview-app-root[data-effective-theme='dark'] .iv-image-list-scroll::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.32);
   border-radius: 5px;
 }
 
-.webview-app-root[data-ui-theme='dark'] .iv-image-list-scroll::-webkit-scrollbar-thumb:hover,
-.webview-app-root[data-ui-theme='follow'][data-effective-light='false'] .iv-image-list-scroll::-webkit-scrollbar-thumb:hover {
+.webview-app-root[data-effective-theme='dark'] .iv-image-list-scroll::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.48);
 }
 
@@ -129,8 +59,8 @@ html {
 }
 
 body {
-  background-color: var(--vscode-editor-background);
-  color: var(--vscode-editor-foreground);
+  background-color: var(--iv-background, var(--vscode-editor-background));
+  color: var(--iv-primary-fg, var(--vscode-editor-foreground));
   font-family: 'Roboto,PingFang SC', sans-serif;
   font-size: 14px;
   padding: 0;
@@ -141,8 +71,8 @@ body {
 #root {
   height: 100%;
   overflow: hidden;
-  background-color: var(--vscode-editor-background);
-  color: var(--vscode-editor-foreground);
+  background-color: var(--iv-background, var(--vscode-editor-background));
+  color: var(--iv-primary-fg, var(--vscode-editor-foreground));
 }
 
 div.webview-app-root {
@@ -167,7 +97,7 @@ div.webview-app-root {
   flex-shrink: 0;
 }
 
-/** Top release-notes strip (inside .iv-preview-root > .ant-spin). */
+/** Release notes and external community links, visually separate from gallery filters. */
 .iv-announcement-bar {
   flex-shrink: 0;
   display: flex;
@@ -177,8 +107,9 @@ div.webview-app-root {
   gap: 8px 12px;
   padding: 6px 16px 8px;
   margin: 0;
-  border-bottom: 1px solid var(--vscode-widget-border, rgba(128, 128, 128, 0.35));
-  background: var(--vscode-sideBar-background, var(--vscode-editor-background));
+  --iv-release-link: var(--iv-link-fg);
+  border-bottom: 1px solid var(--iv-border);
+  background: color-mix(in srgb, currentColor 3%, transparent);
 }
 
 .iv-announcement-bar__left {
@@ -188,27 +119,27 @@ div.webview-app-root {
   max-width: min(100%, 70%);
   height: auto !important;
   padding: 2px 4px !important;
-  color: var(--vscode-foreground) !important;
+  color: var(--iv-primary-fg) !important;
 }
 
 .iv-announcement-bar__left:hover {
-  background: var(--vscode-list-hoverBackground) !important;
+  background: color-mix(in srgb, currentColor 6%, transparent) !important;
 }
 
 .iv-announcement-bar__version {
   font-weight: 600;
-  color: var(--vscode-textLink-foreground);
+  color: var(--iv-release-link);
 }
 
 .iv-announcement-bar__cta {
-  color: var(--vscode-textLink-foreground);
+  color: var(--iv-release-link);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
 
 .iv-announcement-bar__hint {
   font-size: 12px;
-  color: var(--vscode-descriptionForeground);
+  color: var(--iv-secondary-fg);
   white-space: nowrap;
 }
 
@@ -272,11 +203,11 @@ div .ant-menu-inline .ant-menu-item::after {
   border-left: 3px solid rgba(0, 0, 0, 0);
 }
 .ant-menu-item-selected {
-  border-left: 3px solid var(--vscode-focusBorder, #2673dd);
+  border-left: 3px solid var(--iv-focus-border);
 }
 
 .ant-menu-submenu .ant-menu-sub.ant-menu-inline {
-  background: var(--vscode-editor-background);
+  background: var(--iv-background, var(--vscode-editor-background));
 }
 
 div .ant-tag {
@@ -300,12 +231,12 @@ div .ant-modal-confirm .ant-modal-body {
 }
 /* Close control: avoid oversized hit target (reads as a slab in dark); color from icon / theme tokens */
 .ant-modal .ant-modal-close {
-  color: var(--vscode-icon-foreground, var(--vscode-foreground));
+  color: var(--iv-icon-muted);
   background: transparent;
 }
 .ant-modal .ant-modal-close:hover {
-  color: var(--vscode-foreground);
-  background-color: var(--vscode-toolbar-hoverBackground);
+  color: var(--iv-primary-fg);
+  background-color: color-mix(in srgb, currentColor 6%, transparent);
 }
 .ant-modal .ant-modal-close-x {
   width: 22px;
@@ -321,7 +252,7 @@ textarea.ant-input::placeholder,
 .ant-input-outlined textarea.ant-input::placeholder,
 .ant-modal .ant-input::placeholder,
 .ant-modal textarea.ant-input::placeholder {
-  color: var(--iv-placeholder-fg, var(--vscode-input-placeholderForeground)) !important;
+  color: var(--iv-placeholder-fg) !important;
 }
 
 div .ant-popover-inner-content {
@@ -357,3 +288,17 @@ div .ant-tooltip {
   padding: 12px 24px;
 }
 
+.iv-community-link.ant-btn {
+  color: var(--iv-secondary-fg);
+  font-size: 11px;
+  border: 0;
+  box-shadow: none;
+  padding-inline: 7px;
+}
+.iv-community-link.ant-btn:hover {
+  color: var(--iv-release-link, #1677ff);
+}
+.iv-community-external {
+  font-size: 9px;
+  opacity: 0.6;
+}

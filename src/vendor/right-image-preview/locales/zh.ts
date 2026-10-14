@@ -1,0 +1,50 @@
+import type { LocaleStrings } from '../localeTypes';
+
+export const zhStrings: LocaleStrings = {
+  fit: '适应',
+  fitApprox: (pct) => `适应 (约 ${pct}%)`,
+
+  fitToViewport: '适应视口',
+  actualSize: '原始比例 (100%)',
+  zoomIn: '放大',
+  zoomOut: '缩小',
+  lockZoom: '锁定缩放（切图时保持当前比例）',
+  unlockZoom: '解锁缩放（切图时保持当前比例）',
+  rotateCW: '顺时针旋转 90°',
+  rotateCCW: '逆时针旋转 90°',
+  flipH: '水平翻转',
+  flipV: '垂直翻转',
+
+  prev: '上一张',
+  next: '下一张',
+  prevGroup: '上一组',
+  nextGroup: '下一组',
+
+  imagePreview: '图片预览',
+  toolbar: '图片预览工具栏',
+  close: '关闭 (Esc)',
+  loadingImage: '图片加载中',
+  minimapNav: '导航缩略图',
+
+  tipFitToViewport: '让整张图完整显示在窗口里，可能会缩小一些以免裁切边缘。',
+  tipActualSize: '按真实像素 1:1 查看。图可能比窗口大，可拖动画面查看各处。',
+  tipZoomIn: '放大画面，一次只看更小区域，细节更大。',
+  tipZoomOut: '缩小画面，一次看到更多内容。',
+  tipLockZoom: '锁定缩放：切换图片时尽量保持当前缩放和位置。',
+  tipUnlockZoom: '解锁缩放：切换图片时自动让新图适应窗口。',
+  tipRotateCW: '把图片顺时针旋转 90 度。',
+  tipRotateCCW: '把图片逆时针旋转 90 度。',
+  tipFlipH: '左右镜像翻转。',
+  tipFlipV: '上下镜像翻转。',
+  tipPrev: '查看上一张图片。',
+  tipNext: '查看下一张图片。',
+  tipPrevGroup: '跳到上一组或相册。',
+  tipNextGroup: '跳到下一组或相册。',
+  tipClose: '关闭预览。也可以按键盘上的 Esc。',
+  tipZoomLevel: '点击可输入缩放百分比，或打开常用比例列表和“适应整图”。',
+  tipZoomRowPercent: (pct) => `将缩放设为约 ${pct}%（相对原图尺寸）。`,
+  tipZoomRowFit: '让整张图完整显示在窗口内。',
+  tipZoomRowFitApprox: (pct) => `适应窗口显示整图，在当前视图下约等于 ${pct}% 大小。`,
+  tipMinimap:
+    '小地图：拖动高亮框可平移主视图；在框外点击可把该位置移到画面中央。',
+};

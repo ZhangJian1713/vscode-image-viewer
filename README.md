@@ -1,75 +1,102 @@
 # Image Viewer
 
-Browse and manage images in your workspace, or open individual image files directly in a full-screen custom editor. Includes a thumbnail grid, large preview, copy Base64 / path / file name, and per-project include/exclude folders.
+**English** | [中文](./README.zh-CN.md)
 
-## Screenshots
+View individual images or browse a folder as a gallery in **VS Code and Cursor**. Inspect details with zoom, pan, rotation, flip, and a navigation minimap; find project assets with thumbnails, search, sorting, and filters.
 
-### Main panel
+## Quick start
 
-![Image Viewer main panel — folder group preview in dark theme](https://public-img-1253867148.cos.ap-singapore.myqcloud.com/img-in-docs/dark%20theme%2C%20big%20pictures.png)
+| To… | Do this |
+| --- | --- |
+| Open an image | Right-click an image in Explorer → **Open With...** / **Reopen Editor With...** → **Image Viewer** |
+| Use Image Viewer by default | Open the Command Palette (`Ctrl+Shift+P` / `⌘⇧P`) → **Image Viewer: Use as Default Image Editor** |
+| Browse the workspace | Open a folder or workspace → run **View Images 🌄** from the Command Palette |
+| Browse a specific folder | Right-click the folder in Explorer → **View Images 🌄**; includes its subfolders |
 
-![Image Viewer main panel — image preview in dark theme](https://public-img-1253867148.cos.ap-singapore.myqcloud.com/img-in-docs/dark%20theme%2C%20big%20pictures%20-%20view.jpg)
+## Single-image viewer
 
-This shows another light theme style, as well as switching to a checkerboard background to reveal the transparent parts of SVG images.
-![Image Viewer main panel — SVG with transparent background in light theme](https://public-img-1253867148.cos.ap-singapore.myqcloud.com/img-in-docs/light%20theme%EF%BC%8Csvg%20icons.png)
+Open an image directly in a full-screen preview within the editor tab, with controls that fade when idle.
 
-## Features
+- **Zoom:** use the mouse wheel, toolbar buttons, or enter a percentage. Press **Space** or click the main image for an adaptive Fit → Detail → 100% cycle (two states when Detail adds little; small images use Fit/100% → 200%). Drag after zooming to pan. Presets extend through 250%, 300%, 400%, 600%, and 800%.
+- **Inspect details:** drag an enlarged image or use the minimap to move around it.
+- **Rotate and flip:** rotate in either direction or flip horizontally and vertically. These view changes do not modify the file.
+- **Navigate:** use the toolbar or side arrows to view other images in the same folder. The order follows Explorer's sorting settings, including reverse order.
+- **Keyboard controls:** zoom, switch zoom modes, rotate, and navigate from the keyboard.
 
-- The full-screen viewer is now powered by our own preview engine, with a smoother browsing experience.
-- Moving to next/previous images now feels more natural and follows the folder order you see in the panel.
-- The small overview map in preview looks clearer and loads faster, especially for very large images.
-- Preview interactions are richer and easier to use (mouse wheel zoom, double-click zoom, quick flip, and easier navigation buttons).
-- Thumbnail grid with **lazy loading** and tuning for large libraries (many high-resolution images).
-- **Column count** controls grid density (uses panel width efficiently).
-- **Sort** images inside each folder (name, modified time, size, asc/desc).
-- **Light / dark** UI for the panel; default follows your VS Code or Cursor theme (toggle in the toolbar).
-- Preview backdrops: **checkerboard**, **transparent** (default), and solid swatches; useful for PNG/SVG with alpha.
-- Zoom and navigate with keyboard.
-- **Search** by path/name; filter by **file type**.
-- **Include / exclude** folders
-- **Copy** path, file name, or Base64 from the image menu.
-- Open a folder from Explorer: **only that folder tree** is scanned (fast in huge repos). **Multiple** Image Viewer tabs for different folders; tab title includes the folder name.
-- **Optional default editor:** open individual image files directly in the full-screen viewer without scanning or briefly displaying the image library.
+The single-image editor is read-only. It lists images in the opened file's immediate folder, without scanning subfolders or loading the gallery interface. It uses original images directly, without generating thumbnails, and also works for files outside the workspace.
 
-## How to use
+<!-- Screenshot TODO: assets/screenshots/single-image-editor.png.
+Capture a dark-theme editor window with Explorer, the selected image tab, an enlarged image,
+the minimap, and the visible toolbar (filename, zoom, rotate, flip, and navigation).
+Add the Markdown image only after the file exists.
+-->
 
-1. Open a folder or workspace in VS Code / Cursor.
-2. **Whole workspace:** `Ctrl+Shift+P` / `⌘⇧P` → run **View Images** (command id: `vscode-infra.webviewImageViewer`).
-3. **Folder only:** In the **Explorer**, right-click a **folder** (or an image file) → **View Images 🌄**. Only that directory (and subfolders) is indexed in that panel; the editor tab title reflects the folder.
-4. **Individual image:** right-click an image and choose **Open With...** / **Reopen Editor With...** → **Image Viewer**.
-5. **Use Image Viewer by default:** run **Image Viewer: Use as Default Image Editor** once. See [Use as the default image editor](#use-as-the-default-image-editor) for details.
+### Make it the default
 
-## Use as the default image editor
+Run **Image Viewer: Use as Default Image Editor** to open supported image files with this viewer by default. Installing or updating the extension leaves your editor choice unchanged.
 
-Image Viewer is registered as an optional, read-only custom editor. Installing or updating the extension does **not** change your default editor automatically.
+To remove these associations, run **Image Viewer: Restore VS Code's Default Image Editor**. VS Code then uses its normal editor selection; this does not restore a previous custom association overwritten by the setup command.
 
-To make it the default for supported images:
+Both commands update the global User `workbench.editorAssociations` setting. Workspace and Workspace Folder settings can override it. The restore command removes only supported image associations that still point to Image Viewer, preserving unrelated or subsequently changed associations. Run it before uninstalling if you want to remove those global associations.
 
-1. Open the Command Palette with `Ctrl+Shift+P` / `⌘⇧P`.
-2. Run **Image Viewer: Use as Default Image Editor**.
-3. Open an image from Explorer. It opens directly in the full-screen viewer without scanning the surrounding folder or creating an additional gallery tab.
+<!-- Screenshot TODO: assets/screenshots/set-default-image-editor.png.
+Capture the Command Palette with “Image Viewer: Use as Default Image Editor” highlighted.
+Use the same theme as the single-image screenshot; add the Markdown image only once captured.
+-->
 
-The command applies to these filename patterns:
+## Workspace gallery
 
-`*.svg`, `*.png`, `*.jpeg`, `*.jpg`, `*.ico`, `*.gif`, `*.webp`, `*.bmp`, `*.tif`, `*.tiff`, `*.apng`, `*.avif`
+Use the Folders sidebar to select a directory, then browse its images in one continuous thumbnail wall. Click a thumbnail to open the large-image preview.
 
-To stop using Image Viewer as the default, run **Image Viewer: Restore VS Code's Default Image Editor**. This removes Image Viewer's global associations for the supported patterns and returns control to VS Code's normal editor selection. It preserves unrelated editor associations and any target association that no longer points to Image Viewer.
+- **Folders tree:** show direct or recursive image counts, search directories, expand or collapse branches, hide the sidebar, and drag its edge to resize. Toggle **Include subfolders** from the Folders menu. Expand the filter button beside **Find folder** to edit directory scan rules. Right-click a folder to reveal it, copy its path, expand/collapse its subtree, or exclude it from scanning.
+- **Fill / Grid / List:** Fill crops thumbnails to square cells; Grid shows the entire image; List adds file paths, sizes, original dimensions, and modified times. Drag the bottom-bar thumbnail slider right for larger images, with live pixel sizes (1–20 columns in Fill/Grid).
+- **Compact mode:** remove gaps and persistent captions in Fill/Grid, or reduce List spacing. Image menus remain available.
+- **Scroll position:** drag the gallery scrollbar to see the folders in view and reveal/highlight them in the Folders tree without changing your selected directory. Wheel scrolling does not drive this indication.
+- **Large collections:** the wall and tree use virtual scrolling. Thumbnail requests prioritize visible images, cap concurrency, and discard unused results beyond a small bounded cache.
+- **Search, filter, and sort:** search by file name/path, filter by type, and toggle subfolders. Sorting defaults to folders first, then name within each folder; choose name, modified time, size, or format in either folder-first or global mode. Preview follows the same order. Scrollbar folder hints and tree highlighting are available in folder-first mode.
+- **Image menu:** reveal an image, browse its folder, copy paths/name/Base64, or **Move to Trash** after confirmation.
+- **Settings and feedback:** use the bottom-right gear for file-size display and GitHub issue/email feedback. Theme and image background controls stay on the gallery.
+- **Appearance and folder tabs:** Follow inherits the current editor colors; manual Light/Dark use VS Code Light 2026 / Dark 2026 snapshots. Image background choices start with a frameless **No background** option, followed by checkerboard and solid colors. Supports separate gallery tabs for Explorer folder selections.
 
-These commands update the global User `workbench.editorAssociations` setting. Workspace or Workspace Folder associations can override the global choice. Before uninstalling Image Viewer, run the restore command if you want to remove its global associations; uninstalling an extension does not edit your User settings.
+### Directory rules
 
-## Disk cache behavior
+Folder search and scan filters work together. Expand the filter icon beside **Find folder**, enter one project-relative directory rule per line, then press Enter or **Apply**. Shift+Enter adds a line. Collapsing the fields keeps applied rules active.
 
-VS Code and Cursor may store full copies of local images loaded by a WebView. Image Viewer removes old resource caches reachable from the current WebView origin in the background, then keeps only images that live panels are currently using plus a short navigation grace period. Automatic cleanup starts only after the viewer has rendered and the browser grants an idle window; it does not delay opening the viewer or show a notification.
+| Rule | Meaning |
+| --- | --- |
+| `assets` or `assets/**` | assets and its entire directory tree |
+| `assets/{photos,icons}/**` | both directory trees |
+| `**/test-*` | matching directories at any depth and their descendants |
+| `**/{dist,build}` | dist/build directories at any depth and their descendants |
 
-The gallery and single-image editor have separate WebView origins. Opening either viewer cleans history for the origin that VS Code or Cursor currently assigns to that viewer. Closing the last panel performs a best-effort full cleanup, and the next opening removes residue left by a crash or forced exit when the host reuses the same origin.
+Include and exclude compose; exclude wins. Empty include scans the current entry's full range. Explorer folder entries intersect include rules. Directory rules use Glob rather than regex and match directories; use **Types** to filter image formats. Invalid rules show an error without being applied.
 
-To clean the gallery origin immediately, run **Image Viewer: Clean Gallery WebView Image Cache**. Users who upgrade but never open Image Viewer again—or whose host has orphaned an older WebView origin—must close VS Code or Cursor and remove that old host CacheStorage manually. Browser same-origin rules prevent an extension WebView from enumerating or deleting another origin.
+### Screenshot
 
-## More documentation
+Development preview with generated Mock images:
 
-- See **[CHANGELOG.md](./CHANGELOG.md)** for release notes
-- Issues: [GitHub Issues](https://github.com/ZhangJian1713/vscode-image-viewer/issues)
+![Folders sidebar and continuous image wall](./assets/screenshots/gallery-folder-filters.jpg)
 
-## Questions or feedback
+## Image formats
 
-zhangjian1713@gmail.com
+Recognized file extensions: `SVG`, `PNG`, `JPEG`, `JPG`, `ICO`, `GIF`, `WebP`, `BMP`, `TIF`, `TIFF`, `APNG`, `AVIF`.
+
+Rendering depends on the embedded browser in VS Code or Cursor; recognizing an extension does not guarantee that every encoding can be displayed.
+
+## Disk cache
+
+VS Code and Cursor may cache full copies of images loaded in a WebView (an embedded browser view). Image Viewer cleans old image resource caches in the background after the initial render and a browser idle window. During use, it prunes resources no longer used by open panels, with a short grace period for navigation.
+
+The gallery and single-image editor have separate cache scopes. Open each viewer after upgrading to clean its accessible historical cache. Closing the last panel in a scope attempts to clear it; crash or forced-exit residue is cleaned on the next opening if the host reuses that scope. The gallery's thumbnail disk cache is separate from these resource caches. It is checked shortly after opening and every two minutes: above 500 MiB or 25,000 files, older entries are removed toward 85% of both limits. These are background soft limits, so brief overshoots are possible while thumbnails are generated.
+
+For immediate gallery cleanup, run **Image Viewer: Clean Gallery WebView Image Cache**. This command does not clean the single-image editor's cache. Old cache scopes abandoned by the host cannot be reached by the extension and may need manual cleanup while VS Code or Cursor is closed.
+
+## Development preview
+
+Run `yarn ui-dev`, then open `http://127.0.0.1:5000/?mock=1`. Add `&count=100000&folders=1000` to test a large collection. Mock mode uses generated SVG images and isolated browser settings; file actions do not affect real files. It is available only in development browser builds. Use F5 → **Run Extension** to check real workspace images and host interactions.
+
+## Feedback
+
+- [Changelog](./CHANGELOG.md)
+- [Report a bug or request a feature](https://github.com/ZhangJian1713/vscode-image-viewer/issues)
+- Contact: zhangjian1713@gmail.com

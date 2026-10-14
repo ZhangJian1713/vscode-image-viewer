@@ -1,0 +1,52 @@
+.iv-settings-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-height: 210px;
+  padding: 4px 0 8px;
+}
+.iv-settings-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+}
+.iv-settings-row > div:first-child {
+  flex: 1;
+  min-width: 0;
+}
+.iv-settings-row .ant-select {
+  flex: 0 0 160px;
+}
+.iv-settings-panel .ant-typography {
+  margin-top: 6px;
+  margin-bottom: 0;
+  font-size: 12px;
+}
+.iv-feedback-card {
+  padding: 16px;
+  border: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+  border-radius: 8px;
+}
+.iv-feedback-card > strong {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.iv-feedback-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.iv-feedback-card .ant-btn {
+  margin-top: 12px;
+}
+@media (max-width: 480px) {
+  .iv-settings-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .iv-settings-row .ant-select {
+    flex: none;
+    width: 100%;
+  }
+}

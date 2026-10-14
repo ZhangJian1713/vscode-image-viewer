@@ -4,16 +4,28 @@ import { Webview, Uri } from 'vscode'
 import { utils } from '@easy_vscode/core'
 import imageSize from 'image-size'
 import { readLocalConfigFile } from './config'
+import { compileFolderFilters } from '../../folderFilterRules'
 
-export const SUPPORT_IMG_TYPES = ['.svg', '.png', '.jpeg', '.jpg', '.ico', '.gif', '.webp', '.bmp', '.tif', '.tiff', '.apng', '.avif']
+export const SUPPORT_IMG_TYPES = [
+  '.svg',
+  '.png',
+  '.jpeg',
+  '.jpg',
+  '.ico',
+  '.gif',
+  '.webp',
+  '.bmp',
+  '.tif',
+  '.tiff',
+  '.apng',
+  '.avif'
+]
 const { getProjectPath } = utils
 
 /** macOS AppleDouble sidecar files on exFAT/USB (e.g. ._085.jpg); they may look like images by extension but are not bitmap content. */
 function isAppleDoubleSidecarFile(absPath: string): boolean {
   return path.basename(absPath).startsWith('._')
 }
-
-
 
 interface IImage {
   path: string
@@ -24,97 +36,124 @@ interface IImage {
   mtimeMs: number
 }
 
-/**
- * remove last slash of file path
- */
-const removeLastSlash = (path: string) => path.endsWith('/') ? path.slice(0, -1) : path
-
-/**
- * remove first slash of file path
- */
-const removeFirstSlash = (path: string) => path.startsWith('/') ? path.slice(1) : path
-
-/**
- * remove first and last slash of file path
- */
-const removeSlash = (path: string) => removeLastSlash(removeFirstSlash(path))
-
-function searchImgs(
+/** Async traversal avoids blocking the shared extension host; directory symlinks are not followed. */
+async function searchImgs(
   basePath: string,
   includeFolders: string[],
   excludeFolders: string[],
   webview: Webview,
-  /** When set, recurse only this directory tree (including subfolders), ignoring `includeFolders` (used by Explorer context actions). */
-  listScopeAbsPath: string | null
-) {
-  // const imgs: any = new Map<string, IImage>()
+  listScopeAbsPath: string | null,
+  cancellation: { cancelled: boolean }
+): Promise<IImage[]> {
   const imgs: IImage[] = []
-  const searchedFolders = new Set<string>()
-  const excludeFoldersSet = new Set(excludeFolders.map(folder => basePath + '/' + removeSlash(folder)))
-  // eslint-disable-next-line no-unused-vars
-  const dfs = (pathname: string, callback: (filePath: string) => void) => {
+  const directories = new Set<string>()
+  const filters = compileFolderFilters(includeFolders, excludeFolders, process.platform === 'win32')
+  const scope = listScopeAbsPath ? path.relative(basePath, listScopeAbsPath) : ''
+  if (scope === '..' || scope.startsWith(`..${path.sep}`) || path.isAbsolute(scope)) {
+    throw new Error('The selected folder is outside the project.')
+  }
+  const stack = filters.scanRoots(scope).map((folder) => path.resolve(basePath, folder))
+  const rootDirectories = new Set(stack)
+  let unreadableRoots = 0
+  const canonicalBase = await fs.promises.realpath(basePath)
+  while (stack.length) {
+    if (cancellation.cancelled) {
+      throw new Error('Scan cancelled')
+    }
+    const directory = path.normalize(stack.pop()!)
+    const relativeDirectory = path.relative(basePath, directory).replace(/\\/g, '/')
+    if (
+      directories.has(directory) ||
+      filters.excludes(relativeDirectory) ||
+      path.basename(directory) === 'node_modules'
+    ) {
+      continue
+    }
+    directories.add(directory)
+    let entries: fs.Dirent[]
     try {
-      const stats = fs.statSync(pathname)
-      if (stats.isDirectory() && !pathname.includes('node_modules')) {
-        if (excludeFoldersSet.has(pathname)) {
-          return
-        }
-        if (searchedFolders.has(pathname)) {
-          return
-        }
-        searchedFolders.add(pathname)
-        const files = fs.readdirSync(pathname)
-        files.forEach((file) => {
-          dfs(pathname + '/' + file, callback)
-        })
-      } else if (stats.isFile()) {
-        const extLower = path.extname(pathname).toLowerCase()
-        if (!isAppleDoubleSidecarFile(pathname) && SUPPORT_IMG_TYPES.includes(extLower)) {
-          callback && callback(pathname)
+      if (rootDirectories.has(directory) && directory !== basePath) {
+        const stat = await fs.promises.lstat(directory)
+        const canonical = await fs.promises.realpath(directory)
+        const relative = path.relative(canonicalBase, canonical)
+        if (
+          stat.isSymbolicLink() ||
+          relative === '..' ||
+          relative.startsWith(`..${path.sep}`) ||
+          path.isAbsolute(relative)
+        ) {
+          continue
         }
       }
-    } catch (e) {
-      console.log(e)
+      entries = await fs.promises.readdir(directory, { withFileTypes: true })
+    } catch {
+      if (rootDirectories.has(directory)) {
+        unreadableRoots++
+      }
+      continue
+    }
+    const files: string[] = []
+    const included = filters.includes(relativeDirectory)
+    for (const entry of entries) {
+      const filePath = path.join(directory, entry.name)
+      if (entry.isDirectory()) {
+        stack.push(filePath)
+      } else if (
+        included &&
+        entry.isFile() &&
+        !isAppleDoubleSidecarFile(filePath) &&
+        SUPPORT_IMG_TYPES.includes(path.extname(entry.name).toLowerCase())
+      ) {
+        files.push(filePath)
+      }
+    }
+    for (let start = 0; start < files.length; start += 16) {
+      if (cancellation.cancelled) {
+        throw new Error('Scan cancelled')
+      }
+      const batch = await Promise.all(
+        files.slice(start, start + 16).map(async (filePath) => {
+          try {
+            const stat = await fs.promises.stat(filePath)
+            return {
+              path: '/' + path.relative(basePath, filePath).replace(/\\/g, '/'),
+              fullPath: filePath,
+              vscodePath: webview.asWebviewUri(Uri.file(filePath)).toString(),
+              size: stat.size,
+              mtimeMs: stat.mtimeMs
+            }
+          } catch {
+            return null
+          }
+        })
+      )
+      for (const image of batch) {
+        if (image) {
+          imgs.push(image)
+        }
+      }
     }
   }
-  const searchFolders =
-    listScopeAbsPath != null
-      ? [path.normalize(listScopeAbsPath)]
-      : includeFolders.length > 0
-        ? includeFolders.map((folder) => basePath + '/' + removeSlash(folder))
-        : [basePath]
-  searchFolders.forEach((folder) => {
-    dfs(folder, (filePath: string) => {
-      const st = fs.statSync(filePath)
-      const relativePath = filePath.replace(basePath, '')
-      // vscodePath e.g. https://file%2B.vscode-resource.vscode-cdn.net/Users/user_name/project_dir/src/favicon.ico
-      const vscodePath = webview.asWebviewUri(Uri.file(filePath)).toString()
-      const img = {
-        path: relativePath,
-        fullPath: filePath,
-        vscodePath,
-        size: st.size,
-        mtimeMs: st.mtimeMs
-      }
-      imgs.push(img)
-    })
-  })
+  if (rootDirectories.size > 0 && unreadableRoots === rootDirectories.size) {
+    throw new Error('Unable to read the selected image folders.')
+  }
   return imgs
 }
 
-/**
- * get all imgs
- * @param listScopeAbsPath List only this directory tree; when null, search by configured `includeFolders` or the whole workspace.
- */
-export const getAllImgs = (webview: Webview, listScopeAbsPath: string | null = null) => {
-  const config = readLocalConfigFile()
-  const { includeFolders, excludeFolders } = config
-  const basePath = getProjectPath()
-  const beginTime = new Date()
-  const imgs = searchImgs(basePath, includeFolders, excludeFolders, webview, listScopeAbsPath)
-  const endTime = new Date()
-  console.log(`${imgs.length} images found in ${(endTime.getTime() - beginTime.getTime())}ms`)
-  return imgs
+export const getAllImgs = async (
+  webview: Webview,
+  listScopeAbsPath: string | null = null,
+  cancellation = { cancelled: false }
+): Promise<IImage[]> => {
+  const { includeFolders, excludeFolders } = readLocalConfigFile()
+  return searchImgs(
+    path.resolve(getProjectPath()),
+    includeFolders,
+    excludeFolders,
+    webview,
+    listScopeAbsPath,
+    cancellation
+  )
 }
 
 export const getImageBase64 = (filePath: string): string => {
@@ -129,13 +168,12 @@ export const getImageBase64 = (filePath: string): string => {
   return imgBase64
 }
 
-
-export const getImageSize = (filePath: string): { width: number, height: number } => {
+export const getImageSize = (filePath: string): { width: number; height: number } => {
   let dimensions = { width: 0, height: 0 }
   try {
     dimensions = imageSize(filePath)
-  } catch (err) {
-    console.log(err)
+  } catch {
+    // Unsupported/corrupt headers are displayed as unknown dimensions, without per-file logs.
   }
   return dimensions
 }

@@ -40,7 +40,7 @@
     "commands": [
       {
         "command": "vscode-infra.webviewImageViewer",
-        "title": "View Images 🌄"
+        "title": "View Images \ud83c\udf04"
       },
       {
         "command": "vscode-infra.setAsDefaultImageViewer",
@@ -137,7 +137,9 @@
     "lint-staged": "lint-staged",
     "check-type": "tsc --noEmit",
     "test:resource-cache": "jest src/webview/resourceCache --runInBand",
-    "bench:thumb-mac": "node scripts/benchmark-ql-vs-jimp.cjs"
+    "test:gallery": "jest src/folderFilterRules.test.ts src/webview/webviewPalette.test.ts src/webview/PreviewImages/gallery*.test.* src/webviewController/imagesViewer/*.test.ts --runInBand",
+    "bench:thumb-mac": "node scripts/benchmark-ql-vs-jimp.cjs",
+    "test:preview": "jest src/vendor/right-image-preview --runInBand"
   },
   "repository": {
     "type": "git",
@@ -226,7 +228,8 @@
     "webpack-bundle-analyzer": "^4.4.2",
     "webpack-cli": "^4.7.2",
     "webpack-dev-server": "^3.11.2",
-    "webpack-resolve-config-plugin": "^1.0.0"
+    "webpack-resolve-config-plugin": "^1.0.0",
+    "right-image-preview": "0.2.0"
   },
   "dependencies": {
     "@ant-design/icons": "^5.5.0",
@@ -243,10 +246,10 @@
     "jimp": "0.22.12",
     "json5": "^2.2.3",
     "lodash": "^4.17.21",
+    "picomatch": "4.0.7",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-i18next": "^11.18.3",
-    "right-image-preview": "^0.2.0",
     "styled-components": "^5.3.0"
   },
   "resolutions": {

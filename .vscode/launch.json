@@ -7,7 +7,7 @@
 //
 // Browser-only / HMR: run `yarn ui-dev` in another terminal (webpack-dev-server; this template
 // uses port 5000 by default). On http origins, @easy_vscode/webview does not call acquireVsCodeApi;
-// callVscode posts to a no-op unless you mock postMessage / window "message" (e.g. vscodeCallback).
+// add ?mock=1 for generated gallery data and safe simulated file actions.
 //
 // https://go.microsoft.com/fwlink/?linkid=830387
 {
