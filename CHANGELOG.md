@@ -1,5 +1,54 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- **Adaptive preview zoom:** Space and a primary-mouse click share a two/three-state cycle, with pointer/viewport-center anchoring, click-versus-pan arbitration, and short zoom hints.
+- **Scrollbar folder indication:** viewport folder HUD and temporary tree reveal/highlight while dragging; landing highlights persist without changing selection or saved expansion.
+
+- **Extended zoom presets:** 250%, 300%, 400%, 600%, and 800% in the gallery preview and direct image editor.
+
+- **Folder scan rules:** project-relative directory paths and Glob expressions, with validation and shared host/Mock matching. Includes and exclusions compose with scoped folder entries.
+- **Settings and feedback:** separate folder scan filters from settings; add Gallery and Feedback tabs, with file-size display preferences and GitHub issue/email entry points.
+- **Folders sidebar:** virtualized directory tree with image counts, folder search, expandable branches, context menus, sidebar visibility, and adjustable width.
+- **Gallery layouts:** continuous Fill, Grid, and List views with compact mode, adjustable density, and scroll position preservation across layouts.
+- **Browser development preview:** explicit Mock mode with generated data for testing large collections without launching VS Code.
+
+- **Single-image editor:** open image files directly in a read-only, full-screen preview with zoom, pan, rotation, flip, keyboard controls, and a navigation minimap.
+- **Same-folder navigation:** use the toolbar or side arrows to browse sibling images in Explorer sort order, including its filename comparison and reverse-order settings. Images outside the workspace are also supported.
+- **Optional default editor:** use **Image Viewer: Use as Default Image Editor** to set supported image associations, or **Image Viewer: Restore VS Code's Default Image Editor** to remove associations that still point to Image Viewer. Installation and updates do not change the default automatically.
+- **Manual gallery cache cleanup:** run **Image Viewer: Clean Gallery WebView Image Cache** to clear the gallery's accessible WebView image resource caches.
+
+### Changed
+
+- During scrollbar tracking, expand only the current viewport's folder ancestors and collapse offscreen branches, temporarily overriding saved/search expansion without persisting it.
+- Default to natural folder order with configurable name, modified-time, size, or format sorting inside each folder. Offer global sorting separately; disable folder HUD/tree tracking in global mode. Sorting changes reuse the scan snapshot.
+- Center viewport folder highlights as a group in the tree, with a uniform subtle background and no overlapping accent bar.
+
+- Follow now uses a distinct editor/display icon; sun and moon icons identify manual Light and Dark modes.
+- Thumbnail sizing now grows from left to right, displays actual CSS pixel sizes, and limits Fill/Grid to 1–20 columns.
+- Remove duplicate Appearance settings; put the frameless No background option before checkerboard, with a circle-slash icon.
+
+- Manual Light/Dark now use VS Code Light 2026 / Dark 2026 color snapshots; Follow inherits the current host theme and color customizations through the same palette mapping. Theme detection reads body metadata and observes color changes within the same light/dark kind.
+
+- Integrate include/exclude fields beside Find folder using an expandable Search-style area; apply drafts explicitly and retain active filters when collapsed.
+- Move theme controls to the bottom-right, place Include subfolders in the Folders menu, remove the redundant scope row, and distinguish community links from gallery filters.
+- Replace accordion folder groups with one virtualized image wall. Folder-first and global sorting both apply to the complete filtered result; preview navigation follows that result.
+- Scan image folders asynchronously and cancel superseded scans. Thumbnail generation is deduplicated and limited to two concurrent jobs; the wall prioritizes visible requests and bounds unused URL results.
+- Check the thumbnail disk cache on startup and periodically, evict older entries when size/file-count budgets are exceeded, and invalidate cached paths after deletion.
+- Image deletion from the gallery now moves supported files to system Trash after confirmation, without falling back to permanent deletion.
+
+- Direct image opening now uses a dedicated viewer entry without loading the gallery interface. It lists only images in the immediate folder, without scanning subfolders or generating thumbnails.
+- Gallery and single-image resource caches are cleaned in the background on first use and pruned during viewing to retain actively used images plus a short navigation grace period.
+- Historical cache cleanup starts after the initial render and a browser idle window; old cache generations are deleted sequentially to reduce startup disk I/O contention.
+
+### Fixed
+
+- Map logical gallery height into bounded browser scroll space so very large one-column collections can reach their final images.
+
+- Match selected-image paths consistently across Windows slash styles.
+
 ## [2.0.5] - 2026-04-17
 
 ### Added

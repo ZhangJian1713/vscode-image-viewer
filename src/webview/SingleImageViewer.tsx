@@ -1,12 +1,20 @@
-import React, { useMemo } from 'react'
-import { ImagePreview } from 'right-image-preview'
-import type { ImageGroup } from 'right-image-preview'
+import React, { useMemo, useState } from 'react'
+import { ImagePreview } from '../vendor/right-image-preview'
+import { PREVIEW_ZOOM_STOPS } from './previewZoomStops'
+import type { ImageGroup } from '../vendor/right-image-preview'
 import { callVscode } from '@easy_vscode/webview'
 import { MESSAGE_CMD } from '../constants'
+import { useResourceCacheSlot } from './resourceCache/ResourceCacheBoundary'
 
 type SingleImageViewerArgs = {
   src?: string
   name?: string
+  images?: Array<{
+    id: string
+    src: string
+    name: string
+  }>
+  currentIndex?: number
 }
 
 function readSingleImageViewerArgs(): SingleImageViewerArgs {
@@ -20,50 +28,64 @@ function readSingleImageViewerArgs(): SingleImageViewerArgs {
   const value = args as SingleImageViewerArgs
   return {
     src: typeof value.src === 'string' ? value.src : undefined,
-    name: typeof value.name === 'string' ? value.name : undefined
+    name: typeof value.name === 'string' ? value.name : undefined,
+    images: Array.isArray(value.images)
+      ? value.images.filter(
+          (image) =>
+            image && typeof image.id === 'string' && typeof image.src === 'string' && typeof image.name === 'string'
+        )
+      : undefined,
+    currentIndex:
+      typeof value.currentIndex === 'number' && Number.isInteger(value.currentIndex) ? value.currentIndex : undefined
   }
 }
 
 const SingleImageViewer: React.FC = () => {
-  const { src, name } = readSingleImageViewerArgs()
-  const groupedImages = useMemo<ImageGroup[] | undefined>(() => {
+  const { src, name, images, currentIndex } = readSingleImageViewerArgs()
+  const resolvedImages = useMemo(() => {
+    if (images && images.length > 0) {
+      return images
+    }
     if (!src) {
-      return undefined
+      return []
     }
     const imageName = name || 'Image'
+    return [{ id: src, src, name: imageName }]
+  }, [images, src, name])
+  const groupedImages = useMemo<ImageGroup[] | undefined>(() => {
+    if (resolvedImages.length === 0) {
+      return undefined
+    }
     return [
       {
         name: '',
-        images: [
-          {
-            id: src,
-            src,
-            name: imageName,
-            alt: imageName
-          }
-        ]
+        images: resolvedImages.map((image) => ({ ...image, alt: image.name }))
       }
     ]
-  }, [src, name])
+  }, [resolvedImages])
+
+  const initialIndex = Math.min(Math.max(currentIndex ?? 0, 0), Math.max(resolvedImages.length - 1, 0))
+  const [activeIndex, setActiveIndex] = useState(initialIndex)
+  useResourceCacheSlot('single-editor-main-image', resolvedImages[activeIndex]?.src)
 
   if (!groupedImages) {
-    return (
-      <div style={{ padding: 20, color: 'var(--vscode-errorForeground)' }}>
-        Unable to open this image.
-      </div>
-    )
+    return <div style={{ padding: 20, color: 'var(--vscode-errorForeground)' }}>Unable to open this image.</div>
   }
 
   return (
     <ImagePreview
       groupedImages={groupedImages}
       visible
-      defaultIndex={0}
+      defaultGroupedSelection={{ defaultGroupIndex: 0, defaultIndexInGroup: initialIndex }}
+      stops={PREVIEW_ZOOM_STOPS}
       wheelEnabled
-      doubleClickEnabled
+      clickZoomEnabled
+      doubleClickEnabled={false}
       closeOnMaskClick
       arrows='side'
       showFlip
+      progressiveMain={false}
+      onIndexChange={setActiveIndex}
       onClose={() => callVscode({ cmd: MESSAGE_CMD.CLOSE_CUSTOM_IMAGE_EDITOR })}
     />
   )

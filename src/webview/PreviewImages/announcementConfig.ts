@@ -9,7 +9,7 @@
  */
 
 /** Sync with `package.json` version; bumping re-shows the auto modal for users who had dismissed the old id. */
-export const ANNOUNCEMENT_ID = '2.0.0'
+export const ANNOUNCEMENT_ID = '2.0.6'
 
 export const REPOSITORY_URL = 'https://github.com/ZhangJian1713/vscode-image-viewer'
 
@@ -60,13 +60,12 @@ export type AnnouncementStrings = {
 const ANNOUNCEMENT_COPY_EN: AnnouncementStrings = {
   modalTitle: `What’s new in Image Viewer v${ANNOUNCEMENT_ID}`,
   features: [
-    'Light and dark UI themes are supported; by default the panel follows your VS Code or Cursor theme.',
-    'Thumbnail grid performance is greatly improved — fully usable for managing large high-resolution photo libraries.',
-    'Multiple ways to sort images.',
-    'Grid density is controlled with Columns instead of Size for a better use of panel width and a cleaner layout.',
-    'Checkerboard and transparent backgrounds are available as preview backdrops.',
-    'The preview now shows the file name.',
-    'Skips macOS `._*` AppleDouble sidecar files (often seen on external drives).'
+    'Folders sidebar with image counts, directory search, collapsible branches, and folder context menus.',
+    'One continuous image wall with Fill, Grid, List, and compact layouts.',
+    'Virtual scrolling and bounded thumbnail requests for large collections; older disk thumbnails are cleaned automatically.',
+    'Open individual images in a read-only editor with zoom, pan, rotate, flip, minimap, and same-folder navigation.',
+    'Use the optional commands to set Image Viewer as the default image editor or restore the built-in editor.',
+    'Gallery image deletion now moves files to system Trash after confirmation.'
   ],
   barCta: 'What’s new',
   barHint: '— click for details',
@@ -77,13 +76,12 @@ const ANNOUNCEMENT_COPY_EN: AnnouncementStrings = {
 const ANNOUNCEMENT_COPY_ZH_HANS: AnnouncementStrings = {
   modalTitle: `Image Viewer v${ANNOUNCEMENT_ID} 更新说明`,
   features: [
-    '已支持切换明暗主题，默认跟随你的 VS Code 或 Cursor 主题；',
-    '大幅改进缩略图网格性能，完全可用于管理大型高清照片库；',
-    '支持对图片的多种排序方式；',
-    '控制预览密度的参数由 Size 改为 Columns，更好利用面板宽度，布局更美观；',
-    '新增棋盘格与透明色作为预览图背景选项；',
-    '预览图片时显示文件名；',
-    '忽略外置盘上常见的 `._*` AppleDouble 附属文件，不再当作图片列出；',
+    '新增 Folders 侧栏：图片计数、目录搜索、展开与折叠，以及文件夹右键菜单。',
+    '连续图片墙支持 Fill、Grid、List 和紧凑模式。',
+    '目录树与图片墙采用虚拟滚动，缩略图请求有并发和缓存预算，旧磁盘缩略图自动清理。',
+    '单张图片可在只读编辑器中缩放、拖动、旋转、翻转，并使用小地图和同目录切换。',
+    '可通过命令设为默认图片编辑器，或恢复内置编辑器；安装不会自动修改关联。',
+    '图库删除图片时先确认，再移入系统回收站。'
   ],
   barCta: '更新说明',
   barHint: '— 点击查看详情',
@@ -94,13 +92,12 @@ const ANNOUNCEMENT_COPY_ZH_HANS: AnnouncementStrings = {
 const ANNOUNCEMENT_COPY_ZH_HANT: AnnouncementStrings = {
   modalTitle: `Image Viewer v${ANNOUNCEMENT_ID} 更新說明`,
   features: [
-    '已支援切換明暗主題，預設跟隨你的 VS Code 或 Cursor 主題；',
-    '大幅改善縮圖網格效能，完全可用於管理大型高畫質相片庫；',
-    '支援多種圖片排序方式；',
-    '控制預覽密度的參數由 Size 改為 Columns，更好利用面板寬度，版面更美觀；',
-    '新增棋盤格與透明色作為預覽圖背景選項；',
-    '預覽圖片時顯示檔名；',
-    '略過外接儲存裝置上常見的 `._*` AppleDouble 附屬檔，不再當作圖片列出；'
+    '新增 Folders 側欄：圖片計數、目錄搜尋、展開與摺疊，以及資料夾右鍵選單。',
+    '連續圖片牆支援 Fill、Grid、List 和緊湊模式。',
+    '目錄樹與圖片牆採用虛擬捲動，縮圖請求有並行和快取預算，舊磁碟縮圖自動清理。',
+    '單張圖片可在唯讀編輯器中縮放、拖曳、旋轉、翻轉，並使用小地圖和同目錄切換。',
+    '可透過命令設為預設圖片編輯器，或恢復內建編輯器；安裝不會自動修改關聯。',
+    '圖庫刪除圖片時先確認，再移入系統資源回收筒。'
   ],
   barCta: '更新說明',
   barHint: '— 點擊檢視詳情',

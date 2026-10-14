@@ -2,19 +2,25 @@ import type { ImageSortMode } from 'types'
 
 export interface SortableImage {
   fileName: string
+  fileType?: string
   path: string
   fullPath: string
   size: number
   mtimeMs?: number
 }
 
+// Reuse the collator: constructing locale options for every comparison dominates large flat galleries.
+const imageNameCollator = new Intl.Collator(undefined, { sensitivity: 'base', numeric: true })
+
 export const IMAGE_SORT_OPTIONS: { value: ImageSortMode; label: string }[] = [
-  { value: 'nameAsc', label: 'Sort by file name (A–Z)' },
-  { value: 'nameDesc', label: 'Sort by file name (Z–A)' },
-  { value: 'mtimeAsc', label: 'Sort by modified time (oldest first)' },
-  { value: 'mtimeDesc', label: 'Sort by modified time (newest first)' },
-  { value: 'sizeAsc', label: 'Sort by file size (smallest first)' },
-  { value: 'sizeDesc', label: 'Sort by file size (largest first)' }
+  { value: 'nameAsc', label: 'Name (A–Z)' },
+  { value: 'nameDesc', label: 'Name (Z–A)' },
+  { value: 'mtimeAsc', label: 'Modified (oldest first)' },
+  { value: 'mtimeDesc', label: 'Modified (newest first)' },
+  { value: 'sizeAsc', label: 'Size (smallest first)' },
+  { value: 'sizeDesc', label: 'Size (largest first)' },
+  { value: 'typeAsc', label: 'Format (A–Z)' },
+  { value: 'typeDesc', label: 'Format (Z–A)' }
 ]
 
 function normalizeFsPathForComparison(value: string): string {
@@ -35,20 +41,20 @@ export function compareImagesForSort(
   a: SortableImage,
   b: SortableImage
 ): number {
-  if (sameImageFsPath(a.fullPath, clickFilePath)) {
-    return -1
-  }
-  if (sameImageFsPath(b.fullPath, clickFilePath)) {
-    return 1
+  if (clickFilePath) {
+    const priority = Number(sameImageFsPath(b.fullPath, clickFilePath)) - Number(sameImageFsPath(a.fullPath, clickFilePath))
+    if (priority) {
+      return priority
+    }
   }
 
   let c = 0
   switch (mode) {
     case 'nameAsc':
-      c = a.fileName.localeCompare(b.fileName, undefined, { sensitivity: 'base' })
+      c = imageNameCollator.compare(a.fileName, b.fileName)
       break
     case 'nameDesc':
-      c = b.fileName.localeCompare(a.fileName, undefined, { sensitivity: 'base' })
+      c = imageNameCollator.compare(b.fileName, a.fileName)
       break
     case 'mtimeAsc':
       c = (a.mtimeMs ?? 0) - (b.mtimeMs ?? 0)
@@ -62,11 +68,17 @@ export function compareImagesForSort(
     case 'sizeDesc':
       c = (b.size ?? 0) - (a.size ?? 0)
       break
+    case 'typeAsc':
+    case 'typeDesc': {
+      const extension = (image: SortableImage) => (image.fileType ?? image.fileName.slice(image.fileName.lastIndexOf('.') + 1)).toLowerCase()
+      c = imageNameCollator.compare(extension(a), extension(b)) * (mode === 'typeAsc' ? 1 : -1)
+      break
+    }
     default:
-      c = a.fileName.localeCompare(b.fileName, undefined, { sensitivity: 'base' })
+      c = imageNameCollator.compare(a.fileName, b.fileName)
   }
   if (c !== 0) {
     return c
   }
-  return a.path.localeCompare(b.path)
+  return imageNameCollator.compare(a.fileName, b.fileName) || (a.path < b.path ? -1 : a.path > b.path ? 1 : 0)
 }

@@ -7,7 +7,7 @@
 //
 // Browser-only / HMR: run `yarn ui-dev` in another terminal (webpack-dev-server; this template
 // uses port 5000 by default). On http origins, @easy_vscode/webview does not call acquireVsCodeApi;
-// callVscode posts to a no-op unless you mock postMessage / window "message" (e.g. vscodeCallback).
+// add ?mock=1 for generated gallery data and safe simulated file actions.
 //
 // https://go.microsoft.com/fwlink/?linkid=830387
 {
@@ -26,6 +26,19 @@
       "type": "extensionHost",
       "request": "launch",
       "args": ["--disable-extensions", "--extensionDevelopmentPath=${workspaceFolder}"],
+      "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+      "preLaunchTask": "Build Extension & Webview"
+    },
+    {
+      "name": "Run Extension (separate user data; WebStorage may be shared)",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": [
+        "--disable-extensions",
+        "--extensionDevelopmentPath=${workspaceFolder}",
+        "--user-data-dir=${workspaceFolder}/.vscode-test/cache-user-data",
+        "--extensions-dir=${workspaceFolder}/.vscode-test/cache-extensions"
+      ],
       "outFiles": ["${workspaceFolder}/dist/**/*.js"],
       "preLaunchTask": "Build Extension & Webview"
     }

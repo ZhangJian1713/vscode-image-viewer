@@ -2,9 +2,9 @@
   "name": "image-viewer",
   "publisher": "vscode-infra",
   "displayName": "Image Viewer",
-  "description": "Browse images in your project: thumbnail grid, lightbox preview, copy path or Base64. Works well for large folders (columns layout, lazy loading). Light or dark UI; scan one folder from Explorer or the whole workspace.",
+  "description": "Browse workspace images in a fast thumbnail gallery or open individual files in a full-screen custom editor. Includes sorting, filtering, zoom, themes, and large-folder tuning.",
   "icon": "assets/logo.png",
-  "version": "2.0.5",
+  "version": "2.0.6",
   "author": "Zhang Jian <zhangjian1713@gmail.com>",
   "homepage": "https://github.com/ZhangJian1713/vscode-image-viewer",
   "license": "MIT",
@@ -21,6 +21,8 @@
     "gallery",
     "thumbnail",
     "preview",
+    "custom-editor",
+    "default-editor",
     "folder",
     "columns",
     "base64",
@@ -38,7 +40,7 @@
     "commands": [
       {
         "command": "vscode-infra.webviewImageViewer",
-        "title": "View Images 🌄"
+        "title": "View Images \ud83c\udf04"
       },
       {
         "command": "vscode-infra.setAsDefaultImageViewer",
@@ -49,6 +51,11 @@
         "command": "vscode-infra.restoreBuiltInImageViewer",
         "title": "Restore VS Code's Default Image Editor",
         "category": "Image Viewer"
+      },
+      {
+        "command": "vscode-infra.cleanWebviewImageCache",
+        "title": "Clean Gallery WebView Image Cache",
+        "category": "Image Viewer"
       }
     ],
     "customEditors": [
@@ -56,18 +63,42 @@
         "viewType": "vscode-infra.imageViewer",
         "displayName": "Image Viewer",
         "selector": [
-          { "filenamePattern": "*.svg" },
-          { "filenamePattern": "*.png" },
-          { "filenamePattern": "*.jpeg" },
-          { "filenamePattern": "*.jpg" },
-          { "filenamePattern": "*.ico" },
-          { "filenamePattern": "*.gif" },
-          { "filenamePattern": "*.webp" },
-          { "filenamePattern": "*.bmp" },
-          { "filenamePattern": "*.tif" },
-          { "filenamePattern": "*.tiff" },
-          { "filenamePattern": "*.apng" },
-          { "filenamePattern": "*.avif" }
+          {
+            "filenamePattern": "*.svg"
+          },
+          {
+            "filenamePattern": "*.png"
+          },
+          {
+            "filenamePattern": "*.jpeg"
+          },
+          {
+            "filenamePattern": "*.jpg"
+          },
+          {
+            "filenamePattern": "*.ico"
+          },
+          {
+            "filenamePattern": "*.gif"
+          },
+          {
+            "filenamePattern": "*.webp"
+          },
+          {
+            "filenamePattern": "*.bmp"
+          },
+          {
+            "filenamePattern": "*.tif"
+          },
+          {
+            "filenamePattern": "*.tiff"
+          },
+          {
+            "filenamePattern": "*.apng"
+          },
+          {
+            "filenamePattern": "*.avif"
+          }
         ],
         "priority": "option"
       }
@@ -105,7 +136,10 @@
     "ui-build": "npx webpack --config scaffold/webview.webpack.js --color --mode production",
     "lint-staged": "lint-staged",
     "check-type": "tsc --noEmit",
-    "bench:thumb-mac": "node scripts/benchmark-ql-vs-jimp.cjs"
+    "test:resource-cache": "jest src/webview/resourceCache --runInBand",
+    "test:gallery": "jest src/folderFilterRules.test.ts src/webview/webviewPalette.test.ts src/webview/PreviewImages/gallery*.test.* src/webviewController/imagesViewer/*.test.ts --runInBand",
+    "bench:thumb-mac": "node scripts/benchmark-ql-vs-jimp.cjs",
+    "test:preview": "jest src/vendor/right-image-preview --runInBand"
   },
   "repository": {
     "type": "git",
@@ -194,7 +228,8 @@
     "webpack-bundle-analyzer": "^4.4.2",
     "webpack-cli": "^4.7.2",
     "webpack-dev-server": "^3.11.2",
-    "webpack-resolve-config-plugin": "^1.0.0"
+    "webpack-resolve-config-plugin": "^1.0.0",
+    "right-image-preview": "0.2.0"
   },
   "dependencies": {
     "@ant-design/icons": "^5.5.0",
@@ -211,10 +246,10 @@
     "jimp": "0.22.12",
     "json5": "^2.2.3",
     "lodash": "^4.17.21",
+    "picomatch": "4.0.7",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-i18next": "^11.18.3",
-    "right-image-preview": "^0.2.0",
     "styled-components": "^5.3.0"
   },
   "resolutions": {

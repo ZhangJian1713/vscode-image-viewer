@@ -1,8 +1,9 @@
 import * as React from 'react'
 import { ConfigProvider, theme } from 'antd'
 import './antd-global.css'
-import { isVscodeThemeDark, subscribeVsCodeTheme } from './vscodeTheme'
+import { readVscodeThemeSnapshot, subscribeVsCodeTheme } from './vscodeTheme'
 import { applyBodySemanticTokens, clearBodySemanticTokens } from './semanticTokens'
+import { resolveWebviewPalette, effectiveWebviewTheme } from './webviewPalette'
 import { WebviewThemeProvider } from './WebviewThemeContext'
 import type { WebviewUiThemePreference } from 'types'
 
@@ -14,11 +15,17 @@ export interface WebviewRootProps {
 
 /** Align Ant Design with VS Code or user-forced light/dark (no webview reload). */
 export const AntdWebviewShell: React.FC<WebviewRootProps> = ({ components }) => {
-  const [vscodeIsDark, setVscodeIsDark] = React.useState(isVscodeThemeDark)
+  const [hostTheme, setHostTheme] = React.useState(readVscodeThemeSnapshot)
+  const vscodeIsDark = hostTheme.dark
   const [uiThemePreference, setUiThemePreference] = React.useState<WebviewUiThemePreference>('follow')
-  React.useEffect(() => subscribeVsCodeTheme(setVscodeIsDark), [])
+  React.useEffect(() => subscribeVsCodeTheme(setHostTheme), [])
 
-  const effectiveIsDark = uiThemePreference === 'follow' ? vscodeIsDark : uiThemePreference === 'dark'
+  const effectiveTheme = effectiveWebviewTheme(uiThemePreference, vscodeIsDark)
+  const effectiveIsDark = effectiveTheme === 'dark'
+  const palette = React.useMemo(
+    () => resolveWebviewPalette(uiThemePreference, hostTheme),
+    [uiThemePreference, hostTheme]
+  )
   const cyclePreference = React.useCallback(() => {
     setUiThemePreference((p) => (p === 'follow' ? 'light' : p === 'light' ? 'dark' : 'follow'))
   }, [])
@@ -34,49 +41,32 @@ export const AntdWebviewShell: React.FC<WebviewRootProps> = ({ components }) => 
     [vscodeIsDark, uiThemePreference, effectiveIsDark, cyclePreference]
   )
 
-  /** Height chain uses flex (see antd-global.css); keep colors here. */
-  const rootWrapStyle: React.CSSProperties =
-    uiThemePreference === 'follow'
-      ? {
-          backgroundColor: 'var(--vscode-editor-background)',
-          color: 'var(--vscode-editor-foreground)'
-        }
-      : effectiveIsDark
-      ? { backgroundColor: '#141414', color: 'rgba(255,255,255,0.85)' }
-      : { backgroundColor: '#ffffff', color: 'rgba(0,0,0,0.88)' }
+  const rootWrapStyle: React.CSSProperties = {
+    ...palette.tokens,
+    backgroundColor: palette.tokens['--iv-background'],
+    color: palette.tokens['--iv-primary-fg']
+  }
 
   React.useEffect(() => {
-    const body = document.body
-    const root = document.getElementById('root')
-    applyBodySemanticTokens(uiThemePreference, effectiveIsDark)
-    if (uiThemePreference === 'follow') {
-      body.style.removeProperty('background-color')
-      body.style.removeProperty('color')
-      root?.style.removeProperty('background-color')
-      root?.style.removeProperty('color')
-    } else if (effectiveIsDark) {
-      body.style.backgroundColor = '#141414'
-      body.style.color = 'rgba(255,255,255,0.85)'
-      if (root) {
-        root.style.backgroundColor = '#141414'
-        root.style.color = 'rgba(255,255,255,0.85)'
-      }
-    } else {
-      body.style.backgroundColor = '#ffffff'
-      body.style.color = 'rgba(0,0,0,0.88)'
-      if (root) {
-        root.style.backgroundColor = '#ffffff'
-        root.style.color = 'rgba(0,0,0,0.88)'
-      }
-    }
+    // Portal 与页面始终共用同一份 palette，手动主题不改写宿主 --vscode-* 变量。
+    applyBodySemanticTokens(palette.tokens)
+    const elements = [document.body, document.getElementById('root')].filter(Boolean)
+    const previous = elements.map((element) => ({
+      background: element.style.backgroundColor,
+      color: element.style.color
+    }))
+    elements.forEach((element) => {
+      element.style.backgroundColor = palette.tokens['--iv-background']
+      element.style.color = palette.tokens['--iv-primary-fg']
+    })
     return () => {
       clearBodySemanticTokens()
-      body.style.removeProperty('background-color')
-      body.style.removeProperty('color')
-      root?.style.removeProperty('background-color')
-      root?.style.removeProperty('color')
+      elements.forEach((element, index) => {
+        element.style.backgroundColor = previous[index].background
+        element.style.color = previous[index].color
+      })
     }
-  }, [uiThemePreference, effectiveIsDark])
+  }, [palette])
 
   let currentView = (window as any).currentView
   if (currentView === NO_CURRENT_VIEW) {
@@ -90,25 +80,44 @@ export const AntdWebviewShell: React.FC<WebviewRootProps> = ({ components }) => 
         theme={{
           algorithm: effectiveIsDark ? theme.darkAlgorithm : theme.defaultAlgorithm,
           token: {
-            colorLink:
-              uiThemePreference === 'follow' ? 'var(--vscode-textLink-foreground)' : '#1677ff',
-            colorTextDescription:
-              'var(--iv-secondary-fg, var(--vscode-descriptionForeground))',
-            colorTextSecondary:
-              'var(--iv-secondary-fg, var(--vscode-descriptionForeground))',
-            colorTextPlaceholder:
-              'var(--iv-placeholder-fg, var(--vscode-input-placeholderForeground))'
+            colorLink: palette.tokens['--iv-link-fg'],
+            colorPrimary: palette.tokens['--iv-accent'],
+            colorPrimaryHover: palette.tokens['--iv-button-hover'],
+            colorText: palette.tokens['--iv-ui-fg'],
+            colorBgContainer: palette.tokens['--iv-input-background'],
+            colorBgElevated: palette.tokens['--iv-popup-background'],
+            colorBorder: palette.tokens['--iv-input-border'],
+            colorSplit: palette.tokens['--iv-border'],
+            controlItemBgHover: palette.tokens['--iv-hover-background'],
+            controlItemBgActive: palette.tokens['--iv-selected-background'],
+            colorTextDescription: 'var(--iv-secondary-fg)',
+            colorTextSecondary: 'var(--iv-secondary-fg)',
+            colorTextPlaceholder: 'var(--iv-placeholder-fg)'
+          },
+          components: {
+            Button: { primaryColor: palette.tokens['--iv-button-fg'] },
+            Tree: {
+              nodeSelectedBg: palette.tokens['--iv-selected-background'],
+              nodeSelectedColor: palette.tokens['--iv-selected-fg']
+            },
+            Input: {
+              colorText: palette.tokens['--iv-input-fg'],
+              activeBorderColor: palette.tokens['--iv-focus-border']
+            },
+            Select: { colorText: palette.tokens['--iv-input-fg'] }
           }
         }}
         getPopupContainer={(triggerNode) => {
-          if (triggerNode) return triggerNode
+          if (triggerNode) {
+            return triggerNode
+          }
           return document.body
         }}
       >
         <div
           className='webview-app-root'
           data-ui-theme={uiThemePreference}
-          data-effective-light={effectiveIsDark ? 'false' : 'true'}
+          data-effective-theme={effectiveTheme}
           style={rootWrapStyle}
         >
           <CurrentComponent />

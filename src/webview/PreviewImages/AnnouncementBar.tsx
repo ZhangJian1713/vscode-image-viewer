@@ -1,5 +1,5 @@
-import { BulbOutlined, GithubOutlined, StarOutlined } from '@ant-design/icons'
-import { callVscode } from '@easy_vscode/webview'
+import { BulbOutlined, GithubOutlined, StarOutlined, ExportOutlined } from '@ant-design/icons'
+import { callGalleryHost } from './galleryBridge'
 import { Button, Modal, Space } from 'antd'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { MESSAGE_CMD } from '../../constants'
@@ -13,7 +13,7 @@ import {
 } from './announcementConfig'
 
 function openExternalUrl(url: string): void {
-  callVscode({ cmd: MESSAGE_CMD.OPEN_EXTERNAL_URI, data: { url } })
+  callGalleryHost({ cmd: MESSAGE_CMD.OPEN_EXTERNAL_URI, data: { url } })
 }
 
 export type AnnouncementBarProps = {
@@ -70,15 +70,24 @@ export const AnnouncementBar: React.FC<AnnouncementBarProps> = ({ hostUiLanguage
         </Button>
         <Space size={4} className='iv-announcement-bar__right'>
           <Button
-            type='default'
+            type='text'
             size='small'
+            className='iv-community-link'
             icon={<GithubOutlined />}
+            aria-label='Open GitHub issues'
             onClick={() => openExternalUrl(ISSUES_URL)}
           >
-            Issues
+            Issues <ExportOutlined className='iv-community-external' />
           </Button>
-          <Button type='default' size='small' icon={<StarOutlined />} onClick={() => openExternalUrl(REPOSITORY_URL)}>
-            Star
+          <Button
+            type='text'
+            size='small'
+            className='iv-community-link'
+            icon={<StarOutlined />}
+            aria-label='Open GitHub repository'
+            onClick={() => openExternalUrl(REPOSITORY_URL)}
+          >
+            Star <ExportOutlined className='iv-community-external' />
           </Button>
         </Space>
       </div>
@@ -93,7 +102,6 @@ export const AnnouncementBar: React.FC<AnnouncementBarProps> = ({ hostUiLanguage
           </Button>
         ]}
         width={560}
-        destroyOnClose
       >
         <ul className='iv-announcement-feature-list'>
           {modalCopy.features.map((text) => (
