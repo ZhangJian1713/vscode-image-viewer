@@ -1,10 +1,10 @@
 # Gallery：目录树与连续图片墙
 
+语言设置、三语言覆盖与热切换状态保持见 [国际化设计](./internationalization-design.md)。
+
 ## 当前范围
 
-图库保留 `<img>` 与 `right-image-preview` 的 DOM 图片预览，单图编辑器入口不变。本次替换图库手风琴分组：左侧为可收起、可调整宽度的 Image folders tree；右侧为统一虚拟化的 Fill / Grid / List 图片墙。相关文件按职责拆分，不在 App 中维护多套派生列表。
-
-首版复用现有扫描范围：普通入口使用当前项目根，Explorer 的文件夹入口使用该目录，图片入口使用其父目录。目录树只包含已扫描图片的直属目录及祖先，不额外扫描空目录。多根工作区和虚拟文件系统仍沿用现有宿主范围限制，未在本轮宣称完整支持。
+图库保留 `<img>` 与 `right-image-preview` 的 DOM 图片预览，单图编辑器入口不变。本次替换图库手风琴分组：左侧为可收起、可调整宽度的 Image folders 目录树；右侧为统一虚拟化的 Grid / Fill / List 图片墙。相关文件按职责拆分，不在 App 中维护多套派生列表。
 
 图库入口统一按所属工作区根目录扫描和复用面板，Explorer 的目标资源只决定初始定位位置，不再缩小扫描范围。普通文件、图片和文件夹入口共用同一根目录图库；不同 workspace folder 独立。目录树只包含扫描到的图片目录及祖先，根节点即使为空也保留。文件系统访问仍采用 Extension Host 的 Node 文件系统，未新增虚拟文件系统支持。
 
@@ -49,13 +49,11 @@
 
 `FolderSidebar.tsx` 封装已有 Ant Design Tree：虚拟滚动、受控选择/展开、目录搜索、递归计数、侧栏显隐与拖动宽度。所有节点有右键菜单和省略号入口：在 Explorer/系统文件管理器定位、复制完整/项目相对路径、展开/折叠子树、排除扫描。根节点不允许排除。
 
-侧栏标题为 `Image folders`，强调只显示扫描范围内含图片的目录及其祖先。图片右键与省略号菜单提供 `Reveal in Image folders`，与 `Reveal in Explorer` 分开：复用已有快照，显示侧栏、清空目录搜索、展开并居中选中图片的直接目录，临时清空图片名称/路径搜索，再居中并高亮原图；无需打开预览或请求宿主定位。保留当前有效的 Types、Include subfolders 与扫描规则，`Restore filters` 可恢复保存的搜索。目录与图片定位请求使用递增序号；重复定位同一目录仍生效。
+侧栏标题为 `Image folders`，强调只显示扫描范围内含图片的目录及其祖先。图片右键与省略号菜单提供 `Reveal in Image folders`，与 `Reveal in Explorer` 分开：复用已有快照，显示侧栏、清空目录搜索、展开并居中选中图片的直接目录，临时清空图片名称/路径搜索，再居中并高亮原图；无需打开预览或请求宿主定位。保留当前有效的 Types、Include subfolders 与扫描规则，`Restore filters` 可恢复保存的搜索。目录定位请求使用独立递增序号，避免与 Explorer 入口序号冲突；重复定位同一目录仍生效。
 
 菜单复用 `GALLERY_RESOURCE_ACTION`，宿主 canonicalize 目标并校验项目边界。图片菜单保留复制 Base64，并提供有确认的移入系统 Trash 操作；不自动降级成永久删除。文件夹删除/移动/重命名未加入本轮范围。
 
 ## 筛选、设置与反馈
-
-界面语言与热切换协议见 [国际化设计](internationalization-design.md)。
 
 Folder filters 位于 Find folder 右侧，展开后以 VS Code Search 风格直接显示 folders to include / exclude。Types 与 Sort 使用有底色的图库控件，社群入口使用无边框文字外链及跳转图标。搜索框下不再显示重复路径和独立子目录开关；标题的 breadcrumb 保留用于返回上级目录。Include subfolders 位于 Image folders 菜单内，切换时同时更新目录计数与当前结果。
 
@@ -73,12 +71,14 @@ Folder filters 位于 Find folder 右侧，展开后以 VS Code Search 风格直
 
 Feedback 提供已有 Issue 列表、新建 Issue 指引，以及打开邮件应用的 mailto 入口，不自动提交 Issue 或发送邮件。Mock 通过统一 transport 模拟外部链接动作。
 
+顶部 What’s new 复用版本公告机制：v2.1.1 公告完整保留 v2.1.0 内容，并新增一条简短的安全修复说明；此前是否安装或关闭过 v2.1.0 公告，均不影响首次打开图库时展示同一份 v2.1.1 公告。公告以 Feature、Improvement、Bugfix、Compatibility 标记每条更新，提供英文、简体中文、繁体中文文案，末尾邀请用户通过右下角 Settings → Feedback 分享体验。公告正文独立滚动，关闭按钮保留可见；关闭状态按公告版本保存，升级后再次提示，之后仍可手动重新打开。
+
 ### Folder filters 与 Glob
 
 - Find folder 在已扫描目录树中按名字查找；选择结果后按该目录显示图片。include/exclude 限定扫描与计数，二者同时使用；收起输入区不清除已应用的规则。
 - 每行一条项目相对目录规则，支持普通路径和 `*`、`**`、`?`、`[]`、`{a,b}`。不按逗号拆分，保留 brace 和旧的逗号目录名。支持 `/` 和 Windows 目录分隔符，普通目录路径继续表示整个子树。
 - 匹配某个目录后，该规则作用于整个子树；exclude 优先。`assets/*` 匹配 assets 的直接子目录，并包含这些目录的后代。空 include 表示当前入口的完整范围；`**` 匹配整个范围。
-- Explorer 文件夹入口与 include 规则取交集，exclude 同样适用；不会通过规则扩大到入口以外的目录。相较旧实现，该入口现在也遵守 include。
+- Explorer 入口定位与根目录扫描范围分离；扫描以根为基准应用 include/exclude，不因目标入口改变这些规则。目标子树优先扫描同样遵守规则，不扫描排除分支。
 - 输入规则是草稿；Enter / Apply 才保存并扫描，Shift+Enter 换行。关闭输入区丢弃未应用的草稿；外部菜单改变规则时重新载入表单。错误表达式阻止应用，扫描端也验证；错误配置不阻止打开侧栏修正。
 - 一组最多 64 条、每条最多 512 字符；不支持 `!` 反选、extglob 或原始 regex。使用 exclude 和 brace alternatives 表达对应意图。类型过滤仍由 Types 管理，目录规则不匹配图片文件名。
 - `folderFilterRules.ts` 封装 Picomatch，规则每次扫描只编译一次；从 include 的固定目录前缀开始扫描，合并被父根覆盖的重复根。排除子树在 readdir 前剪枝，只对符合 include 的目录执行图片 stat。静态入口不能通过符号链接逃逸项目边界。
@@ -94,7 +94,8 @@ Feedback 提供已有 Issue 列表、新建 Issue 指引，以及打开邮件应
 
 `galleryLayout.ts` 参考 Media Lens 的固定行布局：总高度 O(1) 计算，只物化视口附近的项，不为全库创建坐标数组。`VirtualGallery.tsx` 使用一个滚动容器、一个 ResizeObserver、每帧至多一次 viewport 更新。图片卡片按稳定文件路径 memo，不逐卡创建 IntersectionObserver 或 ResizeObserver。
 
-- Fill：同一方形格子内 `object-fit: cover`；Grid：`contain`。
+- 布局入口依次为 Grid、Fill、List。没有保存过布局或配置值无效时默认 Grid；已有的 Fill/Grid/List 偏好继续保留。宿主默认配置、WebView 初始状态与配置规范化、浏览器 Mock 使用相同默认值。
+- Grid：同一方形格子内 `object-fit: contain`，显示完整图片；Fill：`cover`，裁切填满格子。
 - 缩略图尺寸滑动条统一左小右大：Fill/Grid 反向映射 20～1 列，List 保持 40～160px；加载旧配置时将列数夹紧至 1～20。拖动 tooltip 显示实际渲染边长（CSS px）和有效列数，底栏常驻像素值。虚拟图库只在尺寸/有效列数变化时报告几何，不因滚动同步父组件。
 - 背景选项首项为 No background（圆圈斜线图标），其次为 Checkerboard 和纯色。沿用持久化值 `transparent`；缩略图外层不再绘制底色、边框或阴影，透明像素和 Grid 留白直接透出图片墙底色。键盘焦点和悬停菜单仍可见。
 - List：缩略图、文件名/相对路径、大小、按需原图尺寸、修改时间；窄面板逐步收起附加列。
@@ -155,8 +156,8 @@ Feedback 提供已有 Issue 列表、新建 Issue 指引，以及打开邮件应
 - `sharpThumbnail.ts` 用 Node `createRequire` 加载 `dist/native/sharp-runtime` 中的独立运行时；与基准和 smoke check 共用 `native/sharp-thumbnail.cjs`。使用 autoOrient、fit:inside、withoutEnlargement、白色 flatten、JPEG Q78；关闭 libvips operation cache，保留图库既有磁盘缓存；单图内部线程设为 1，依靠多个任务并行，避免与宿主争抢全部核心。此参数是保守默认，不声称在 Windows 上已经调优到最优值。
 - Sharp 路径覆盖 JPEG / PNG / WebP / GIF / TIFF / AVIF / APNG；BMP / ICO 当前使用原图，macOS 仍可由 ImageIO 生成。动画仅首帧，不新增格式入口。系统/libvips 无法解码的输入也返回原图。
 - `prepare-sharp.cjs` 解析并复制 Sharp 实际运行依赖（包括 nested semver 的正确版本），不由 Webpack 解析动态原生 require。开发构建保留当前平台 Sharp 以便基准测试；发布构建 macOS 不准备 Sharp，Windows/Linux 仅准备目标平台。外国平台包从官方 npm 下载并校验 integrity，不执行其代码；保留 LICENSE、第三方说明和版本清单。
-- `vsix-targets.cjs` 集中维护平台名称/映射。`yarn vsix` 默认生成宿主平台包，`IMAGE_VIEWER_VSIX_TARGET=win32-x64 yarn vsix` 可指定平台，各目标包需串行构建。矩阵复用一次 WebView 构建，并在结束后恢复宿主产物供 F5 使用；共享 dist 不可并行打包。macOS 包只含 ImageIO；其他包只含目标 Sharp/libvips，Webpack 清理旧 dist，发布前校验平台标识和后端内容。通用 VSIX 不再属于发布流程。
-- CopyWebpackPlugin 将 Sharp vendor 运行文件标记为已处理，避免生产模式 Terser 二次压缩/改写；保留原始 CJS/ESM 文件及许可证，支持 Sharp 新版 import attributes 语法。发布包须检查 VSIX 身份、版本、平台和原生依赖。
+- `vsix-targets.cjs` 集中维护平台名称/映射。`yarn vsix` 默认生成宿主平台包，`IMAGE_VIEWER_VSIX_TARGET=win32-x64 yarn vsix` 可指定平台，`yarn vsix:all` 串行生成 9 个目标包。矩阵复用一次 WebView 构建，并在结束后恢复宿主产物供 F5 使用；共享 dist 不可并行打包。macOS 包只含 ImageIO；其他包只含目标 Sharp/libvips，Webpack 清理旧 dist，发布前校验平台标识和后端内容。通用 VSIX 不再属于发布流程。
+- CopyWebpackPlugin 将 Sharp vendor 运行文件标记为已处理，避免生产模式 Terser 二次压缩/改写；保留原始 CJS/ESM 文件及许可证，支持 Sharp 新版 import attributes 语法。Open VSX CLI 上传流程见 `docs/open-vsx-publishing.md`，发布前检查 VSIX 身份、版本、平台和原生依赖。
 - 直接比较见 [2026-10-14 基准报告](thumbnail-backend-benchmark-2026-10-14.md)：相同 12 张混合输入，200/400/800px、外层 1/2/4/8 并发及 Sharp 内部 1/4/默认线程。当前规格下 ImageIO 在混合批次更快、更省 RSS，因此 macOS 保留 ImageIO。不能把此结论泛化为所有格式或所有硬件，也不是等画质的编码器比较。
 - `yarn test:sharp` 验证独立运行时；`yarn test:thumbnail-native` 验证实际 TS 适配器在打包路径加载。Windows/Linux 分支、缓存失败与去重有程序化验证；本机只执行了 macOS arm64 原生代码，Windows/Linux 实机验证仍待完成。
 

@@ -79,14 +79,14 @@ test.each(['en', 'zh-CN', 'zh-TW'])(
   }
 )
 
-test.each([null, '2.0.5', '2.0.4'])(
-  'shows the same 2.0.6 announcement with dismissal state %s, saves dismissal, and allows manual reopening',
+test.each([null, '2.0.6', '2.1.0'])(
+  'shows the same 2.1.1 announcement with dismissal state %s, saves dismissal, and allows manual reopening',
   (dismissedVersion) => {
     expect(ANNOUNCEMENT_ID).toBe(require('../../../package.json').version)
     if (dismissedVersion) { localStorage.setItem(ANNOUNCEMENT_DISMISS_STORAGE_KEY, dismissedVersion) }
     render('zh-CN')
     const dialog = root.querySelector('[role="dialog"]')!
-    expect(dialog.textContent).toContain('v2.0.6')
+    expect(dialog.textContent).toContain('v2.1.1')
     const copy = getAnnouncementStrings('zh-CN')
     expect(Array.from(dialog.querySelectorAll('li')).map((item) => item.textContent))
       .toEqual(copy.updates.map((item) => copy.categoryLabels[item.kind] + item.text))

@@ -1,25 +1,47 @@
 # Changelog
 
-## [Unreleased]
+## Unreleased
+
+### Added
+
+- Add live English, Simplified Chinese and Traditional Chinese language switching, with a user-level setting shared by gallery and single-image panels while preserving browsing and preview state.
 
 ### Fixed
 
 - Upgrade `@easy_vscode/webview` to 2.0.2 so HTTP(S) WebViews, including code-server, initialize host messaging instead of leaving the gallery stuck at “Scanning…”. Preserve the existing host command, resource and CSP restrictions.
 
-### Security
-
-- Restrict WebView commands, scripts, feedback links and file access; validate configuration writes and bind each gallery to its host-resolved workspace root.
+## [2.1.1] - 2026-10-14
 
 ### Added
 
-- Reuse one project-root gallery for Explorer entries and prioritize the requested subtree during scanning, with explicit navigation and temporary view filters.
+- Add batch commands to publish macOS/Windows packages to Marketplace, Open VSX, or both, plus an offline rehearsal and a read-only publication status check. Reuse inspected packages, verify existing package hashes before skipping, and distinguish accepted uploads from public availability.
+- Add pre-release code checks and post-build native thumbnail/package verification to the combined release command; include TSX in ESLint checks.
+
+### Security
+
+- Upgrade `@easy_vscode/core` to 3.0.0, remove built-in shell/arbitrary VS Code command messages, isolate panel handlers, and use nonce-based production script policies for gallery and single-image HTML.
+- Bind gallery roots in the host, validate image operations against canonical project paths, narrow resource roots, and replace arbitrary URI opening with fixed feedback actions.
+- Validate persisted preferences and scan rules, use atomic configuration writes, and remove the unnecessary npm `child_process` package. Existing gallery, single-image, file-menu and feedback features remain available.
+
+### Changed
+
+- Rename the gallery sidebar to **Image folders**. Image menus now offer **Reveal in Image folders**, which shows, selects, and centers the containing directory, temporarily clears image search, and centers/highlights the original image so neighboring images can be browsed. Saved search, type filters, and Include subfolders preferences are preserved.
+- Show the same v2.1.1 announcement to new users and users upgrading from any earlier version, including those who dismissed v2.1.0. Retain all v2.1.0 announcement content and add a brief security-fix note in English, Simplified Chinese, and Traditional Chinese.
+- Put Grid before Fill in the gallery layout controls and use Grid by default when no layout is saved. Preserve existing layout preferences.
+- Update the Marketplace description and keywords to highlight Image Viewer as a replacement for VS Code's default image viewer alongside the workspace gallery.
+
+## [2.1.0] - 2026-10-14
+
+### Added
+
+- **Categorized release announcement:** v2.1.0 notes label each item as Feature, Improvement, Bugfix, or Compatibility in English, Simplified Chinese, and Traditional Chinese, with an invitation to share experience via the bottom-right **Settings → Feedback**.
 
 - **Adaptive preview zoom:** Space and a primary-mouse click share a two/three-state cycle, with pointer/viewport-center anchoring, click-versus-pan arbitration, and short zoom hints.
 - **Scrollbar folder indication:** viewport folder HUD and temporary tree reveal/highlight while dragging; landing highlights persist without changing selection or saved expansion.
 
 - **Extended zoom presets:** 250%, 300%, 400%, 600%, and 800% in the gallery preview and direct image editor.
 
-- **Folder scan rules:** project-relative directory paths and Glob expressions, with validation and shared host/Mock matching. Includes and exclusions compose with scoped folder entries.
+- **Folder scan rules:** project-relative directory paths and Glob expressions, with validation and shared host/Mock matching. Includes and exclusions apply to project-root scans and prioritized entry subtrees.
 - **Settings and feedback:** separate folder scan filters from settings; add Gallery and Feedback tabs, with file-size display preferences and GitHub issue/email entry points.
 - **Folders sidebar:** virtualized directory tree with image counts, folder search, expandable branches, context menus, sidebar visibility, and adjustable width.
 - **Gallery layouts:** continuous Fill, Grid, and List views with compact mode, adjustable density, and scroll position preservation across layouts.
@@ -32,8 +54,14 @@
 
 ### Changed
 
-- Rename the gallery sidebar to **Image folders**. Image menus now offer **Reveal in Image folders**, which shows, selects, and centers the containing directory, temporarily clears image search, and centers/highlights the original image so neighboring images can be browsed. Saved search, type filters, and Include subfolders preferences are preserved.
+- Add a subtle, centered thumbnail zoom on hover across Fill, Grid, and List, respecting reduced-motion preferences.
 
+- Explorer folder/file entries locate the nearest directory with image resources in a project-root gallery. Image entries center/highlight the thumbnail and open preview; empty directories fall back to their nearest available ancestor. Search/type filters are temporarily relaxed without changing saved filters or Include subfolders.
+- Prioritize the requested subtree during the initial root scan, publish it once, then complete the project index without traversing directories twice. Switching entries in an open gallery reuses the snapshot; configuration and file actions stay bound to the correct workspace root.
+
+- Publish platform-specific VSIX packages: macOS includes only ImageIO; Windows/Linux include only the target Sharp/libvips runtime. Default packaging selects the build host, with a separate command for the full target matrix.
+- Replace Windows/Linux Jimp and WebP WASM thumbnails with Sharp 0.35.5, with bounded native concurrency and prepackaged platform binaries. Require VS Code 1.92+, using the host's embedded Node.js rather than a system installation. Keep macOS ImageIO after the direct concurrency benchmark.
+- Replace all macOS thumbnail subprocess paths with an in-process ImageIO Node-API module, running asynchronously with up to four jobs. Bundle Apple Silicon/Intel binaries, honor EXIF orientation, and invalidate old backend cache entries; no sips or Quick Look fallback remains.
 - During scrollbar tracking, expand only the current viewport's folder ancestors and collapse offscreen branches, temporarily overriding saved/search expansion without persisting it.
 - Default to natural folder order with configurable name, modified-time, size, or format sorting inside each folder. Offer global sorting separately; disable folder HUD/tree tracking in global mode. Sorting changes reuse the scan snapshot.
 - Center viewport folder highlights as a group in the tree, with a uniform subtle background and no overlapping accent bar.
@@ -47,7 +75,7 @@
 - Integrate include/exclude fields beside Find folder using an expandable Search-style area; apply drafts explicitly and retain active filters when collapsed.
 - Move theme controls to the bottom-right, place Include subfolders in the Folders menu, remove the redundant scope row, and distinguish community links from gallery filters.
 - Replace accordion folder groups with one virtualized image wall. Folder-first and global sorting both apply to the complete filtered result; preview navigation follows that result.
-- Scan image folders asynchronously and cancel superseded scans. Thumbnail generation is deduplicated and limited to two concurrent jobs; the wall prioritizes visible requests and bounds unused URL results.
+- Scan image folders asynchronously and cancel superseded scans. Thumbnail generation is deduplicated and limited to four concurrent jobs; the wall prioritizes visible requests and bounds unused URL results.
 - Check the thumbnail disk cache on startup and periodically, evict older entries when size/file-count budgets are exceeded, and invalidate cached paths after deletion.
 - Image deletion from the gallery now moves supported files to system Trash after confirmation, without falling back to permanent deletion.
 

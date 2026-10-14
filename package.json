@@ -2,9 +2,9 @@
   "name": "image-viewer",
   "publisher": "vscode-infra",
   "displayName": "Image Viewer",
-  "description": "Browse workspace images in a fast thumbnail gallery or open individual files in a full-screen custom editor. Includes sorting, filtering, zoom, themes, and large-folder tuning.",
+  "description": "A replacement for VS Code's default image viewer with zoom, pan, rotation, flip, and same-folder navigation. Includes a fast workspace gallery with folder search, filters, and Grid/Fill/List layouts.",
   "icon": "assets/logo.png",
-  "version": "2.0.6",
+  "version": "2.1.1",
   "author": "Zhang Jian <zhangjian1713@gmail.com>",
   "homepage": "https://github.com/ZhangJian1713/vscode-image-viewer",
   "license": "MIT",
@@ -17,22 +17,30 @@
   ],
   "keywords": [
     "image",
-    "images",
+    "image viewer",
+    "image preview",
+    "default image viewer",
+    "photo viewer",
+    "image gallery",
     "gallery",
     "thumbnail",
     "preview",
     "custom-editor",
     "default-editor",
+    "zoom",
+    "pan",
+    "rotate",
+    "flip",
+    "minimap",
     "folder",
-    "columns",
-    "base64",
+    "search",
+    "filter",
     "svg",
     "png",
     "jpg",
     "webp",
-    "img",
-    "pic",
-    "photos"
+    "gif",
+    "avif"
   ],
   "main": "./dist/extension.js",
   "webviewVendorTemplate": "antd-less",
@@ -134,8 +142,8 @@
           "enumItemLabels": [
             "%language.follow%",
             "English",
-            "\u7b80\u4f53\u4e2d\u6587",
-            "\u7e41\u9ad4\u4e2d\u6587"
+            "简体中文",
+            "繁體中文"
           ],
           "description": "%language.description%"
         }
@@ -241,16 +249,19 @@
     "html-webpack-plugin": "^5.3.2",
     "husky": "4.2.3",
     "jest": "^27.0.6",
+    "jimp": "0.22.12",
     "less": "^4.1.1",
     "less-loader": "^10.0.1",
     "lint-staged": "^11.0.1",
     "mini-css-extract-plugin": "^2.1.0",
     "mocha": "^8.4.0",
+    "ovsx": "1.1.1",
     "prettier": "^2.3.2",
     "prettier-eslint-cli": "^5.0.1",
     "progress-bar-webpack-plugin": "^2.1.0",
     "react-docgen-typescript-loader": "^3.7.2",
     "react-hot-loader": "^4.13.0",
+    "right-image-preview": "0.2.0",
     "source-map-loader": "^3.0.0",
     "speed-measure-webpack-plugin": "^1.5.0",
     "style-loader": "^3.2.1",
@@ -269,10 +280,7 @@
     "webpack-bundle-analyzer": "^4.4.2",
     "webpack-cli": "^4.7.2",
     "webpack-dev-server": "^3.11.2",
-    "webpack-resolve-config-plugin": "^1.0.0",
-    "right-image-preview": "0.2.0",
-    "jimp": "0.22.12",
-    "ovsx": "1.1.1"
+    "webpack-resolve-config-plugin": "^1.0.0"
   },
   "dependencies": {
     "@ant-design/icons": "^5.5.0",
@@ -291,8 +299,8 @@
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-i18next": "^11.18.3",
-    "styled-components": "^5.3.0",
-    "sharp": "0.35.5"
+    "sharp": "0.35.5",
+    "styled-components": "^5.3.0"
   },
   "resolutions": {
     "webpack": "5.73.0",

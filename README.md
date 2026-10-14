@@ -12,7 +12,7 @@ Click any screenshot to view it at full size.
 
 Watch the image wall and folder navigation in action.
 
-<video src="https://raw.githubusercontent.com/ZhangJian1713/vscode-image-viewer/main/assets/demos/gallery-demo.mp4" poster="https://raw.githubusercontent.com/ZhangJian1713/vscode-image-viewer/main/assets/demos/gallery-demo-poster.jpg" width="800" controls preload="none"></video>
+<video src="https://raw.githubusercontent.com/ZhangJian1713/vscode-image-viewer/main/assets/demos/gallery-demo.mp4" poster="https://public-img-1253867148.cos.ap-singapore.myqcloud.com/img-in-docs/vscode-image-viewer/gallery-demo-poster.webp" width="800" style="max-width:100%;height:auto;" controls preload="none"></video>
 
 [Watch or download the video](https://raw.githubusercontent.com/ZhangJian1713/vscode-image-viewer/main/assets/demos/gallery-demo.mp4).
 
@@ -29,7 +29,7 @@ Watch the image wall and folder navigation in action.
 
 Zoom into details, pan with the minimap, and browse nearby images without changing the original files.
 
-[![Single-image viewer with zoom, rotation, flip, and navigation minimap](https://raw.githubusercontent.com/ZhangJian1713/vscode-image-viewer/main/assets/screenshots/single-image-editor-blue-marble.jpg)](https://raw.githubusercontent.com/ZhangJian1713/vscode-image-viewer/main/assets/screenshots/single-image-editor-blue-marble.jpg)
+[![Single-image viewer with zoom, rotation, flip, and navigation minimap](https://public-img-1253867148.cos.ap-singapore.myqcloud.com/img-in-docs/vscode-image-viewer/single-image-editor-blue-marble.webp)](https://public-img-1253867148.cos.ap-singapore.myqcloud.com/img-in-docs/vscode-image-viewer/single-image-editor-blue-marble.webp)
 
 - **Zoom and pan:** use the mouse wheel, toolbar, or enter a percentage. Press **Space** or click the image to cycle through two or three zoom levels suited to its size. Zoom presets extend to **800%**.
 - **Inspect details:** drag an enlarged image or navigate with the minimap.
@@ -37,47 +37,45 @@ Zoom into details, pan with the minimap, and browse nearby images without changi
 - **Navigate:** browse other images in the same folder with toolbar buttons, side arrows, or keyboard controls. The order follows Explorer's sorting settings.
 - **Unobstructed viewing:** controls fade when idle. Images outside the workspace can also be opened.
 
-Blue Marble 2012: NASA/NOAA/GSFC/Suomi NPP/VIIRS/Norman Kuring, [NASA source](https://www.flickr.com/photos/gsfc/6760135001/), [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/). Shown zoomed/cropped in the viewer. [Screenshot credits](./assets/screenshots/CREDITS.md).
-
 ### Make it the default
 
 Run **Image Viewer: Use as Default Image Editor** to open supported image files with this viewer by default. Installing or updating the extension leaves your editor choice unchanged.
 
-[![Use as Default Image Editor in the VS Code Command Palette](https://raw.githubusercontent.com/ZhangJian1713/vscode-image-viewer/main/assets/screenshots/set-default-image-editor-command.jpg)](https://raw.githubusercontent.com/ZhangJian1713/vscode-image-viewer/main/assets/screenshots/set-default-image-editor-command.jpg)
+[![Use as Default Image Editor in the VS Code Command Palette](https://public-img-1253867148.cos.ap-singapore.myqcloud.com/img-in-docs/vscode-image-viewer/set-default-image-editor-command.webp)](https://public-img-1253867148.cos.ap-singapore.myqcloud.com/img-in-docs/vscode-image-viewer/set-default-image-editor-command.webp)
 
 To remove these associations, run **Image Viewer: Restore VS Code's Default Image Editor** before uninstalling. This does not restore earlier custom associations overwritten by setup. [More about editor associations](./docs/usage-notes.md#default-editor-associations).
 
 ## Workspace gallery
 
-Select a folder in the sidebar and browse one continuous image wall. Click any thumbnail to open the large-image preview. Fill and Grid support **1–20 columns**, live thumbnail sizing, and a compact mode for denser browsing.
+New galleries start in Grid. Select a folder in the sidebar and browse one continuous image wall. Click any thumbnail to open the large-image preview. Grid and Fill support **1–20 columns**, live thumbnail sizing, and a compact mode for denser browsing.
+
+### Grid — see the whole image (default)
+
+Images keep their original proportions without cropping, useful for comparing portraits, landscapes, and panoramic images.
+
+[![Grid layout showing complete images](https://public-img-1253867148.cos.ap-singapore.myqcloud.com/img-in-docs/vscode-image-viewer/gallery-grid-photos.webp)](https://public-img-1253867148.cos.ap-singapore.myqcloud.com/img-in-docs/vscode-image-viewer/gallery-grid-photos.webp)
 
 ### Fill — browse thumbnails
 
 Square thumbnails fill the wall, making it easy to scan many images at once.
 
-[![Fill layout: folders sidebar and continuous image wall](https://raw.githubusercontent.com/ZhangJian1713/vscode-image-viewer/main/assets/screenshots/gallery-fill-photos.jpg)](https://raw.githubusercontent.com/ZhangJian1713/vscode-image-viewer/main/assets/screenshots/gallery-fill-photos.jpg)
+[![Fill layout: folders sidebar and continuous image wall](https://public-img-1253867148.cos.ap-singapore.myqcloud.com/img-in-docs/vscode-image-viewer/gallery-fill-photos.webp)](https://public-img-1253867148.cos.ap-singapore.myqcloud.com/img-in-docs/vscode-image-viewer/gallery-fill-photos.webp)
 
-### Compact — more images, less clutter
+### Compact and thumbnail size
 
-Turn on **Compact** in the bottom toolbar. In Fill/Grid, it removes thumbnail gaps and the always-visible file names and sizes; hover to see a file name. **Fill + Compact** creates a seamless image wall, fitting more images on screen at the same column count.
+Turn on **Compact** in the bottom toolbar. In Grid/Fill, it removes thumbnail gaps and the always-visible file names and sizes; hover to see a file name. **Fill + Compact** creates a seamless image wall, fitting more images on screen at the same column count.
 
 Drag the **Thumbnails** slider to adjust **1–20 columns**: right makes images larger with fewer columns; left fits more, smaller thumbnails. The tooltip shows the current pixel size and column count. Below, the six-column Fill example is changed to **four columns + Compact**.
 
-[![Fill + Compact with four columns and 260 px thumbnails](https://raw.githubusercontent.com/ZhangJian1713/vscode-image-viewer/main/assets/screenshots/gallery-fill-compact-photos.jpg)](https://raw.githubusercontent.com/ZhangJian1713/vscode-image-viewer/main/assets/screenshots/gallery-fill-compact-photos.jpg)
-
-### Grid — see the whole image
-
-Images keep their original proportions without cropping, useful for comparing portraits, landscapes, and panoramic images.
-
-[![Grid layout showing complete images](https://raw.githubusercontent.com/ZhangJian1713/vscode-image-viewer/main/assets/screenshots/gallery-grid-photos.jpg)](https://raw.githubusercontent.com/ZhangJian1713/vscode-image-viewer/main/assets/screenshots/gallery-grid-photos.jpg)
+[![Fill + Compact with four columns and 260 px thumbnails](https://public-img-1253867148.cos.ap-singapore.myqcloud.com/img-in-docs/vscode-image-viewer/gallery-fill-compact-photos.webp)](https://public-img-1253867148.cos.ap-singapore.myqcloud.com/img-in-docs/vscode-image-viewer/gallery-fill-compact-photos.webp)
 
 ### List — inspect file information
 
 View the file name, relative path, size, dimensions, and modified time alongside each thumbnail.
 
-[![List layout with paths, sizes, dimensions, and modified times](https://raw.githubusercontent.com/ZhangJian1713/vscode-image-viewer/main/assets/screenshots/gallery-list-photos.jpg)](https://raw.githubusercontent.com/ZhangJian1713/vscode-image-viewer/main/assets/screenshots/gallery-list-photos.jpg)
+[![List layout with paths, sizes, dimensions, and modified times](https://public-img-1253867148.cos.ap-singapore.myqcloud.com/img-in-docs/vscode-image-viewer/gallery-list-photos.webp)](https://public-img-1253867148.cos.ap-singapore.myqcloud.com/img-in-docs/vscode-image-viewer/gallery-list-photos.webp)
 
-Sample image [sources and licenses](./assets/screenshots/CREDITS.md).
+Screenshot [credits and licenses](./assets/screenshots/CREDITS.md).
 
 ### Themes
 
@@ -92,16 +90,16 @@ Choose a thumbnail background separately: none, checkerboard for transparency, o
 
 Right-click a folder or file → **View Images 🌄**. The sidebar shows the project root and reveals your target. Images are highlighted in the wall and opened in the large-image preview; other files locate their containing folder. Empty folders fall back to the nearest ancestor with images, then the project root. Closing the preview returns to the located thumbnail.
 
-Switching folders in an open project gallery reuses its index; use **Refresh images** to update external file changes. Search/type filters may be temporarily cleared for navigation, with **Restore filters** available; directory include/exclude rules and **Include subfolders** stay unchanged.
+Explorer entries in the same project reuse one gallery tab; different workspace roots have separate tabs. Use **Refresh images** after external file changes. If search/type filters hide the target, they are temporarily adjusted, with **Restore filters** available.
 
 ### Find and organize images
 
 - **Image folders:** browse image-containing directories and their ancestors, see image counts, and expand or collapse branches. Hide or resize the sidebar.
 - **Return from search to a folder:** right-click an image → **Reveal in Image folders**. The gallery selects and centers its containing folder, temporarily clears image search, and highlights the original image among its neighbors. Use **Restore filters** to recover the search; Types and Include subfolders remain in effect.
-- **Search and filters:** combine image name/path search with type filters and folder include/exclude rules.
 - **Sorting:** keep each folder's images together, or sort the whole collection by name, modified time, size, or format. In folder-first mode, dragging the scrollbar highlights the visible folders in the tree.
 - **File actions:** reveal files, copy paths, names, or Base64, and move images to Trash after confirmation. Right-click folders to reveal, copy paths, or exclude them.
-- **Appearance:** follow your editor theme or choose Light/Dark. Choose no thumbnail background, checkerboard, or solid colors. Use the bottom-right gear for settings and feedback.
+- **Settings and feedback:** use the bottom-right gear for settings, bug reports, and feature requests.
+- **Language:** Settings → General → Language offers Follow VS Code, English, 简体中文, and 繁體中文. Unsupported editor languages default to English. Switching updates open panels while preserving your browsing state.
 
 ### Folder search and Include/Exclude
 
@@ -127,18 +125,14 @@ Use **Image folders → Include subfolders** to choose whether the wall shows th
 | Item | Details |
 | --- | --- |
 | Zoom presets | Up to **800%** |
-| Image wall density | **1–20 columns** in Fill/Grid |
+| Image wall density | **1–20 columns** in Grid/Fill |
 | Large-collection validation | **100,000 images and about 10,000 directory nodes**, using simulated data |
-| Jumping through the gallery | Beginning, middle, and end verified; thumbnails at the current position load first, without generating the entire collection in advance |
+| Gallery browsing | Load thumbnails at the current position first, without generating the entire collection in advance |
 | Thumbnail generation benchmark | **12 mixed-format images in about 0.61 seconds**, 400px long edge, on Apple M1 Max after warm-up |
 | Loading | Visible thumbnails load first; generation runs in the background, up to **4 at a time** |
 | Thumbnail disk cache | Automatic cleanup above **500 MiB** or **25,000 files**; temporary overshoots are possible |
 | Requirements | **VS Code 1.92+** or a compatible Cursor version; **macOS 11+** on Mac |
 | Setup | No separate runtime or compilation tools required |
-
-The image wall and folder tree use virtual scrolling to keep large collections responsive. In the simulated collection, an eight-column wall mounted only **40–56 image cards**, and the expanded tree about **20 rows**, at a 1280×720 window size. This validates browsing scale, not a fixed maximum or real-disk scan speed. [Large-collection test](./docs/gallery-scale-validation-2026-10-14.md).
-
-The **0.61-second** benchmark covers thumbnail generation, not the time from dragging the scrollbar to a fully displayed screen; results vary with images, storage, and hardware. [Thumbnail test details](./docs/thumbnail-backend-benchmark-2026-10-14.md).
 
 Cache cleanup is automatic. For manual gallery cleanup, run **Image Viewer: Clean Gallery WebView Image Cache**. [Cache details](./docs/usage-notes.md#image-caches).
 
@@ -153,8 +147,6 @@ The gallery and image-editor entry recognize these extensions:
 | GIF, APNG | Original-image animation depends on the host; generated thumbnails use a static first frame |
 | AVIF | Display and thumbnail availability depend on the host version and platform decoder |
 | TIF / TIFF | Gallery thumbnails can be generated for decodable files; a visible thumbnail does not guarantee large-image preview |
-
-Full-image viewing depends on the browser engine embedded in VS Code/Cursor. Some encodings, particularly TIFF, may produce gallery thumbnails but fail to open in the large-image viewer. HEIC/HEIF, PSD, and camera RAW formats are currently outside the supported extension list.
 
 ## Feedback
 

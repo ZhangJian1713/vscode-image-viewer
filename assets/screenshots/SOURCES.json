@@ -228,6 +228,155 @@
       "Space/Tropical storms.jpg",
       "Space/Mars panorama.jpg",
       "Space/Blue Marble 2012.jpg"
+    ],
+    "gallery-fill-compact-photos.webp": [
+      "Nature/Lacs Laberge.jpg",
+      "Nature/Forest trail.jpg",
+      "Architecture/Trevi Fountain.jpg",
+      "Architecture/Church tower.jpg",
+      "Architecture/Milan Cathedral.jpg",
+      "Art/Pavilions by a mountain stream.jpg",
+      "Art/Palace and gardens.jpg",
+      "Art/Mule-train in snowy mountains.jpg",
+      "Space/Earth from above.jpg",
+      "Space/Tropical storms.jpg",
+      "Space/Mars panorama.jpg",
+      "Space/Blue Marble 2012.jpg"
+    ],
+    "gallery-fill-photos.webp": [
+      "Nature/Lacs Laberge.jpg",
+      "Nature/Forest trail.jpg",
+      "Architecture/Trevi Fountain.jpg",
+      "Architecture/Church tower.jpg",
+      "Architecture/Milan Cathedral.jpg",
+      "Art/Pavilions by a mountain stream.jpg",
+      "Art/Palace and gardens.jpg",
+      "Art/Mule-train in snowy mountains.jpg",
+      "Space/Earth from above.jpg",
+      "Space/Tropical storms.jpg",
+      "Space/Mars panorama.jpg",
+      "Space/Blue Marble 2012.jpg"
+    ],
+    "gallery-grid-photos.webp": [
+      "Nature/Lacs Laberge.jpg",
+      "Nature/Forest trail.jpg",
+      "Architecture/Trevi Fountain.jpg",
+      "Architecture/Church tower.jpg",
+      "Architecture/Milan Cathedral.jpg",
+      "Art/Pavilions by a mountain stream.jpg",
+      "Art/Palace and gardens.jpg",
+      "Art/Mule-train in snowy mountains.jpg",
+      "Space/Earth from above.jpg",
+      "Space/Tropical storms.jpg",
+      "Space/Mars panorama.jpg",
+      "Space/Blue Marble 2012.jpg"
+    ],
+    "gallery-list-photos.webp": [
+      "Architecture/Trevi Fountain.jpg",
+      "Architecture/Church tower.jpg",
+      "Architecture/Milan Cathedral.jpg",
+      "Art/Pavilions by a mountain stream.jpg",
+      "Art/Palace and gardens.jpg",
+      "Art/Mule-train in snowy mountains.jpg"
+    ],
+    "set-default-image-editor-command.webp": [],
+    "single-image-editor-blue-marble.webp": [
+      "Space/Blue Marble 2012.jpg"
+    ]
+  },
+  "screenshotEncoding": {
+    "date": "2026-10-14",
+    "encoder": "TinyJPG web service",
+    "resize": false,
+    "dimensions": "Original screenshot dimensions preserved",
+    "assets": [
+      {
+        "filename": "gallery-fill-compact-photos.jpg",
+        "width": 1280,
+        "height": 720,
+        "bytes": 103578
+      },
+      {
+        "filename": "gallery-fill-photos.jpg",
+        "width": 1280,
+        "height": 720,
+        "bytes": 104279
+      },
+      {
+        "filename": "gallery-grid-photos.jpg",
+        "width": 1280,
+        "height": 720,
+        "bytes": 85752
+      },
+      {
+        "filename": "gallery-list-photos.jpg",
+        "width": 1049,
+        "height": 523,
+        "bytes": 31713
+      },
+      {
+        "filename": "set-default-image-editor-command.jpg",
+        "width": 1220,
+        "height": 230,
+        "bytes": 37884
+      },
+      {
+        "filename": "single-image-editor-blue-marble.jpg",
+        "width": 2562,
+        "height": 1358,
+        "bytes": 452403
+      }
+    ]
+  },
+  "webpEncoding": {
+    "date": "2026-10-14",
+    "encoder": "Sharp 0.35.5 / libwebp",
+    "source": "Original screenshot files, before the TinyJPG or JPEG quality-55 compression",
+    "effort": 6,
+    "smartSubsample": true,
+    "assets": [
+      {
+        "filename": "gallery-fill-compact-photos.webp",
+        "width": 1024,
+        "height": 576,
+        "quality": 76,
+        "bytes": 52592
+      },
+      {
+        "filename": "gallery-fill-photos.webp",
+        "width": 1024,
+        "height": 576,
+        "quality": 76,
+        "bytes": 44442
+      },
+      {
+        "filename": "gallery-grid-photos.webp",
+        "width": 1024,
+        "height": 576,
+        "quality": 76,
+        "bytes": 38264
+      },
+      {
+        "filename": "gallery-list-photos.webp",
+        "width": 960,
+        "height": 479,
+        "quality": 80,
+        "bytes": 17812
+      },
+      {
+        "filename": "set-default-image-editor-command.webp",
+        "width": 850,
+        "height": 160,
+        "quality": 65,
+        "bytes": 11370
+      },
+      {
+        "filename": "single-image-editor-blue-marble.webp",
+        "width": 1200,
+        "height": 636,
+        "quality": 74,
+        "bytes": 103500
+      }
     ]
   }
 }

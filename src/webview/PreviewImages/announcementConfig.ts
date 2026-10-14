@@ -9,7 +9,7 @@ import { resolveLanguage } from '../../i18n/language'
  */
 
 /** Sync with `package.json` version; bumping re-shows the auto modal for users who had dismissed the old id. */
-export const ANNOUNCEMENT_ID = '2.0.6'
+export const ANNOUNCEMENT_ID = '2.1.1'
 
 export { REPOSITORY_URL, ISSUES_URL } from '../../feedback'
 
