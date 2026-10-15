@@ -45,6 +45,36 @@ Run **Image Viewer: Use as Default Image Editor** to open supported image files 
 
 To remove these associations, run **Image Viewer: Restore VS Code's Default Image Editor** before uninstalling. This does not restore earlier custom associations overwritten by setup. [More about editor associations](./docs/usage-notes.md#default-editor-associations).
 
+## Keyboard shortcuts
+
+Inside the single-image viewer or gallery preview, click **⌨ View keyboard shortcuts** in the toolbar,
+or press **`?`**, to open the read-only reference. Bindings are fixed; no customization settings are provided.
+Text fields keep normal editing keys, and IME composition does not trigger image actions.
+
+| Keys | Action |
+| --- | --- |
+| `←` / `Q`, `→` / `E` | Previous / next image; hold for continuous browsing |
+| `Home` / `End` | First / last image |
+| `↑` / `+` / `=` / Numpad `+` | Zoom in one stop |
+| `↓` / `-` / Numpad `-` | Zoom out one stop |
+| `Space` / Numpad `0` | Adaptive observation zoom cycle, matching primary click |
+| Main keyboard `0` / `1` | Fit / actual size (100%) |
+| `R` / `Shift+R` | Rotate 90° clockwise / counter-clockwise |
+| `Ctrl/⌘+→` / `Ctrl/⌘+←` | Existing clockwise / counter-clockwise rotation aliases |
+| `W/A/S/D` | Reveal up / left / down / right, only for a zoomed image overflowing the viewport |
+| Numpad `8/4/2(or 5)/6` | Reveal up / left / down / right |
+| Numpad `7/9/1/3` | Reveal upper-left / upper-right / lower-left / lower-right |
+| `Shift+↑/↓/←/→` | Existing pan aliases |
+| `F` | Toggle VS Code window fullscreen |
+| `?` | Open / close shortcut reference |
+| `Esc` | Close the shortcut reference first; otherwise close the preview or single-image editor |
+
+Numpad keys retain physical identity with NumLock off. Unless listed above, Ctrl/⌘/Alt combinations
+remain available to the host; Ctrl/⌘+Space does not run the zoom cycle. Esc does not exit VS Code window
+fullscreen: use F, the fullscreen button, or the native host shortcut.
+No video, deletion, EXIF, or selection shortcuts are added to entries without those features; filmstrip
+and flip controls keep their buttons without invented bindings.
+
 ## Workspace gallery
 
 New galleries start in Grid. Select a folder in the sidebar and browse one continuous image wall. Click any thumbnail to open the large-image preview. Grid and Fill support **1–20 columns**, live thumbnail sizing, and a compact mode for denser browsing.
@@ -130,7 +160,7 @@ Use **Image folders → Include subfolders** to choose whether the wall shows th
 | Large-collection validation | **100,000 images and about 10,000 directory nodes**, using simulated data |
 | Gallery browsing | Load thumbnails at the current position first, without generating the entire collection in advance |
 | Thumbnail generation benchmark | **12 mixed-format images in about 0.61 seconds**, 400px long edge, on Apple M1 Max after warm-up |
-| Loading | Visible thumbnails load first; generation runs in the background, up to **4 at a time** |
+| Loading | Visible thumbnails load first; generation runs in the background, up to **6 at a time** |
 | Thumbnail disk cache | Automatic cleanup above **500 MiB** or **25,000 files**; temporary overshoots are possible |
 | Requirements | **VS Code 1.92+** or a compatible Cursor version; **macOS 11+** on Mac |
 | Setup | No separate runtime or compilation tools required |

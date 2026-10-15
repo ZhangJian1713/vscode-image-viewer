@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useCallback } from 'react'
+import { ShortcutHelp } from './ShortcutHelp'
 import { useFilmstrip } from './useFilmstrip'
 import { ImagePreview } from 'right-image-preview'
 import type { ImagePreviewProps, ImageItem } from 'right-image-preview'
@@ -34,13 +35,28 @@ export function HostImagePreview({ transport, filmstripScope, ...props }: Props)
   }, [base, ids, thumbnails, props.groupedImages])
   const notifyIndex = props.onIndexChange
   const onIndexChange = useCallback((next: number) => { setIndex(next); notifyIndex?.(next) }, [notifyIndex])
+  const [shortcutsOpen, setShortcutsOpen] = useState(false)
+  const openShortcuts = useCallback(() => setShortcutsOpen(true), [])
+  const closeShortcuts = useCallback(() => setShortcutsOpen(false), [])
+  const capabilities = useMemo(() => ({ navigation: base.length > 1,
+    groups: (props.groupedImages?.filter((group) => group.images.length).length ?? 0) > 1,
+    shortcuts: true, exif: props.showExif === true, delete: props.showDelete === true }),
+  [base.length, props.groupedImages, props.showExif, props.showDelete])
   const host = useHostFullscreen(transport)
   const { t } = useI18n()
   return <>
     <ImagePreview {...props} {...data} onIndexChange={onIndexChange}
+      keyboardEnabled={props.keyboardEnabled !== false && !shortcutsOpen} onShowShortcuts={openShortcuts}
+      wheelEnabled={props.wheelEnabled !== false && !shortcutsOpen} pinchEnabled={props.pinchEnabled !== false && !shortcutsOpen}
+      toolbarExtra={<>{props.toolbarExtra}<button type='button' onClick={openShortcuts} title={t('shortcuts.open')}
+        aria-label={t('shortcuts.open')} aria-haspopup='dialog'
+        style={{ border: 0, background: 'transparent', color: 'inherit', cursor: 'pointer', width: 32, height: 32, fontSize: 18 }}>
+        <span aria-hidden='true'>⌨</span>
+      </button></>}
       showThumbnailToggle showThumbnails={strip.visible} onThumbnailsVisibleChange={strip.toggle}
       onThumbnailVisibleIndexesChange={strip.onVisibleIndexesChange} fullscreen={host.fullscreen} onFullscreenError={host.onFullscreenError}
       strings={{ ...props.strings, toggleFullscreen: t('preview.toggleWindowFullscreen') }} />
+    {shortcutsOpen && <ShortcutHelp capabilities={capabilities} onClose={closeShortcuts} />}
     <FullscreenErrorNotice error={host.error} />
     {strip.preferenceError && <div role='alert' style={{ position: 'fixed', top: 20, left: 20, zIndex: 20000 }}>
       {t('preview.filmstripPreferenceFailed')}
