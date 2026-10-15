@@ -13,7 +13,7 @@ const mockSetPreference = jest.fn()
 jest.mock('./gallery.css', () => ({}))
 jest.mock('./AnnouncementBar', () => ({ AnnouncementBar: () => null }))
 jest.mock('./GallerySettingsModal', () => ({ GallerySettingsModal: () => null }))
-jest.mock('../../vendor/right-image-preview', () => ({ ImagePreview: () => null }))
+jest.mock('right-image-preview', () => ({ ImagePreview: () => null }))
 jest.mock('../WebviewThemeContext', () => ({ useWebviewTheme: () => ({
   preference: 'follow', setPreference: mockSetPreference
 }) }))

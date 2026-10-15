@@ -1,5 +1,20 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- Add independently remembered filmstrip switches to single-image and gallery previews. Single-image strips browse only direct siblings. Generate fixed 200px thumbnails on demand with a shared six-task limit, regardless of compressed byte size. Display SVG and browser-renderable rasters up to 200px directly, allowing small images to scale up inside the strip; generation failures remain placeholders.
+
+### Changed
+
+- Use the shared DOM-based `right-image-preview` component in both preview entries and remove the vendored 0.2.0 source snapshot. Keep adaptive click/Space zoom, pointer anchoring, Traditional Chinese and the 100% Fit cap. Temporarily enable adjacent-image preloading (radius 1, two display slots) for host testing. Development links the local component build; public releases must restore the latest published npm dependency.
+
+### Fixed
+
+- Route fullscreen buttons in single-image and gallery previews through the VS Code host window fullscreen command; show failures and avoid guessing fullscreen state. This adapter currently requires the locally linked component build.
+- Show a localized image-load error in single-image and gallery previews.
+
 ## [2.2.0] - 2026-10-15
 
 ### Added

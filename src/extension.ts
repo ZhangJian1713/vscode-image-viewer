@@ -1,4 +1,5 @@
 import * as vscode from 'vscode'
+import { initFilmstripPreferences } from './filmstripHost'
 import { utils } from '@easy_vscode/core'
 import { registryAllWebviews } from './webviewController'
 import { initGridThumbGlobalStorage } from './webviewController/imagesViewer/thumbGridCache'
@@ -17,6 +18,7 @@ export function activate(context: vscode.ExtensionContext) {
   console.log('Congratulations, your extension "Image Viewer" is now active!')
   envVars.extensionPath = path.join(context.extensionPath, './')
   initGridThumbGlobalStorage(context)
+  initFilmstripPreferences(context)
   registerLanguageService(context)
   registryAllWebviews(context)
   registerCustomImageEditor(context)

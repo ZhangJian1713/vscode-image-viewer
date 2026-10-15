@@ -1,7 +1,0 @@
-# right-image-preview 0.2.0 source snapshot
-
-MIT source recovered from the installed published package's `dist/index.mjs.map` (`sourcesContent`), with its LICENSE retained (distribution copy: `assets/licenses/right-image-preview.txt`). The original package is pinned to 0.2.0 as a development-only provenance/sync reference; runtime imports use this source snapshot. Types come from the same package's declarations. Upstream: https://github.com/ZhangJian1713/right-image-preview . The local ESLint override preserves upstream brace/null-comparison style while retaining functional lint checks. Browser timeout types and React imports were adapted for this project's classic JSX compiler.
-
-The published public API lacks click zoom and anchor control. This source snapshot preserves the shipped DOM renderer, toolbar, minimap, progressive loading and resource structure while allowing the gesture extension to live inside the renderer. Both entry points use this same snapshot; no DOM probing or mutation of node_modules is used.
-
-Local changes: adaptive Space/click cycle and 100% Fit cap, pointer arbitration/anchoring, short zoom hints, no transform animation for adaptive zoom. Fixed wheel/toolbar presets stay independent. New helpers and regression tests are maintained beside this snapshot. Future dependency updates require explicit reconciliation; do not overwrite modified sources automatically.

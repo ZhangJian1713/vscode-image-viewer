@@ -10,6 +10,10 @@ export const WEBVIEW_NAMES = {
 }
 
 export const MESSAGE_CMD = {
+  TOGGLE_WINDOW_FULLSCREEN: 'toggleWindowFullscreen',
+  GET_FILMSTRIP_STATE: 'getFilmstripState',
+  SET_FILMSTRIP_STATE: 'setFilmstripState',
+  GET_FILMSTRIP_THUMBNAIL: 'getFilmstripThumbnail',
   GET_UI_LANGUAGE: 'getUiLanguage',
   SET_UI_LANGUAGE: 'setUiLanguage',
   UI_LANGUAGE_CHANGED: 'uiLanguageChanged',

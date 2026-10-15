@@ -1,3 +1,7 @@
+import { filmstripPreference, filmstripThumbnail } from './filmstripHost'
+import { GRID_THUMB_GLOBAL_SUBDIR } from './config/gridThumb'
+import { assertProjectResource } from './webviewController/imagesViewer/projectResource'
+import { toggleWindowFullscreen } from './windowFullscreen'
 import * as fs from 'fs'
 import * as path from 'path'
 import * as vscode from 'vscode'
@@ -181,14 +185,32 @@ class ImageViewerEditorProvider implements vscode.CustomReadonlyEditorProvider<I
     webviewPanel.webview.options = {
       enableScripts: true,
       enableCommandUris: false,
-      localResourceRoots: [distRoot, documentFolder]
+      localResourceRoots: [distRoot, documentFolder, vscode.Uri.joinPath(this.context.globalStorageUri, GRID_THUMB_GLOBAL_SUBDIR)]
     }
 
     let disposed = false
+    let allowedIds = new Set<string>()
     const languageSubscription = trackLanguageWebview(webviewPanel.webview)
     const messageSubscription = webviewPanel.webview.onDidReceiveMessage(async (message) => {
       if (message?.cmd === MESSAGE_CMD.CLOSE_CUSTOM_IMAGE_EDITOR) {
         webviewPanel.dispose()
+      } else if (message?.cmd === MESSAGE_CMD.GET_FILMSTRIP_THUMBNAIL) {
+        const result = await filmstripThumbnail(webviewPanel.webview, message.data?.id, async (id) => {
+          if (!allowedIds.has(id)) { throw new Error('Image is outside this editor session') }
+          const uri = vscode.Uri.parse(id)
+          if (uri.scheme !== 'file') { throw new Error('This resource provider cannot generate local thumbnails') }
+          const { target } = await assertProjectResource(documentFolder.fsPath, uri.fsPath, true)
+          return { filePath: target, sourceUri: uri }
+        })
+        if (!disposed) { webviewUtils.invokeCallback(WEBVIEW_NAMES.SingleImageViewer, message, result, webviewPanel.webview) }
+      } else if (message?.cmd === MESSAGE_CMD.GET_FILMSTRIP_STATE || message?.cmd === MESSAGE_CMD.SET_FILMSTRIP_STATE) {
+        const result = await filmstripPreference('single', message.cmd, message.data?.visible)
+        if (!disposed) { webviewUtils.invokeCallback(WEBVIEW_NAMES.SingleImageViewer, message, result, webviewPanel.webview) }
+      } else if (message?.cmd === MESSAGE_CMD.TOGGLE_WINDOW_FULLSCREEN) {
+        const result = await toggleWindowFullscreen()
+        if (!disposed) {
+          webviewUtils.invokeCallback(WEBVIEW_NAMES.SingleImageViewer, message, result, webviewPanel.webview)
+        }
       } else if (message?.cmd === MESSAGE_CMD.GET_UI_LANGUAGE || message?.cmd === MESSAGE_CMD.SET_UI_LANGUAGE) {
         const result = await languageRequest(message.cmd, message.data?.preference)
         if (!disposed) {
@@ -206,6 +228,7 @@ class ImageViewerEditorProvider implements vscode.CustomReadonlyEditorProvider<I
     if (disposed) {
       return
     }
+    allowedIds = new Set(bootstrap.images.map((image) => image.id))
     webviewPanel.webview.html = createCustomEditorHtml(
       this.context,
       webviewPanel.webview,

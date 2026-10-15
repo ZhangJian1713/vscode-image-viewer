@@ -3,7 +3,7 @@ import * as path from 'path'
 import * as os from 'os'
 import { createHash } from 'crypto'
 import { setTimeout as realSetTimeout } from 'timers'
-import { initGridThumbGlobalStorage, resolveThumbForGrid } from './thumbGridCache'
+import { initGridThumbGlobalStorage, resolveThumbForGrid, resolveFilmstripThumbnail } from './thumbGridCache'
 import { imageioThumbnail } from './imageioThumbnail'
 import { sharpThumbnail } from './sharpThumbnail'
 import { thumbnailBackend } from '../../config/thumbnailBackend'
@@ -95,7 +95,7 @@ test('ImageIO generation stays bounded, deduplicates requests, and caches each s
     sources.forEach((source) => fs.writeFileSync(source, Buffer.alloc(128 * 1024)))
     const tasks = sources.map((source) => resolveThumbForGrid(source, 200))
     const duplicate = resolveThumbForGrid(sources[0], 200)
-    const limit = Math.max(1, Math.min(4, os.cpus().length - 1))
+    const limit = 6
     expect(native).toHaveBeenCalledTimes(limit)
     release!()
     const results = await Promise.all([...tasks, duplicate])
@@ -144,6 +144,95 @@ test('the Sharp branch generates and caches once, and decode failure returns the
     choice.mockReturnValue('imageio')
     native.mockRejectedValue(new Error('Invalid fixture'))
     subscriptions.forEach(subscription => subscription.dispose())
+    fs.rmSync(root, { recursive: true, force: true })
+  }
+})
+
+
+test('filmstrip generates 200px for small-byte sources with unknown/large dimensions and shares cached output', async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'filmstrip-small-'))
+  const subscriptions: Array<{ dispose: () => void }> = []
+  try {
+    initGridThumbGlobalStorage({ globalStorageUri: { fsPath: root }, subscriptions } as any)
+    const source = path.join(root, 'tiny.png')
+    fs.writeFileSync(source, 'small-source')
+    const backend = (thumbnailBackend() === 'imageio' ? imageioThumbnail : sharpThumbnail) as jest.Mock
+    backend.mockResolvedValueOnce(Buffer.from('generated-thumbnail'))
+    const first = await resolveFilmstripThumbnail(source)
+    expect(first).toEqual({ kind: 'thumb', cacheFsPath: expect.stringMatching(/_200\.jpg$/) })
+    expect(backend).toHaveBeenLastCalledWith(expect.any(String), fs.realpathSync(source), 200, 78)
+    const calls = backend.mock.calls.length
+    expect(await resolveFilmstripThumbnail(source)).toEqual(first)
+    expect(backend).toHaveBeenCalledTimes(calls)
+    expect(await resolveThumbForGrid(source, 200)).toEqual({ kind: 'original' })
+  } finally {
+    subscriptions.forEach((entry) => entry.dispose())
+    fs.rmSync(root, { recursive: true, force: true })
+  }
+})
+
+test('shared thumbnail generation allows exactly six in flight and coalesces duplicates', async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'filmstrip-concurrency-'))
+  const subscriptions: Array<{ dispose: () => void }> = []
+  const completions: Array<() => void> = []
+  try {
+    initGridThumbGlobalStorage({ globalStorageUri: { fsPath: root }, subscriptions } as any)
+    const backend = (thumbnailBackend() === 'imageio' ? imageioThumbnail : sharpThumbnail) as jest.Mock
+    backend.mockImplementation(() => new Promise((resolve) => completions.push(() => resolve(Buffer.from('thumb')))))
+    const sources = Array.from({ length: 9 }, (_, i) => path.join(root, `${i}.jpg`))
+    sources.forEach((file) => fs.writeFileSync(file, 'tiny'))
+    const requests = sources.map((file) => resolveFilmstripThumbnail(file))
+    requests.push(resolveFilmstripThumbnail(sources[0]))
+    for (let i = 0; i < 100 && completions.length < 6; i++) { await new Promise((resolve) => realSetTimeout(resolve, 5)) }
+    expect(completions).toHaveLength(6)
+    completions[0]()
+    for (let i = 0; i < 100 && completions.length < 7; i++) { await new Promise((resolve) => realSetTimeout(resolve, 5)) }
+    expect(completions).toHaveLength(7)
+    completions.slice(1).forEach((finish) => finish())
+    for (let i = 0; i < 100 && completions.length < 9; i++) { await new Promise((resolve) => realSetTimeout(resolve, 5)) }
+    completions.slice(7).forEach((finish) => finish())
+    const outputs = await Promise.all(requests)
+    expect(outputs.every(Boolean)).toBe(true)
+    expect(outputs[0]).toEqual(outputs[9])
+    expect(completions).toHaveLength(9)
+  } finally {
+    subscriptions.forEach((entry) => entry.dispose())
+    fs.rmSync(root, { recursive: true, force: true })
+  }
+})
+
+
+test('filmstrip uses original SVG and rasters up to 200px without generating cache files', async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'filmstrip-direct-'))
+  const subscriptions: Array<{ dispose: () => void }> = []
+  const backend = (thumbnailBackend() === 'imageio' ? imageioThumbnail : sharpThumbnail) as jest.Mock
+  const Jimp = require('jimp')
+  try {
+    initGridThumbGlobalStorage({ globalStorageUri: { fsPath: root }, subscriptions } as any)
+    backend.mockClear()
+    const svg = path.join(root, 'vector.SVG')
+    fs.writeFileSync(svg, '<svg xmlns="http://www.w3.org/2000/svg" width="4000" height="3000"/>')
+    const small = path.join(root, '40x20.png')
+    await new Jimp(40, 20, 0x336699ff).writeAsync(small)
+    const boundary = path.join(root, '200x100.png')
+    await new Jimp(200, 100, 0x336699ff).writeAsync(boundary)
+    for (const file of [svg, small, boundary]) {
+      expect(await resolveFilmstripThumbnail(file)).toEqual({ kind: 'original' })
+    }
+    expect(backend).not.toHaveBeenCalled()
+    const large = path.join(root, '201x20.png')
+    await new Jimp(201, 20, 0x336699ff).writeAsync(large)
+    expect(fs.statSync(large).size).toBeLessThan(120 * 1024)
+    backend.mockResolvedValueOnce(Buffer.from('generated'))
+    expect(await resolveFilmstripThumbnail(large)).toEqual({ kind: 'thumb', cacheFsPath: expect.stringMatching(/_200\.jpg$/) })
+    expect(backend).toHaveBeenCalledTimes(1)
+    expect(backend).toHaveBeenLastCalledWith(expect.any(String), fs.realpathSync(large), 200, 78)
+    backend.mockRejectedValueOnce(new Error('Cannot decode'))
+    const broken = path.join(root, 'broken.png')
+    fs.writeFileSync(broken, 'not an image')
+    expect(await resolveFilmstripThumbnail(broken)).toBeNull()
+  } finally {
+    subscriptions.forEach((entry) => entry.dispose())
     fs.rmSync(root, { recursive: true, force: true })
   }
 })

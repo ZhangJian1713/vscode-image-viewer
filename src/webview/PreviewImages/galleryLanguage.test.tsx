@@ -19,7 +19,7 @@ jest.mock('./AnnouncementBar', () => ({ AnnouncementBar: () => null }))
 jest.mock('../WebviewThemeContext', () => ({ useWebviewTheme: () => ({ preference: 'dark', setPreference: mockSetTheme }) }))
 jest.mock('./galleryBridge', () => ({ callGalleryHost: jest.fn() }))
 jest.mock('@easy_vscode/webview', () => ({ callVscode: jest.fn() }))
-jest.mock('../../vendor/right-image-preview', () => ({ ImagePreview: (props) => {
+jest.mock('right-image-preview', () => ({ ImagePreview: (props) => {
   mockPreviewProps = props
   return <div data-preview='open'>{props.language}</div>
 } }))

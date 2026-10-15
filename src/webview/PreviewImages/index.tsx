@@ -1,3 +1,4 @@
+import { HostImagePreview } from '../HostImagePreview'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   Breadcrumb,
@@ -29,9 +30,8 @@ import {
   SettingOutlined,
   SunOutlined
 } from '@ant-design/icons'
-import { ImagePreview } from '../../vendor/right-image-preview'
 import { PREVIEW_ZOOM_STOPS } from '../previewZoomStops'
-import type { ImageItem } from '../../vendor/right-image-preview'
+import type { ImageItem } from 'right-image-preview'
 import type { IConfig } from '../../types'
 import { commandArgToFsPath, GalleryEntry, GalleryScanResult, galleryEntryFromArg } from '../../galleryEntry'
 import { GalleryNavigationResolution, GalleryRevealRequest, galleryNavigationFilters, includeGalleryEntryImage, nearestGalleryFolder } from './galleryNavigation'
@@ -685,19 +685,26 @@ const PreviewImages: React.FC = () => {
         <GallerySettingsModal config={config} onChange={patchConfig} onClose={() => setShowSettings(false)} />
       )}
       {session && (
-        <ImagePreview
+        <HostImagePreview
+          filmstripScope='gallery'
+          transport={callGalleryHost}
           key={session.id}
           language={language}
           images={session.items}
           defaultIndex={session.index}
           visible
           stops={PREVIEW_ZOOM_STOPS}
+          fitMaxNativePercent={100}
+          preloadRadius={1}
+          preloadDisplaySlots={2}
+          preloadDisplayMode='slot'
           wheelEnabled
           clickZoomEnabled
           doubleClickEnabled={false}
           showFlip
           arrows='both'
           closeOnMaskClick
+          errorFallback={() => <div role='alert'>{t('preview.loadFailed')}</div>}
           onIndexChange={setPreviewIndex}
           onClose={() => setSession(null)}
         />

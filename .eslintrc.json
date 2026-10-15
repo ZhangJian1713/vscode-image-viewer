@@ -52,22 +52,6 @@
           }
         ]
       }
-    },
-    {
-      "files": [
-        "src/vendor/right-image-preview/**/*.ts",
-        "src/vendor/right-image-preview/**/*.tsx"
-      ],
-      "rules": {
-        "curly": "off",
-        "eqeqeq": [
-          "warn",
-          "always",
-          {
-            "null": "ignore"
-          }
-        ]
-      }
     }
   ]
 }

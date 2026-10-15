@@ -8,7 +8,7 @@ import { MESSAGE_CMD } from '../constants'
 import { useResourceCacheSlot } from './resourceCache/ResourceCacheBoundary'
 
 let mockPreviewProps: any
-jest.mock('../vendor/right-image-preview', () => ({ ImagePreview: (props) => { mockPreviewProps = props; return <div /> } }))
+jest.mock('right-image-preview', () => ({ ImagePreview: (props) => { mockPreviewProps = props; return <div /> } }))
 jest.mock('@easy_vscode/webview', () => ({ callVscode: jest.fn() }))
 jest.mock('./resourceCache/ResourceCacheBoundary', () => ({ useResourceCacheSlot: jest.fn() }))
 const transport = (request, callback) => {

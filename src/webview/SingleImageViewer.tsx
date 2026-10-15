@@ -1,7 +1,7 @@
+import { HostImagePreview } from './HostImagePreview'
 import React, { useMemo, useState } from 'react'
-import { ImagePreview } from '../vendor/right-image-preview'
 import { PREVIEW_ZOOM_STOPS } from './previewZoomStops'
-import type { ImageGroup } from '../vendor/right-image-preview'
+import type { ImageGroup } from 'right-image-preview'
 import { callVscode } from '@easy_vscode/webview'
 import { MESSAGE_CMD } from '../constants'
 import { useResourceCacheSlot } from './resourceCache/ResourceCacheBoundary'
@@ -75,12 +75,18 @@ const SingleImageViewer: React.FC = () => {
   }
 
   return (
-    <ImagePreview
+    <HostImagePreview
+      filmstripScope='single'
+      transport={callVscode}
       language={language}
       groupedImages={groupedImages}
       visible
       defaultGroupedSelection={{ defaultGroupIndex: 0, defaultIndexInGroup: initialIndex }}
       stops={PREVIEW_ZOOM_STOPS}
+      fitMaxNativePercent={100}
+      preloadRadius={1}
+      preloadDisplaySlots={2}
+      preloadDisplayMode='slot'
       wheelEnabled
       clickZoomEnabled
       doubleClickEnabled={false}
@@ -88,6 +94,7 @@ const SingleImageViewer: React.FC = () => {
       arrows='side'
       showFlip
       progressiveMain={false}
+      errorFallback={() => <div role='alert'>{t('preview.loadFailed')}</div>}
       onIndexChange={setActiveIndex}
       onClose={() => callVscode({ cmd: MESSAGE_CMD.CLOSE_CUSTOM_IMAGE_EDITOR })}
     />

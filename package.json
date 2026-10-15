@@ -187,7 +187,7 @@
     "test:resource-cache": "jest src/webview/resourceCache --runInBand",
     "test:gallery": "jest src/folderFilterRules.test.ts src/feedback.test.ts src/webview/webviewPalette.test.ts src/webview/PreviewImages/gallery*.test.* src/webviewController/imagesViewer/*.test.ts --runInBand",
     "bench:thumb-mac": "node scripts/benchmark-ql-vs-jimp.cjs",
-    "test:preview": "jest src/vendor/right-image-preview --runInBand",
+    "test:preview": "jest src/webview/previewPackage.test.tsx src/webview/useHostFullscreen.test.tsx src/windowFullscreen.test.ts src/webview/filmstripThumbnailStore.test.ts src/webview/useFilmstrip.test.tsx src/filmstripHost.test.ts --runInBand",
     "bench:thumbnail-backends": "node scripts/benchmark-imageio-sharp.cjs",
     "test:i18n": "jest src/i18n src/webview/SingleImageViewer.test.tsx src/webview/notifications.test.tsx --runInBand"
   },
@@ -261,7 +261,6 @@
     "progress-bar-webpack-plugin": "^2.1.0",
     "react-docgen-typescript-loader": "^3.7.2",
     "react-hot-loader": "^4.13.0",
-    "right-image-preview": "0.2.0",
     "source-map-loader": "^3.0.0",
     "speed-measure-webpack-plugin": "^1.5.0",
     "style-loader": "^3.2.1",
@@ -299,11 +298,20 @@
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-i18next": "^11.18.3",
+    "right-image-preview": "link:../../../jsws/right-image-preview",
     "sharp": "0.35.5",
     "styled-components": "^5.3.0"
   },
   "resolutions": {
     "webpack": "5.73.0",
     "rc-util": "5.44.4"
+  },
+  "jest": {
+    "moduleNameMapper": {
+      "^react$": "<rootDir>/node_modules/react",
+      "^react/(.*)$": "<rootDir>/node_modules/react/$1",
+      "^react-dom$": "<rootDir>/node_modules/react-dom",
+      "^react-dom/(.*)$": "<rootDir>/node_modules/react-dom/$1"
+    }
   }
 }

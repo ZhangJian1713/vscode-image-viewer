@@ -1,3 +1,5 @@
+import { filmstripPreference, filmstripThumbnail } from '../../filmstripHost'
+import { toggleWindowFullscreen } from '../../windowFullscreen'
 import * as path from 'path'
 import { assertProjectResource } from './projectResource'
 import { feedbackUrl } from '../../feedback'
@@ -77,6 +79,22 @@ const webviewProps: IWebviewProps = {
 }
 
 const messageHandlers = new Map([
+  [MESSAGE_CMD.GET_FILMSTRIP_THUMBNAIL, async (message: IMessage, webview: Webview) => {
+    const result = await filmstripThumbnail(webview, message.data?.id,
+      async (id) => {
+        const { target } = await assertProjectResource(panelRoot(webview), id, true)
+        return { filePath: target, sourceUri: Uri.file(id) }
+      })
+    invokeCallback(viewType, message, result, webview)
+  }],
+  ...[MESSAGE_CMD.GET_FILMSTRIP_STATE, MESSAGE_CMD.SET_FILMSTRIP_STATE].map((cmd) => [
+    cmd, async (message: IMessage, webview: Webview) => {
+      invokeCallback(viewType, message, await filmstripPreference('gallery', cmd, message.data?.visible), webview)
+    }
+  ] as [string, (message: IMessage, webview: Webview) => Promise<void>]),
+  [MESSAGE_CMD.TOGGLE_WINDOW_FULLSCREEN, async (message: IMessage, webview: Webview) => {
+    invokeCallback(viewType, message, await toggleWindowFullscreen(), webview)
+  }],
   ...[MESSAGE_CMD.GET_UI_LANGUAGE, MESSAGE_CMD.SET_UI_LANGUAGE].map((cmd) => [
     cmd,
     async (message: IMessage, webview: Webview) => {

@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 import { createHash } from 'crypto'
 import * as fs from 'fs'
-import * as os from 'os'
+import imageSize from 'image-size'
 import * as path from 'path'
 import { utils } from '@easy_vscode/core'
 import { ExtensionContext, Uri, workspace, extensions } from 'vscode'
@@ -29,8 +29,8 @@ import {
 
 const RASTER_EXT = new Set(['.jpg', '.jpeg', '.png', '.webp', '.gif', '.tif', '.tiff', '.avif', '.apng'])
 const MACOS_RASTER_EXT = new Set([...RASTER_EXT, '.bmp', '.ico'])
-// 原生任务使用 libuv 工作线程；限制到 4，避免把所有 CPU 都分给缩略图。
-const generationLimit = Math.max(1, Math.min(4, os.cpus().length - 1))
+// 图库和所有预览共享六个生成名额，避免各窗口叠加并发。
+const generationLimit = 6
 
 export type GridThumbResponse = { kind: 'thumb'; cacheFsPath: string } | { kind: 'original' }
 
@@ -433,4 +433,30 @@ export async function resolveThumbForGrid(
   } catch {
     return { kind: 'original' }
   }
+}
+
+/** Read bounded image headers asynchronously; unknown dimensions never authorize direct raster display. */
+async function isSmallFilmstripImage(filePath: string): Promise<boolean> {
+  return new Promise((resolve) => {
+    imageSize(filePath, (error, dimensions) => {
+      const sizes = dimensions?.images?.length ? dimensions.images : [dimensions]
+      resolve(!error && dimensions?.type !== 'tiff' && sizes.every((size) => size && Number.isFinite(size.width) && Number.isFinite(size.height)
+        && size.width > 0 && size.height > 0 && size.width <= 200 && size.height <= 200))
+    })
+  })
+}
+
+/** Caller authorizes the file. Original is an explicit SVG/small-pixel choice, never a decode-failure fallback. */
+export async function resolveFilmstripThumbnail(authorizedPath: string): Promise<GridThumbResponse | null> {
+  try {
+    const realPath = await fs.promises.realpath(authorizedPath)
+    const stat = await fs.promises.stat(realPath)
+    if (!stat.isFile()) { return null }
+    if (path.extname(realPath).toLowerCase() === '.svg' || await isSmallFilmstripImage(realPath)) {
+      return { kind: 'original' }
+    }
+    // Compressed byte count does not bound decoded pixels. Large rasters always use the 200px cache.
+    const cacheFsPath = await ensureThumbOnDisk(realPath, stat, 200)
+    return cacheFsPath ? { kind: 'thumb', cacheFsPath } : null
+  } catch { return null }
 }
