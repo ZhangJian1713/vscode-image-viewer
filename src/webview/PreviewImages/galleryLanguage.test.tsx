@@ -12,6 +12,7 @@ import { GalleryThumbnailStore } from './galleryThumbnailStore'
 let mockTreeProps: any
 let mockPreviewProps: any
 const mockSetTheme = jest.fn()
+jest.mock('../HostImagePreview.css', () => ({}))
 jest.mock('./gallery.css', () => ({}))
 jest.mock('./gallerySettings.css', () => ({}))
 jest.mock('./scrollbarFolders.css', () => ({}))
@@ -46,7 +47,10 @@ jest.mock('antd', () => {
   }
   const Wrapper = ({ children }) => <div>{children}</div>
   return { Button, Input, Checkbox, Select, Tabs, Space: Wrapper, Dropdown: Wrapper,
-    Popover: Wrapper, Tooltip: Wrapper, Spin: () => null, Switch: () => null, Slider: () => null,
+    Popover: Wrapper, Tooltip: Wrapper, Spin: () => null,
+    Switch: ({ checked, disabled, onChange, ...props }) => <button role='switch' aria-label={props['aria-label']}
+      aria-checked={checked} disabled={disabled} onClick={() => onChange(!checked)} />,
+    Slider: () => null,
     Breadcrumb: () => null, Empty: ({ description }) => <p>{description}</p>,
     Modal: ({ open, title, children, footer }) => open ? <div role='dialog'>{title}{children}{footer}</div> : null,
     Typography: { Paragraph: Wrapper, Text: Wrapper },
@@ -65,6 +69,7 @@ const stored = { keyword: 'image', showImageTypes: ['jpg'], gallerySelectedFolde
 const images = Array.from({ length: 1000 }, (_, i) => ({ path: `/photos/image${i}.jpg`, vscodePath: `image:${i}`, size: 100 }))
 let root: HTMLDivElement
 let revision: number
+let mirrorPreference: { showMirrorButtons: boolean; revision: number }
 let destroy: jest.SpyInstance
 const calls = (cmd: string) => host.mock.calls.filter(([request]) => request.cmd === cmd)
 
@@ -72,8 +77,15 @@ beforeEach(async () => {
   jest.useFakeTimers(); jest.clearAllMocks()
   await webviewI18n.changeLanguage('en')
   revision = 0
+  mirrorPreference = { showMirrorButtons: false, revision: 0 }
   destroy = jest.spyOn(GalleryThumbnailStore.prototype, 'destroy')
   host.mockImplementation((request, callback) => {
+    if (request.cmd === MESSAGE_CMD.GET_PREVIEW_PREFERENCES) { callback({ ok: true, snapshot: mirrorPreference }) }
+    if (request.cmd === MESSAGE_CMD.SET_PREVIEW_PREFERENCES) {
+      mirrorPreference = { showMirrorButtons: request.data.showMirrorButtons, revision: mirrorPreference.revision + 1 }
+      window.dispatchEvent(new MessageEvent('message', { data: { cmd: MESSAGE_CMD.PREVIEW_PREFERENCES_CHANGED, data: mirrorPreference } }))
+      callback({ ok: true, snapshot: mirrorPreference })
+    }
     if (request.cmd === MESSAGE_CMD.GET_UI_LANGUAGE) { callback({ ok: true, snapshot: { preference: 'auto', language: 'en', revision } }) }
     if (request.cmd === MESSAGE_CMD.SET_UI_LANGUAGE) {
       const preference = request.data.preference
@@ -146,4 +158,68 @@ test('settings options hot-switch the whole gallery while preserving browsing, d
   expect(calls(MESSAGE_CMD.SAVE_CONFIG)).toHaveLength(saved)
   expect(destroy).not.toHaveBeenCalled()
   expect(root.querySelector<HTMLSelectElement>('select[aria-label="Sort images"]')!.value).toBe('folder:nameDesc')
+})
+
+test('filesystem invalidation updates images, counts and folders while preserving browsing and the open preview', () => {
+  const area = root.querySelector<HTMLDivElement>('.iv-gallery-scroll')!
+  act(() => { area.scrollTop = 2000; area.dispatchEvent(new Event('scroll')); jest.advanceTimersByTime(16) })
+  act(() => { root.querySelector<HTMLElement>('[data-image-id]')!.click() })
+  const previewImages = mockPreviewProps.images
+  const selected = mockTreeProps.selectedKeys
+  const expanded = mockTreeProps.expandedKeys
+  const scrollTop = area.scrollTop
+  const priorHost = host.getMockImplementation()!
+  const pending: { requestId: number; callback: (result: unknown) => void }[] = []
+  host.mockImplementation((request, callback) => {
+    if (request.cmd === MESSAGE_CMD.GET_ALL_IMGS) { pending.push({ requestId: request.data.requestId, callback }) }
+    else { priorHost(request, callback) }
+  })
+  const invalidate = (projectPath: string, requestId: number) => act(() => {
+    window.dispatchEvent(new MessageEvent('message', { data: { cmd: MESSAGE_CMD.GALLERY_FILES_CHANGED,
+      data: { projectPath, requestId } } }))
+  })
+  invalidate('/other', 1)
+  expect(pending).toHaveLength(0)
+  invalidate('/project', 1)
+  expect(pending).toHaveLength(1)
+  // A second invalidation from the same completed scan cannot restart the running scan.
+  invalidate('/project', 1)
+  expect(pending).toHaveLength(1)
+  expect(root.querySelector('.iv-gallery-count')!.textContent).toContain('1,000')
+  const updated = [...images, { path: '/photos/copied/image-new.jpg', vscodePath: 'image:new', size: 101 }]
+  act(() => { pending[0].callback({ imgs: updated, projectPath: '/project', complete: true, requestId: pending[0].requestId }) })
+  expect(root.querySelector('.iv-gallery-count')!.textContent).toContain('1,001')
+  const keys = (nodes) => nodes.flatMap((node) => [node.key, ...keys(node.children || [])])
+  expect(keys(mockTreeProps.treeData)).toContain('/project/photos/copied')
+  expect(mockTreeProps.selectedKeys).toEqual(selected)
+  expect(mockTreeProps.expandedKeys).toEqual(expanded)
+  expect(root.querySelector<HTMLSelectElement>('select[aria-label="Sort images"]')!.value).toBe('folder:nameDesc')
+  expect(root.querySelector<HTMLInputElement>('input[aria-label="Search images"]')!.value).toBe('image')
+  expect(root.querySelector('.iv-gallery-scroll')).toBe(area)
+  expect(area.scrollTop).toBe(scrollTop)
+  expect(mockPreviewProps.images).toBe(previewImages)
+  expect(destroy).not.toHaveBeenCalled()
+  // A later folder deletion removes its images and tree node in the same snapshot.
+  invalidate('/project', pending[0].requestId)
+  act(() => { pending[1].callback({ imgs: images, projectPath: '/project', complete: true, requestId: pending[1].requestId }) })
+  expect(root.querySelector('.iv-gallery-count')!.textContent).toContain('1,000')
+  expect(keys(mockTreeProps.treeData)).not.toContain('/project/photos/copied')
+})
+
+test('general settings persist mirror visibility and update the open preview without rebuilding its dataset', () => {
+  act(() => { root.querySelector<HTMLElement>('[data-image-id]')!.click() })
+  const dataset = mockPreviewProps.images
+  expect(mockPreviewProps.showFlip).toBe(false)
+  expect(mockPreviewProps.showRotateCCW).toBe(false)
+  act(() => { button('Settings').click() })
+  const toggle = button('Show mirror buttons')
+  expect(toggle.getAttribute('aria-checked')).toBe('false')
+  act(() => { toggle.click() })
+  expect(calls(MESSAGE_CMD.SET_PREVIEW_PREFERENCES).pop()[0].data).toEqual({ showMirrorButtons: true })
+  expect(toggle.getAttribute('aria-checked')).toBe('true')
+  expect(mockPreviewProps.showFlip).toBe(true)
+  expect(mockPreviewProps.images).toBe(dataset)
+  expect(calls(MESSAGE_CMD.GET_ALL_IMGS)).toHaveLength(1)
+  act(() => { toggle.click() })
+  expect(mockPreviewProps.showFlip).toBe(false)
 })

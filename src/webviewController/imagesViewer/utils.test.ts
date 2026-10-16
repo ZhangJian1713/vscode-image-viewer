@@ -12,7 +12,7 @@ jest.mock('vscode', () => ({ Uri: { file: (fsPath: string) => ({ fsPath, toStrin
 jest.mock('./config', () => ({ readLocalConfigFile: jest.fn() }))
 
 const mockConfig = readLocalConfigFile as jest.Mock
-const webview = { asWebviewUri: (uri) => uri } as any
+const webview = { asWebviewUri: (uri) => ({ with: ({ query }) => ({ toString: () => `${uri.fsPath}?${query}` }) }) } as any
 
 beforeEach(() => {
   mockProjectRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'image-gallery-scan-'))
@@ -40,6 +40,16 @@ test('async scanning preserves image metadata, uppercase formats and project-rel
     '/root.JPG'
   ])
   expect(images.every((image) => image.size === 7 && image.mtimeMs > 0)).toBe(true)
+})
+
+test('unchanged images keep their URLs while overwritten originals receive new resource versions', async () => {
+  const before = await getAllImgs(webview)
+  expect((await getAllImgs(webview)).map((image) => image.vscodePath)).toEqual(before.map((image) => image.vscodePath))
+  const original = before.find((image) => image.path === '/assets/icons/a.svg')!
+  fs.writeFileSync(original.fullPath, 'updated SVG content')
+  const updated = (await getAllImgs(webview)).find((image) => image.path === original.path)!
+  expect(updated.vscodePath).not.toBe(original.vscodePath)
+  expect(updated.vscodePath).toBe(`${updated.fullPath}?v=${updated.mtimeMs}-${updated.size}`)
 })
 
 test('scoped scans exclude siblings and exclusions still apply to a directly requested subtree', async () => {

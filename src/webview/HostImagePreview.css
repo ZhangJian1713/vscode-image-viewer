@@ -1,0 +1,22 @@
+.iv-preview-help-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #cdd5e0;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.iv-preview-help-button:hover {
+  background: rgba(255, 255, 255, 0.09);
+}
+.iv-preview-help-button:focus-visible {
+  outline: 2px solid var(--vscode-focusBorder, #7daaff);
+  outline-offset: 2px;
+}

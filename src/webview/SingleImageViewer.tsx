@@ -90,9 +90,8 @@ const SingleImageViewer: React.FC = () => {
       wheelEnabled
       clickZoomEnabled
       doubleClickEnabled={false}
-      closeOnMaskClick
+      closeOnMaskClick={false}
       arrows='side'
-      showFlip
       progressiveMain={false}
       errorFallback={() => <div role='alert'>{t('preview.loadFailed')}</div>}
       onIndexChange={setActiveIndex}

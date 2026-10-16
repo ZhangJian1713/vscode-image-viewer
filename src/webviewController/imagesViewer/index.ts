@@ -14,6 +14,8 @@ import { readLocalConfigFile, writeLocalConfigFile } from './config'
 import { createGalleryEntry, imageViewerPanelInstanceKey, imageViewerPanelTitle } from '../imageViewerPanelScope'
 import { GalleryScanResult, galleryEntryToArg, galleryEntryFromArg } from '../../galleryEntry'
 import { hostText, languageRequest, trackLanguageWebview } from '../../i18n/languageHost'
+import { createGalleryFileWatcher } from './galleryFileWatcher'
+import { previewPreferencesRequest, trackPreviewPreferences } from '../../previewPreferencesHost'
 
 /** Webview payload returned by `GET_THUMB_FOR_GRID`. */
 export type GridThumbWirePayload = { kind: 'thumb'; thumbSrc: string } | { kind: 'original' }
@@ -23,6 +25,7 @@ const { invokeCallback, successResp } = webviewUtils
 const viewType = WEBVIEW_NAMES.PreviewImages
 const scanRequests = new WeakMap<Webview, { cancelled: boolean }>()
 const panelRoots = new WeakMap<Webview, string>()
+const panelWatchers = new WeakMap<Webview, ReturnType<typeof createGalleryFileWatcher>>()
 
 /** Bind once: panel messages cannot change to a different workspace root. */
 function panelRoot(webview: Webview): string {
@@ -56,9 +59,15 @@ const webviewProps: IWebviewProps = {
     const entry = galleryEntryFromArg(args[0])
     if (!entry) { throw new Error('A host-resolved gallery entry is required.') }
     panelRoots.set(panel.webview, path.resolve(entry.rootPath))
+    const fileWatcher = createGalleryFileWatcher(panel, path.resolve(entry.rootPath))
+    panelWatchers.set(panel.webview, fileWatcher)
     const languageSubscription = trackLanguageWebview(panel.webview)
+    const previewSubscription = trackPreviewPreferences(panel.webview)
     return { dispose: () => {
       languageSubscription.dispose()
+      previewSubscription.dispose()
+      fileWatcher.dispose()
+      panelWatchers.delete(panel.webview)
       const scan = scanRequests.get(panel.webview)
       if (scan) { scan.cancelled = true }
       scanRequests.delete(panel.webview)
@@ -79,6 +88,11 @@ const webviewProps: IWebviewProps = {
 }
 
 const messageHandlers = new Map([
+  ...[MESSAGE_CMD.GET_PREVIEW_PREFERENCES, MESSAGE_CMD.SET_PREVIEW_PREFERENCES].map((cmd) => [
+    cmd, async (message: IMessage, webview: Webview) => {
+      invokeCallback(viewType, message, await previewPreferencesRequest(cmd, message.data?.showMirrorButtons), webview)
+    }
+  ] as [string, (message: IMessage, webview: Webview) => Promise<void>]),
   [MESSAGE_CMD.GET_FILMSTRIP_THUMBNAIL, async (message: IMessage, webview: Webview) => {
     const result = await filmstripThumbnail(webview, message.data?.id,
       async (id) => {
@@ -113,6 +127,8 @@ const messageHandlers = new Map([
       }
       const request = { cancelled: false }
       scanRequests.set(webview, request)
+      const fileWatcher = panelWatchers.get(webview)
+      const scanToken = fileWatcher?.beginScan(requestId)
       try {
         basePath = panelRoot(webview)
         const response = (imgs, complete): GalleryScanResult => ({ imgs, complete, requestId,
@@ -139,6 +155,8 @@ const messageHandlers = new Map([
           },
           webview
         )
+      } finally {
+        if (scanToken) { fileWatcher.endScan(scanToken) }
       }
     }
   ],

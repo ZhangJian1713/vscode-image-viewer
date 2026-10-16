@@ -158,7 +158,8 @@ async function searchImgs(
             return {
               path: '/' + path.relative(basePath, filePath).replace(/\\/g, '/'),
               fullPath: filePath,
-              vscodePath: webview.asWebviewUri(Uri.file(filePath)).toString(),
+              // A changed original (including SVG/small images) must not reuse the browser's old image URL.
+              vscodePath: webview.asWebviewUri(Uri.file(filePath)).with({ query: `v=${stat.mtimeMs}-${stat.size}` }).toString(),
               size: stat.size,
               mtimeMs: stat.mtimeMs
             }

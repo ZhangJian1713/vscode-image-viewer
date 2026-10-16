@@ -6,7 +6,8 @@ jest.mock('./webviewController/imagesViewer/thumbGridCache', () => ({
 }))
 
 test('thumbnail requests require host authorization and never return originals on failure', async () => {
-  const webview = { asWebviewUri: (uri) => ({ toString: () => `cache:${uri.path}` }) } as any
+  const webview = { asWebviewUri: (uri) => ({ toString: () => `cache:${uri.path}`,
+    with: ({ query }) => ({ toString: () => `cache:${uri.path}?${query}` }) }) } as any
   const authorize = jest.fn(async () => ({ filePath: '/authorized/a.jpg', sourceUri: { path: '/authorized/a.jpg' } as any }))
   ;(resolveFilmstripThumbnail as jest.Mock).mockResolvedValue({ kind: 'thumb', cacheFsPath: '/generated/200.jpg' })
   expect(await filmstripThumbnail(webview, 'image-id', authorize)).toEqual({ kind: 'thumb', thumbSrc: 'cache:/generated/200.jpg' })
@@ -15,8 +16,10 @@ test('thumbnail requests require host authorization and never return originals o
   expect(await filmstripThumbnail(webview, '../outside', async () => { throw new Error('denied') })).toEqual({ kind: 'error' })
   expect(resolveFilmstripThumbnail).not.toHaveBeenCalled()
   expect(await filmstripThumbnail(webview, {}, authorize)).toEqual({ kind: 'error' })
-  ;(resolveFilmstripThumbnail as jest.Mock).mockResolvedValue({ kind: 'original' })
-  expect(await filmstripThumbnail(webview, 'small-or-svg', authorize)).toEqual({ kind: 'thumb', thumbSrc: 'cache:/authorized/a.jpg' })
+  ;(resolveFilmstripThumbnail as jest.Mock).mockResolvedValue({ kind: 'original', version: '123-456' })
+  expect(await filmstripThumbnail(webview, 'small-or-svg', authorize)).toEqual({ kind: 'thumb', thumbSrc: 'cache:/authorized/a.jpg?v=123-456' })
+  ;(resolveFilmstripThumbnail as jest.Mock).mockResolvedValue({ kind: 'original', version: '124-456' })
+  expect(await filmstripThumbnail(webview, 'small-or-svg', authorize)).toEqual({ kind: 'thumb', thumbSrc: 'cache:/authorized/a.jpg?v=124-456' })
   ;(resolveFilmstripThumbnail as jest.Mock).mockResolvedValue(null)
   expect(await filmstripThumbnail(webview, 'image-id', authorize)).toEqual({ kind: 'error' })
 })

@@ -33,9 +33,9 @@ Zoom into details, pan with the minimap, and browse nearby images without changi
 
 - **Zoom and pan:** use the mouse wheel, toolbar, or enter a percentage. Press **Space** or click the image to cycle through two or three zoom levels suited to its size. Zoom presets extend to **800%**.
 - **Inspect details:** drag an enlarged image or navigate with the minimap.
-- **Rotate and flip:** rotate in either direction, or flip horizontally and vertically, without changing the original file.
+- **Rotate and flip:** the toolbar keeps clockwise rotation; use `R` / `Shift+R` to rotate clockwise / counter-clockwise. Mirror buttons are hidden by default. Enable **Settings → General → Show mirror buttons** in the gallery, or VS Code's `imageViewer.showMirrorButtons` setting, to show both horizontal and vertical mirror controls in all previews. These operations do not change the original file.
 - **Navigate:** browse other images in the same folder with toolbar buttons, side arrows, or keyboard controls. The order follows Explorer's sorting settings.
-- **Unobstructed viewing:** controls fade when idle. Images outside the workspace can also be opened.
+- **Unobstructed viewing:** controls fade when idle. Clicking the background does not close the single-image editor; use its close button or `Esc`. Images outside the workspace can also be opened.
 
 ### Make it the default
 
@@ -47,7 +47,7 @@ To remove these associations, run **Image Viewer: Restore VS Code's Default Imag
 
 ## Keyboard shortcuts
 
-Inside the single-image viewer or gallery preview, click **⌨ View keyboard shortcuts** in the toolbar,
+Inside the single-image viewer or gallery preview, click the **circled question-mark button (View keyboard shortcuts)** in the toolbar,
 or press **`?`**, to open the read-only reference. Bindings are fixed; no customization settings are provided.
 Text fields keep normal editing keys, and IME composition does not trigger image actions.
 
@@ -60,15 +60,19 @@ Text fields keep normal editing keys, and IME composition does not trigger image
 | `Space` / Numpad `0` | Adaptive observation zoom cycle, matching primary click |
 | Main keyboard `0` / `1` | Fit / actual size (100%) |
 | `R` / `Shift+R` | Rotate 90° clockwise / counter-clockwise |
-| `Ctrl/⌘+→` / `Ctrl/⌘+←` | Existing clockwise / counter-clockwise rotation aliases |
-| `W/A/S/D` | Reveal up / left / down / right, only for a zoomed image overflowing the viewport |
-| Numpad `8/4/2(or 5)/6` | Reveal up / left / down / right |
-| Numpad `7/9/1/3` | Reveal upper-left / upper-right / lower-left / lower-right |
-| `Shift+↑/↓/←/→` | Existing pan aliases |
+| `W` / Numpad `8` | Reveal up |
+| `S` / Numpad `2` / Numpad `5` | Reveal down |
+| `A` / Numpad `4` | Reveal left |
+| `D` / Numpad `6` | Reveal right |
+| Numpad `7` | Reveal upper-left |
+| Numpad `9` | Reveal upper-right |
+| Numpad `1` | Reveal lower-left |
+| Numpad `3` | Reveal lower-right |
 | `F` | Toggle VS Code window fullscreen |
 | `?` | Open / close shortcut reference |
 | `Esc` | Close the shortcut reference first; otherwise close the preview or single-image editor |
 
+Pan only works when the zoomed image overflows the viewport. Ctrl/⌘/Shift + arrow keys are left to the host.
 Numpad keys retain physical identity with NumLock off. Unless listed above, Ctrl/⌘/Alt combinations
 remain available to the host; Ctrl/⌘+Space does not run the zoom cycle. Esc does not exit VS Code window
 fullscreen: use F, the fullscreen button, or the native host shortcut.
@@ -120,7 +124,7 @@ Choose a thumbnail background separately: none, checkerboard for transparency, o
 
 Right-click a folder or file → **View Images 🌄**. The sidebar shows the project root and reveals your target. Images are highlighted in the wall and opened in the large-image preview; other files locate their containing folder. Empty folders fall back to the nearest ancestor with images, then the project root. Closing the preview returns to the located thumbnail.
 
-Explorer entries in the same project reuse one gallery tab; different workspace roots have separate tabs. Use **Refresh images** after external file changes. If search/type filters hide the target, they are temporarily adjusted, with **Restore filters** available.
+Explorer entries in the same project reuse one gallery tab; different workspace roots have separate tabs. The gallery automatically updates images, folder nodes, and counts about **3 seconds after file changes stop**, including copied, renamed, or deleted folders. Changes during a scan are checked again after it finishes; hidden tabs refresh when shown. Current filters and browsing position are retained where possible, and an open large-image preview keeps its current session. Empty folders remain hidden. Paths excluded by VS Code's `files.watcherExclude` may require **Refresh images**. If search/type filters hide the target, they are temporarily adjusted, with **Restore filters** available.
 
 ### Find and organize images
 

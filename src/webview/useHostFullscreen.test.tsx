@@ -64,3 +64,12 @@ test('rejects pending work on unmount without updating the departed preview', as
   await rejected
   expect(jest.getTimerCount()).toBe(0)
 })
+
+test('a retained toggle callback cannot change the window after its preview unmounts', async () => {
+  transport.mockImplementation((_request, callback) => callback({ ok: true }))
+  const retained = api.fullscreen.toggle!
+  act(() => { ReactDOM.unmountComponentAtNode(root) })
+  await expect(retained()).rejects.toThrow('preview was closed')
+  expect(transport).not.toHaveBeenCalled()
+  expect(jest.getTimerCount()).toBe(0)
+})

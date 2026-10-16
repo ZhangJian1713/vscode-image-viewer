@@ -1,5 +1,5 @@
 import React from 'react'
-import { Button, Modal, Select, Tabs, Typography } from 'antd'
+import { Button, Modal, Select, Switch, Tabs, Typography } from 'antd'
 import { ExportOutlined, GithubOutlined, MailOutlined } from '@ant-design/icons'
 import type { IConfig } from '../../types'
 import { MESSAGE_CMD } from '../../constants'
@@ -7,6 +7,7 @@ import { ANNOUNCEMENT_ID } from './announcementConfig'
 import { callGalleryHost } from './galleryBridge'
 import { useI18n, useLanguage } from '../../i18n/react'
 import './gallerySettings.css'
+import { usePreviewPreferences } from '../usePreviewPreferences'
 
 import { FEEDBACK_EMAIL, FeedbackAction } from '../../feedback'
 const openFeedback = (action: FeedbackAction) => callGalleryHost({ cmd: MESSAGE_CMD.OPEN_FEEDBACK, data: { action } })
@@ -18,6 +19,7 @@ export const GallerySettingsModal: React.FC<{
 }> = ({ config, onChange, onClose }) => {
   const { t } = useI18n()
   const language = useLanguage()
+  const preferences = usePreviewPreferences(callGalleryHost)
   return (
     <Modal
       title={t('common.settings')}
@@ -57,6 +59,15 @@ export const GallerySettingsModal: React.FC<{
                 />
               </div>
               {language.saveError && <Typography.Text type='danger' role='alert'>{t('language.saveFailed')}</Typography.Text>}
+              <div className='iv-settings-row'>
+                <div>
+                  <strong>{t('settings.showMirrorButtons')}</strong>
+                  <Typography.Paragraph type='secondary'>{t('settings.mirrorButtonsDescription')}</Typography.Paragraph>
+                </div>
+                <Switch aria-label={t('settings.showMirrorButtons')} checked={preferences.showMirrorButtons}
+                  loading={preferences.saving} disabled={preferences.saving} onChange={preferences.setShowMirrorButtons} />
+              </div>
+              {preferences.saveError && <Typography.Text type='danger' role='alert'>{t('settings.previewSaveFailed')}</Typography.Text>}
             </div>
           },
           {

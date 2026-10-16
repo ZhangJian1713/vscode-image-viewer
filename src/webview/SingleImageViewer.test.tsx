@@ -6,6 +6,7 @@ import SingleImageViewer from './SingleImageViewer'
 import { LanguageProvider, webviewI18n } from '../i18n/react'
 import { MESSAGE_CMD } from '../constants'
 import { useResourceCacheSlot } from './resourceCache/ResourceCacheBoundary'
+jest.mock('./HostImagePreview.css', () => ({}))
 
 let mockPreviewProps: any
 jest.mock('right-image-preview', () => ({ ImagePreview: (props) => { mockPreviewProps = props; return <div /> } }))
@@ -27,6 +28,7 @@ test('single-editor language broadcasts retain the sibling dataset and active re
   try {
     act(() => { ReactDOM.render(<LanguageProvider transport={transport}><SingleImageViewer /></LanguageProvider>, root) })
     const groups = mockPreviewProps.groupedImages
+    expect(mockPreviewProps.closeOnMaskClick).toBe(false)
     act(() => { mockPreviewProps.onIndexChange(2) })
     for (const [index, language] of ['zh-CN', 'zh-TW', 'en'].entries()) {
       act(() => { window.dispatchEvent(new MessageEvent('message', { data: {

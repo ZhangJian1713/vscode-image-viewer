@@ -1,4 +1,5 @@
 {
+  "preview.showMirrorButtons.description": "在单图查看器和图库预览中显示水平、上下镜像按钮，立即应用到所有已打开的预览。",
   "command.viewImages": "查看图片 🌄",
   "command.setDefault": "设为默认图片编辑器",
   "command.restoreDefault": "恢复 VS Code 默认图片编辑器",

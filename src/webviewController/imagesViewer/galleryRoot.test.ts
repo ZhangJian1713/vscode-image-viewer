@@ -6,6 +6,7 @@ import { MESSAGE_CMD } from '../../constants'
 import { getAllImgs } from './utils'
 import { readLocalConfigFile, writeLocalConfigFile } from './config'
 import { webviewUtils } from '@easy_vscode/core'
+import { createGalleryFileWatcher } from './galleryFileWatcher'
 
 let mockRoots: string[] = []
 jest.mock('@easy_vscode/core', () => ({ utils: { getProjectPath: () => mockRoots[0] },
@@ -17,6 +18,9 @@ jest.mock('./utils', () => ({ getAllImgs: jest.fn(), getImageBase64: jest.fn(), 
   SUPPORT_IMG_TYPES: ['.jpg'] }))
 jest.mock('./config', () => ({ readLocalConfigFile: jest.fn(() => ({ includeFolders: [], excludeFolders: [] })), writeLocalConfigFile: jest.fn() }))
 jest.mock('./thumbGridCache', () => ({ resolveThumbForGrid: jest.fn(), cacheFsPathToThumbResourceUri: jest.fn() }))
+jest.mock('./galleryFileWatcher', () => ({ createGalleryFileWatcher: jest.fn(() => ({
+  beginScan: jest.fn(() => ({})), endScan: jest.fn(), dispose: jest.fn()
+})) }))
 let directory: string
 const callbacks = webviewUtils.invokeCallback as jest.Mock
 const scan = getAllImgs as jest.Mock
@@ -65,6 +69,31 @@ test('a superseded root scan cannot publish its early snapshot or final callback
   finish([])
   await old
   expect(callbacks.mock.calls.filter((call) => call[2].requestId === 1)).toHaveLength(0)
+})
+
+test('panel lifecycle binds the watcher to its root and finishes scan tracking on failure or disposal', async () => {
+  const webview = { postMessage: jest.fn() } as any
+  const nativePanel = { webview } as any
+  const subscription = gallery.webviewProps.onDidCreatePanel(nativePanel,
+    [{ __imageViewerEntry: true, rootPath: mockRoots[1], targetPath: '', kind: 'root' }], mockRoots[1])
+  if (!subscription) { throw new Error('Expected panel lifecycle disposable') }
+  const factory = createGalleryFileWatcher as jest.Mock
+  expect(factory).toHaveBeenLastCalledWith(nativePanel, mockRoots[1])
+  const fileWatcher = factory.mock.results[factory.mock.results.length - 1].value
+  scan.mockRejectedValueOnce(new Error('unreadable fixture'))
+  await handle(MESSAGE_CMD.GET_ALL_IMGS, { requestId: 5 }, webview)
+  expect(fileWatcher.beginScan).toHaveBeenCalledWith(5)
+  expect(fileWatcher.endScan).toHaveBeenCalledWith(fileWatcher.beginScan.mock.results[0].value)
+  expect(lastReply().error).toBe('unreadable fixture')
+  let finish: (_images: any[]) => void
+  scan.mockImplementationOnce(() => new Promise((resolve) => { finish = resolve }))
+  const pending = handle(MESSAGE_CMD.GET_ALL_IMGS, { requestId: 6 }, webview)
+  subscription.dispose()
+  expect(fileWatcher.dispose).toHaveBeenCalledTimes(1)
+  expect(scan.mock.calls[1][2].cancelled).toBe(true)
+  finish([])
+  await pending
+  expect(callbacks.mock.calls.some((call) => call[2].requestId === 6)).toBe(false)
 })
 
 test('the command adapter serializes only encoded paths, including Explorer multiselection arguments', () => {

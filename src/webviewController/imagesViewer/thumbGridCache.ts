@@ -4,6 +4,7 @@ import { createHash } from 'crypto'
 import * as fs from 'fs'
 import imageSize from 'image-size'
 import * as path from 'path'
+import { setTimeout, setInterval, clearTimeout, clearInterval } from 'timers'
 import { utils } from '@easy_vscode/core'
 import { ExtensionContext, Uri, workspace, extensions } from 'vscode'
 import { thumbnailEvictionCandidates } from './thumbnailCachePolicy'
@@ -33,6 +34,7 @@ const MACOS_RASTER_EXT = new Set([...RASTER_EXT, '.bmp', '.ico'])
 const generationLimit = 6
 
 export type GridThumbResponse = { kind: 'thumb'; cacheFsPath: string } | { kind: 'original' }
+export type FilmstripThumbResponse = { kind: 'thumb'; cacheFsPath: string } | { kind: 'original'; version: string }
 
 let globalThumbRoot: string | null = null
 /** `Uri.joinPath(globalStorageUri, GRID_THUMB_GLOBAL_SUBDIR)`, used by `asWebviewUri` to align with webview roots. */
@@ -447,13 +449,13 @@ async function isSmallFilmstripImage(filePath: string): Promise<boolean> {
 }
 
 /** Caller authorizes the file. Original is an explicit SVG/small-pixel choice, never a decode-failure fallback. */
-export async function resolveFilmstripThumbnail(authorizedPath: string): Promise<GridThumbResponse | null> {
+export async function resolveFilmstripThumbnail(authorizedPath: string): Promise<FilmstripThumbResponse | null> {
   try {
     const realPath = await fs.promises.realpath(authorizedPath)
     const stat = await fs.promises.stat(realPath)
     if (!stat.isFile()) { return null }
     if (path.extname(realPath).toLowerCase() === '.svg' || await isSmallFilmstripImage(realPath)) {
-      return { kind: 'original' }
+      return { kind: 'original', version: `${stat.mtimeMs}-${stat.size}` }
     }
     // Compressed byte count does not bound decoded pixels. Large rasters always use the 200px cache.
     const cacheFsPath = await ensureThumbOnDisk(realPath, stat, 200)

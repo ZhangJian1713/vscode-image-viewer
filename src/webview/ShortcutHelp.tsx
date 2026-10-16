@@ -1,6 +1,6 @@
 import React, { useLayoutEffect, useRef } from 'react'
 import { getPreviewShortcutHelp } from 'right-image-preview'
-import type { PreviewShortcutAction, PreviewShortcutCapabilities } from 'right-image-preview'
+import type { PreviewShortcutAction, PreviewShortcutCapabilities, PreviewPanDirection } from 'right-image-preview'
 import { useI18n } from '../i18n/react'
 import type { TranslationKey } from '../i18n/en'
 
@@ -11,10 +11,16 @@ const labels: Record<PreviewShortcutAction, TranslationKey> = {
   rotateCW: 'shortcuts.rotateCW', rotateCCW: 'shortcuts.rotateCCW', pan: 'shortcuts.pan', fullscreen: 'preview.toggleWindowFullscreen',
   shortcuts: 'shortcuts.open', exif: 'shortcuts.exif', delete: 'shortcuts.delete', close: 'shortcuts.closePreview'
 }
+const panLabels: Record<PreviewPanDirection, TranslationKey> = {
+  up: 'shortcuts.panUp', down: 'shortcuts.panDown', left: 'shortcuts.panLeft', right: 'shortcuts.panRight',
+  upLeft: 'shortcuts.panUpLeft', upRight: 'shortcuts.panUpRight',
+  downLeft: 'shortcuts.panDownLeft', downRight: 'shortcuts.panDownRight'
+}
 
 export function ShortcutHelp({ capabilities, onClose }: { capabilities: PreviewShortcutCapabilities; onClose: () => void }) {
   const { t } = useI18n()
   const close = useRef<HTMLButtonElement>(null)
+  const content = useRef<HTMLDivElement>(null)
   useLayoutEffect(() => {
     const previous = document.activeElement as HTMLElement | null
     close.current?.focus()
@@ -29,23 +35,27 @@ export function ShortcutHelp({ capabilities, onClose }: { capabilities: PreviewS
         event.stopPropagation()
         if (event.key === 'Escape' || (event.key === '?' && !event.ctrlKey && !event.metaKey && !event.altKey)) {
           event.preventDefault(); onClose()
-        } else if (event.key === 'Tab') { event.preventDefault(); close.current?.focus() }
+        } else if (event.key === 'Tab') {
+          event.preventDefault()
+          // Both focus targets stay inside the dialog; the body must be reachable for native keyboard scrolling.
+          if (document.activeElement === close.current) { content.current?.focus() } else { close.current?.focus() }
+        }
       }}
-      style={{ width: 'min(720px, 100%)', maxHeight: '80vh', overflow: 'auto', borderRadius: 10,
+      style={{ width: 'min(720px, 100%)', maxHeight: '80vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', borderRadius: 10,
         color: 'var(--vscode-editor-foreground, #ddd)', background: 'var(--vscode-editor-background, #222)',
         border: '1px solid var(--vscode-widget-border, #555)', boxShadow: '0 16px 60px #0008' }}>
-      <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px' }}>
+      <header style={{ display: 'flex', flexShrink: 0, alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px' }}>
         <h2 style={{ margin: 0, fontSize: 18 }}>{t('shortcuts.title')}</h2>
         <button ref={close} type='button' onClick={onClose} aria-label={t('common.close')}
           style={{ border: 0, color: 'inherit', background: 'transparent', fontSize: 24, cursor: 'pointer' }}>×</button>
       </header>
-      <div style={{ padding: '0 20px 20px' }}>
+      <div ref={content} tabIndex={0} style={{ padding: '0 20px 20px', minHeight: 0, overflowY: 'auto', overscrollBehavior: 'contain' }}>
         <p>{t('shortcuts.note')}</p>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
           <thead><tr><th style={{ textAlign: 'left', padding: 8 }}>{t('shortcuts.action')}</th>
             <th style={{ textAlign: 'left', padding: 8 }}>{t('shortcuts.keys')}</th></tr></thead>
-          <tbody>{entries.map((entry) => <tr key={entry.action}>
-            <td style={{ padding: 8, borderTop: '1px solid var(--vscode-widget-border, #555)', width: '42%' }}>{t(labels[entry.action])}</td>
+          <tbody>{entries.map((entry) => <tr key={entry.direction || entry.action}>
+            <td style={{ padding: 8, borderTop: '1px solid var(--vscode-widget-border, #555)', width: '42%' }}>{t(entry.direction ? panLabels[entry.direction] : labels[entry.action])}</td>
             <td style={{ padding: 8, borderTop: '1px solid var(--vscode-widget-border, #555)' }}>{entry.keys.map((key, index) => <React.Fragment key={key}>
               {index > 0 && ' / '}<kbd style={{ whiteSpace: 'nowrap' }}>{key}</kbd>
             </React.Fragment>)}</td>

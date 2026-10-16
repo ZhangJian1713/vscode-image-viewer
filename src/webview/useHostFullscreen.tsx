@@ -18,7 +18,8 @@ export function useHostFullscreen(transport: GalleryTransport) {
     }
   }, [])
   const toggle = useCallback(() => new Promise<void>((resolve, reject) => {
-    if (mounted.current) { setError(null) }
+    if (!mounted.current) { reject(new Error('The preview was closed')); return }
+    setError(null)
     let finished = false
     const finish = (failure?: Error) => {
       if (finished) { return }

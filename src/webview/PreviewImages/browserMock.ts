@@ -18,6 +18,8 @@ export function installGalleryMock(): void {
   const savedLanguage = localStorage.getItem(`${key}:language`)
   let languagePreference: LanguagePreference = isLanguagePreference(savedLanguage) ? savedLanguage : 'auto'
   let languageRevision = 0
+  let showMirrorButtons = localStorage.getItem(`${key}:showMirrorButtons`) === 'true'
+  let previewRevision = 0
   const languageSnapshot = () => ({ preference: languagePreference,
     language: effectiveLanguage(languagePreference, params.get('hostLanguage') || 'en'), revision: languageRevision })
   const imageScale = Math.max(1, Math.min(4, Number(params.get('imageScale')) || 1))
@@ -93,6 +95,20 @@ export function installGalleryMock(): void {
   const transport: GalleryTransport = (request: GalleryMessage, callback) => {
     let value: unknown
     switch (request.cmd) {
+      case MESSAGE_CMD.GET_PREVIEW_PREFERENCES:
+        value = { ok: true, snapshot: { showMirrorButtons, revision: previewRevision } }
+        break
+      case MESSAGE_CMD.SET_PREVIEW_PREFERENCES: {
+        const next = (request.data as { showMirrorButtons?: unknown })?.showMirrorButtons
+        if (typeof next === 'boolean') {
+          showMirrorButtons = next
+          localStorage.setItem(`${key}:showMirrorButtons`, String(next))
+          previewRevision++
+          window.postMessage({ cmd: MESSAGE_CMD.PREVIEW_PREFERENCES_CHANGED, data: { showMirrorButtons, revision: previewRevision } }, '*')
+        }
+        value = { ok: typeof next === 'boolean', snapshot: { showMirrorButtons, revision: previewRevision } }
+        break
+      }
       case MESSAGE_CMD.GET_UI_LANGUAGE:
         value = { ok: true, snapshot: languageSnapshot() }
         break

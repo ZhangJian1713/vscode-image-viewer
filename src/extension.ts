@@ -7,6 +7,7 @@ import { registerCustomImageEditor } from './customImageEditor'
 import * as path from 'path'
 import { EXTENSION_COMMANDS, RESOURCE_CACHE_CLEANUP_ARG } from './constants'
 import { registerLanguageService } from './i18n/languageHost'
+import { registerPreviewPreferences } from './previewPreferencesHost'
 
 const {envVars} = utils
 
@@ -20,6 +21,7 @@ export function activate(context: vscode.ExtensionContext) {
   initGridThumbGlobalStorage(context)
   initFilmstripPreferences(context)
   registerLanguageService(context)
+  registerPreviewPreferences(context)
   registryAllWebviews(context)
   registerCustomImageEditor(context)
   context.subscriptions.push(

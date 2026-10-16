@@ -129,6 +129,12 @@
     "configuration": {
       "title": "Image Viewer",
       "properties": {
+        "imageViewer.showMirrorButtons": {
+          "type": "boolean",
+          "default": false,
+          "scope": "application",
+          "description": "%preview.showMirrorButtons.description%"
+        },
         "imageViewer.language": {
           "type": "string",
           "default": "auto",
@@ -187,7 +193,7 @@
     "test:resource-cache": "jest src/webview/resourceCache --runInBand",
     "test:gallery": "jest src/folderFilterRules.test.ts src/feedback.test.ts src/webview/webviewPalette.test.ts src/webview/PreviewImages/gallery*.test.* src/webviewController/imagesViewer/*.test.ts --runInBand",
     "bench:thumb-mac": "node scripts/benchmark-ql-vs-jimp.cjs",
-    "test:preview": "jest src/webview/previewPackage.test.tsx src/webview/useHostFullscreen.test.tsx src/windowFullscreen.test.ts src/webview/filmstripThumbnailStore.test.ts src/webview/useFilmstrip.test.tsx src/filmstripHost.test.ts src/webview/ShortcutHelp.test.tsx --runInBand",
+    "test:preview": "jest src/previewPreferencesHost.test.ts src/webview/usePreviewPreferences.test.tsx src/webview/previewPackage.test.tsx src/webview/useHostFullscreen.test.tsx src/windowFullscreen.test.ts src/webview/filmstripThumbnailStore.test.ts src/webview/useFilmstrip.test.tsx src/filmstripHost.test.ts src/webview/ShortcutHelp.test.tsx --runInBand",
     "bench:thumbnail-backends": "node scripts/benchmark-imageio-sharp.cjs",
     "test:i18n": "jest src/i18n src/webview/SingleImageViewer.test.tsx src/webview/notifications.test.tsx --runInBand"
   },

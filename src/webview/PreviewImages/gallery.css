@@ -101,9 +101,20 @@
   width: 100%;
   padding-bottom: 0;
 }
-.iv-folder-tree-slot .ant-tree-node-content-wrapper {
+.iv-folder-tree-slot .ant-tree .ant-tree-node-content-wrapper {
   min-width: 0;
   flex: 1;
+  padding: 0;
+}
+.iv-folder-tree-slot .ant-tree .ant-tree-switcher {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-inline-end: 0;
+}
+.iv-folder-tree-slot .ant-tree .ant-tree-switcher::before {
+  width: 100%;
+  height: 100%;
 }
 .iv-folder-tree-slot .ant-tree-title {
   display: block;
@@ -119,11 +130,12 @@
   align-items: center;
   gap: 7px;
   height: calc(var(--iv-folder-row-height, 32px) - 4px);
-  padding: 0 6px;
+  /* Keep the folder close to the switcher without overlapping their hit areas. */
+  padding: 0 6px 0 2px;
   box-sizing: border-box;
 }
 .iv-folder-title > .anticon {
-  color: #d9ad5a;
+  color: inherit;
   flex-shrink: 0;
 }
 .iv-folder-name {

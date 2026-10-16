@@ -3,6 +3,7 @@ import { GRID_THUMB_GLOBAL_SUBDIR } from './config/gridThumb'
 import { assertProjectResource } from './webviewController/imagesViewer/projectResource'
 import { toggleWindowFullscreen } from './windowFullscreen'
 import * as fs from 'fs'
+import { previewPreferencesRequest, trackPreviewPreferences } from './previewPreferencesHost'
 import * as path from 'path'
 import * as vscode from 'vscode'
 import { hostText, languageRequest, trackLanguageWebview } from './i18n/languageHost'
@@ -191,8 +192,12 @@ class ImageViewerEditorProvider implements vscode.CustomReadonlyEditorProvider<I
     let disposed = false
     let allowedIds = new Set<string>()
     const languageSubscription = trackLanguageWebview(webviewPanel.webview)
+    const previewSubscription = trackPreviewPreferences(webviewPanel.webview)
     const messageSubscription = webviewPanel.webview.onDidReceiveMessage(async (message) => {
-      if (message?.cmd === MESSAGE_CMD.CLOSE_CUSTOM_IMAGE_EDITOR) {
+      if (message?.cmd === MESSAGE_CMD.GET_PREVIEW_PREFERENCES || message?.cmd === MESSAGE_CMD.SET_PREVIEW_PREFERENCES) {
+        const result = await previewPreferencesRequest(message.cmd, message.data?.showMirrorButtons)
+        if (!disposed) { webviewUtils.invokeCallback(WEBVIEW_NAMES.SingleImageViewer, message, result, webviewPanel.webview) }
+      } else if (message?.cmd === MESSAGE_CMD.CLOSE_CUSTOM_IMAGE_EDITOR) {
         webviewPanel.dispose()
       } else if (message?.cmd === MESSAGE_CMD.GET_FILMSTRIP_THUMBNAIL) {
         const result = await filmstripThumbnail(webviewPanel.webview, message.data?.id, async (id) => {
@@ -222,6 +227,7 @@ class ImageViewerEditorProvider implements vscode.CustomReadonlyEditorProvider<I
       disposed = true
       messageSubscription.dispose()
       languageSubscription.dispose()
+      previewSubscription.dispose()
     })
 
     const bootstrap = await createSingleImageBootstrap(webviewPanel.webview, document.uri)

@@ -174,3 +174,20 @@ test('local filmstrip URLs and visibility changes preserve main-image zoom, rota
   expect(root.querySelector('img[src="test:package-image"]')).toBe(image)
   expect(ref.current!.getState().nativePercent).toBe(state.nativePercent)
 })
+
+test('React 17 keeps the last painted frame while skipping an unloaded image', async () => {
+  const items = [...images, { src: 'test:skipped' }, { src: 'test:incoming' }]
+  const image = await readyImage(3200, 2400, { images: items })
+  act(() => { ref.current!.setNative(100); ref.current!.rotateCW() })
+  const pose = image.parentElement!.style.transform
+  act(() => { ref.current!.goTo(1) })
+  act(() => { ref.current!.goTo(2) })
+  expect(root.querySelector('img[src="test:package-image"]')).toBe(image)
+  expect(image.closest('[data-rip-stage-layer]')!.getAttribute('data-rip-stage-layer')).toBe('outgoing')
+  expect(image.parentElement!.style.transform).toBe(pose)
+  const incoming = root.querySelector<HTMLImageElement>('img[src="test:incoming"]')!
+  Object.defineProperties(incoming, { complete: { value: true }, naturalWidth: { value: 2000 }, naturalHeight: { value: 1000 } })
+  incoming.decode = () => Promise.resolve()
+  await act(async () => { incoming.dispatchEvent(new Event('load')); await new Promise((resolve) => window.setTimeout(resolve, 30)) })
+  expect(root.querySelector('[data-rip-stage-layer="outgoing"]')).toBeNull()
+})

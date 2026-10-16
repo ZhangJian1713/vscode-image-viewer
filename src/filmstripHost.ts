@@ -33,8 +33,12 @@ export async function filmstripThumbnail(webview: Webview, id: unknown,
     if (typeof id !== 'string' || !id || id.length > 32768 || id.includes('\0')) { return { kind: 'error' } }
     const target = await authorize(id)
     const result = await resolveFilmstripThumbnail(target.filePath)
-    const uri = result?.kind === 'original' ? target.sourceUri
-      : result?.kind === 'thumb' ? cacheFsPathToThumbResourceUri(result.cacheFsPath) : null
-    return uri ? { kind: 'thumb', thumbSrc: webview.asWebviewUri(uri).toString() } : { kind: 'error' }
+    if (!result) { return { kind: 'error' } }
+    const uri = result.kind === 'original' ? target.sourceUri : cacheFsPathToThumbResourceUri(result.cacheFsPath)
+    if (!uri) { return { kind: 'error' } }
+    const resource = webview.asWebviewUri(uri)
+    // Generated filenames already contain the content version; direct SVG/small originals need one too.
+    return { kind: 'thumb', thumbSrc: result.kind === 'original'
+      ? resource.with({ query: `v=${result.version}` }).toString() : resource.toString() }
   } catch { return { kind: 'error' } }
 }

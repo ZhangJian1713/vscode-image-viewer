@@ -217,9 +217,13 @@ test('filmstrip uses original SVG and rasters up to 200px without generating cac
     const boundary = path.join(root, '200x100.png')
     await new Jimp(200, 100, 0x336699ff).writeAsync(boundary)
     for (const file of [svg, small, boundary]) {
-      expect(await resolveFilmstripThumbnail(file)).toEqual({ kind: 'original' })
+      const stat = fs.statSync(file)
+      expect(await resolveFilmstripThumbnail(file)).toEqual({ kind: 'original', version: `${stat.mtimeMs}-${stat.size}` })
     }
     expect(backend).not.toHaveBeenCalled()
+    const original = await resolveFilmstripThumbnail(svg)
+    fs.writeFileSync(svg, '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"/>')
+    expect(await resolveFilmstripThumbnail(svg)).not.toEqual(original)
     const large = path.join(root, '201x20.png')
     await new Jimp(201, 20, 0x336699ff).writeAsync(large)
     expect(fs.statSync(large).size).toBeLessThan(120 * 1024)

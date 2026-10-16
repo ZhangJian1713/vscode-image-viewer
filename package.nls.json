@@ -1,4 +1,5 @@
 {
+  "preview.showMirrorButtons.description": "Show horizontal and vertical mirror buttons in single-image and gallery previews. Applies immediately to all open previews.",
   "command.viewImages": "View Images 🌄",
   "command.setDefault": "Use as Default Image Editor",
   "command.restoreDefault": "Restore VS Code's Default Image Editor",

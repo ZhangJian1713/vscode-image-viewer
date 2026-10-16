@@ -172,10 +172,14 @@ const PreviewImages: React.FC = () => {
   useEffect(() => {
     const onProgress = (event: MessageEvent) => {
       if (event.data?.cmd === MESSAGE_CMD.GALLERY_SCAN_PROGRESS) { applyScanResult(event.data.data) }
+      if (event.data?.cmd === MESSAGE_CMD.GALLERY_FILES_CHANGED && hydrationRef.current &&
+        event.data.data?.projectPath === projectRoot.current && event.data.data?.requestId === requestSequence.current) {
+        refresh()
+      }
     }
     window.addEventListener('message', onProgress)
     return () => window.removeEventListener('message', onProgress)
-  }, [applyScanResult])
+  }, [applyScanResult, refresh])
 
   useEffect(() => {
     let active = true
@@ -701,7 +705,6 @@ const PreviewImages: React.FC = () => {
           wheelEnabled
           clickZoomEnabled
           doubleClickEnabled={false}
-          showFlip
           arrows='both'
           closeOnMaskClick
           errorFallback={() => <div role='alert'>{t('preview.loadFailed')}</div>}

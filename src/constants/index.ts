@@ -17,9 +17,13 @@ export const MESSAGE_CMD = {
   GET_UI_LANGUAGE: 'getUiLanguage',
   SET_UI_LANGUAGE: 'setUiLanguage',
   UI_LANGUAGE_CHANGED: 'uiLanguageChanged',
+  GET_PREVIEW_PREFERENCES: 'getPreviewPreferences',
+  SET_PREVIEW_PREFERENCES: 'setPreviewPreferences',
+  PREVIEW_PREFERENCES_CHANGED: 'previewPreferencesChanged',
   // image viewer
   GET_ALL_IMGS: 'getAllImgs',
   GALLERY_SCAN_PROGRESS: 'galleryScanProgress',
+  GALLERY_FILES_CHANGED: 'galleryFilesChanged',
   RESOLVE_GALLERY_ENTRY: 'resolveGalleryEntry',
   GET_IMAGE_SIZE: 'getImageSize',
   /** Explicit gallery file/folder menu action; extension validates workspace boundaries. */
