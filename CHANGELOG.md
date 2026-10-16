@@ -2,20 +2,34 @@
 
 ## [Unreleased]
 
+## [2.3.0] - 2026-10-16
+
 ### Added
 
-- Add shared fixed image-preview shortcuts (Q/E navigation, Home/End, R/Shift+R rotation, F fullscreen, WASD/numpad panning and ? help), retaining existing bindings. Add a localized read-only toolbar reference with focus restoration and keyboard isolation; no customization settings.
-
-- Add independently remembered filmstrip switches to single-image and gallery previews. Single-image strips browse only direct siblings. Generate fixed 200px thumbnails on demand with a shared six-task limit, regardless of compressed byte size. Display SVG and browser-renderable rasters up to 200px directly, allowing small images to scale up inside the strip; generation failures remain placeholders.
+- Add independently remembered filmstrip switches to single-image and gallery previews, off by default. Single-image strips include only direct siblings; gallery strips follow the preview session's filtered and sorted sequence. Generate 200px thumbnails on demand with a shared six-task limit, regardless of compressed byte size. SVG and browser-renderable rasters up to 200px use their originals and may scale up inside the strip; generation failures remain placeholders.
+- Add fixed preview shortcuts and a localized read-only reference opened with the circled question-mark button or `?`. List all eight pan directions separately, preserve text editing and IME input, and leave Ctrl/⌘/Shift + arrow combinations to the host. No shortcut customization is added.
+- Preserve directory groups when opening a gallery preview in folder-first sorting. Show group controls and enable PageUp/PageDown only when multiple groups are present; ordinary navigation and the filmstrip keep the same flat order. Single-image editors use a flat sibling list without group controls.
 
 ### Changed
 
-- Use the shared DOM-based `right-image-preview` component in both preview entries and remove the vendored 0.2.0 source snapshot. Keep adaptive click/Space zoom, pointer anchoring, Traditional Chinese and the 100% Fit cap. Temporarily enable adjacent-image preloading (radius 1, two display slots) for host testing. Development links the local component build; public releases must restore the latest published npm dependency.
+- Use the shared DOM-based `right-image-preview` 0.9.0 npm package in both preview entries and remove the vendored 0.2.0 source snapshot. Keep adaptive click/Space zoom, pointer anchoring, Traditional Chinese and the 100% Fit cap.
+- Apply one finite zoom ceiling across wheel, keyboard, toolbar, percentage input and pinch: 800% normally, with only a 1600% extra preset for loaded originals whose longest edge is at most 64px. Do not add 1000% or 1200% presets. Pinch remains continuous within the ceiling, with no extra ×4 allowance.
+- Trial adjacent-image preloading in both preview entries: radius 1, up to two display slots and the component's default 600ms settle delay. This is independent of filmstrip visibility and does not guarantee browser bitmap retention.
+- Use an opaque black preview background, preserve the brightness of unselected filmstrip images, reduce redundant tooltips, and use neutral folder icons with tighter expander spacing.
+- Keep mirror buttons hidden by default, with a shared visibility preference, and hide counter-clockwise rotation in the extension toolbar while retaining Shift+R. The component remains configurable for other hosts.
 
 ### Fixed
 
-- Route fullscreen buttons in single-image and gallery previews through the VS Code host window fullscreen command; show failures and avoid guessing fullscreen state. This adapter currently requires the locally linked component build.
-- Show a localized image-load error in single-image and gallery previews.
+- Route fullscreen buttons through the VS Code window fullscreen command, report failures, and avoid inventing fullscreen state for the toggle-only host.
+- Prevent residual long-press navigation from continuing after selecting a filmstrip image or releasing the navigation input. Keep the last painted frame while a requested image loads, and ignore readiness from departed images.
+- Keep the shortcut dialog heading and close button outside its scrollable body; restore focus and suspend preview shortcuts and gestures while the dialog is open.
+- Keep background clicks from closing a single-image editor. Preserve the gallery's configured background-click behavior and show localized image-load errors.
+- Refresh gallery images, folder nodes and counts after file or directory changes settle for about three seconds, including copied directory trees. Recheck changes arriving during a scan and defer hidden-panel refreshes until the panel is shown.
+
+### Security
+
+- Remove unused Axios, ahooks, styled-components and direct lodash dependencies, plus the unused styled-components Babel plugin and type package. Update remaining Babel, lodash, picomatch and follow-redirects dependency versions within their compatible major versions.
+- Pin `image-size` to 2.0.4 to fix known malformed-image parser loops. Share asynchronous, bounded header reads of at most 512 KiB between image-size requests and filmstrip checks; malformed or unsupported headers yield unknown dimensions. Add isolated-process regression cases for ICNS, HEIF and JXL, including misleading filename extensions.
 
 ## [2.2.0] - 2026-10-15
 

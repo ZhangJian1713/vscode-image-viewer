@@ -11,6 +11,7 @@ let mockGalleryProps: any
 let mockFolderProps: any
 const mockSetPreference = jest.fn()
 jest.mock('./gallery.css', () => ({}))
+jest.mock('../HostImagePreview.css', () => ({}))
 jest.mock('./AnnouncementBar', () => ({ AnnouncementBar: () => null }))
 jest.mock('./GallerySettingsModal', () => ({ GallerySettingsModal: () => null }))
 jest.mock('right-image-preview', () => ({ ImagePreview: () => null }))

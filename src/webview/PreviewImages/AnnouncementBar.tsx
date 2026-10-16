@@ -8,7 +8,6 @@ import { MESSAGE_CMD } from '../../constants'
 import {
   ANNOUNCEMENT_DISMISS_STORAGE_KEY,
   ANNOUNCEMENT_ID,
-  getAnnouncementBarTopStrings,
   getAnnouncementStrings,
 } from './announcementConfig'
 
@@ -16,19 +15,13 @@ function openFeedback(action: FeedbackAction): void {
   callGalleryHost({ cmd: MESSAGE_CMD.OPEN_FEEDBACK, data: { action } })
 }
 
-export type AnnouncementBarProps = {
-  /** Resolved application language shared by the bar and modal. */
-  hostUiLanguage?: string
-}
-
 /**
  * Top bar: version + CTA (opens modal); Issues / Star on the right. Unread users get the modal once; after dismiss, open via bar only.
  */
-export const AnnouncementBar: React.FC<AnnouncementBarProps> = ({ hostUiLanguage }) => {
+export const AnnouncementBar: React.FC = () => {
   const { t } = useI18n()
   const [modalOpen, setModalOpen] = useState(false)
-  const barTop = useMemo(() => getAnnouncementBarTopStrings(hostUiLanguage), [hostUiLanguage])
-  const modalCopy = useMemo(() => getAnnouncementStrings(hostUiLanguage), [hostUiLanguage])
+  const modalCopy = useMemo(() => getAnnouncementStrings(t), [t])
 
   const persistDismiss = useCallback(() => {
     try {
@@ -63,11 +56,11 @@ export const AnnouncementBar: React.FC<AnnouncementBarProps> = ({ hostUiLanguage
           className='iv-announcement-bar__left'
           icon={<BulbOutlined />}
           onClick={() => setModalOpen(true)}
-          aria-label={barTop.openReleaseNotesAria}
+          aria-label={modalCopy.openReleaseNotesAria}
         >
           <span className='iv-announcement-bar__version'>v{ANNOUNCEMENT_ID}</span>
-          <span className='iv-announcement-bar__cta'>{barTop.barCta}</span>
-          <span className='iv-announcement-bar__hint'>{barTop.barHint}</span>
+          <span className='iv-announcement-bar__cta'>{modalCopy.barCta}</span>
+          <span className='iv-announcement-bar__hint'>{modalCopy.barHint}</span>
         </Button>
         <Space size={4} className='iv-announcement-bar__right'>
           <Button

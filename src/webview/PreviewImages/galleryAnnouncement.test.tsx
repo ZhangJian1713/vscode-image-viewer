@@ -2,6 +2,10 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { act } from 'react-dom/test-utils'
+import { I18nextProvider } from 'react-i18next'
+import { webviewI18n } from '../../i18n/react'
+import { resolveLanguage } from '../../i18n/language'
+import { fixedTranslate } from '../../i18n/translator'
 import { AnnouncementBar } from './AnnouncementBar'
 import { ANNOUNCEMENT_DISMISS_STORAGE_KEY, ANNOUNCEMENT_ID, getAnnouncementStrings } from './announcementConfig'
 
@@ -54,20 +58,25 @@ afterEach(() => {
 
 function render(language: string) {
   act(() => {
-    ReactDOM.render(<AnnouncementBar hostUiLanguage={language} />, root)
+    void webviewI18n.changeLanguage(resolveLanguage(language))
+    ReactDOM.render(<I18nextProvider i18n={webviewI18n}><AnnouncementBar /></I18nextProvider>, root)
   })
+}
+
+function copyFor(language: string) {
+  return getAnnouncementStrings(fixedTranslate(webviewI18n, resolveLanguage(language)))
 }
 
 test.each(['en', 'zh-CN', 'zh-TW'])(
   'renders classified updates and the settings feedback invitation for %s',
   (language) => {
     render(language)
-    const copy = getAnnouncementStrings(language)
+    const copy = copyFor(language)
     const dialog = root.querySelector('[role="dialog"]')!
     const items = dialog.querySelectorAll('li')
     expect(items).toHaveLength(copy.updates.length)
-    expect(items).toHaveLength(3)
-    expect(items[0].textContent).toMatch(/language|语言|語言/i)
+    expect(items).toHaveLength(9)
+    expect(items[0].textContent).toMatch(/filmstrip|底片/i)
     expect(new Set(copy.updates.map((item) => item.kind))).toEqual(
       new Set(['feature', 'improvement', 'bugfix'])
     )
@@ -79,15 +88,15 @@ test.each(['en', 'zh-CN', 'zh-TW'])(
   }
 )
 
-test.each([null, '2.0.6', '2.1.0', '2.1.1'])(
-  'shows the same 2.2.0 announcement with dismissal state %s, saves dismissal, and allows manual reopening',
+test.each([null, '2.0.6', '2.1.0', '2.1.1', '2.2.0'])(
+  'shows the same 2.3.0 announcement with dismissal state %s, saves dismissal, and allows manual reopening',
   (dismissedVersion) => {
     expect(ANNOUNCEMENT_ID).toBe(require('../../../package.json').version)
     if (dismissedVersion) { localStorage.setItem(ANNOUNCEMENT_DISMISS_STORAGE_KEY, dismissedVersion) }
     render('zh-CN')
     const dialog = root.querySelector('[role="dialog"]')!
-    expect(dialog.textContent).toContain('v2.2.0')
-    const copy = getAnnouncementStrings('zh-CN')
+    expect(dialog.textContent).toContain('v2.3.0')
+    const copy = copyFor('zh-CN')
     expect(Array.from(dialog.querySelectorAll('li')).map((item) => item.textContent))
       .toEqual(copy.updates.map((item) => copy.categoryLabels[item.kind] + item.text))
     act(() => {
@@ -109,7 +118,11 @@ test('does not automatically reopen a dismissed current release and honors the h
   act(() => {
     root.querySelector<HTMLButtonElement>('button[aria-label="Open release notes"]')!.click()
   })
-  expect(root.querySelector('[role="dialog"]')!.textContent).toContain('What’s new in Image Viewer')
+  const dialog = root.querySelector('[role="dialog"]')!
+  expect(dialog.textContent).toContain('What’s new in Image Viewer')
   render('zh-TW')
-  expect(root.querySelector('[role="dialog"]')!.textContent).toContain('更新說明')
+  expect(root.querySelector('[role="dialog"]')).toBe(dialog)
+  expect(dialog.textContent).toContain('更新說明')
+  expect(root.querySelector('[aria-label="開啟更新說明"]')).not.toBeNull()
+  expect(localStorage.getItem(ANNOUNCEMENT_DISMISS_STORAGE_KEY)).toBe(ANNOUNCEMENT_ID)
 })

@@ -2,7 +2,7 @@
 
 **English** | [中文](./README.zh-CN.md)
 
-**Use Image Viewer as your default image viewer in VS Code.** Get zoom presets up to **800%**, click/Space zoom cycling, rotation and flipping, a navigation minimap, and same-folder image navigation. [Make it the default](#make-it-the-default).
+**Use Image Viewer as your default image viewer in VS Code.** Get zoom up to **800%** (**1600%** for tiny images), click/Space zoom cycling, rotation and flipping, a navigation minimap, and same-folder image navigation. [Make it the default](#make-it-the-default).
 
 Browse project assets in **VS Code and Cursor** with a continuous image wall, folders, search, and filters.
 
@@ -31,11 +31,19 @@ Zoom into details, pan with the minimap, and browse nearby images without changi
 
 [![Single-image viewer with zoom, rotation, flip, and navigation minimap](https://public-img-1253867148.cos.ap-singapore.myqcloud.com/img-in-docs/vscode-image-viewer/single-image-editor-blue-marble.webp)](https://public-img-1253867148.cos.ap-singapore.myqcloud.com/img-in-docs/vscode-image-viewer/single-image-editor-blue-marble.webp)
 
-- **Zoom and pan:** use the mouse wheel, toolbar, or enter a percentage. Press **Space** or click the image to cycle through two or three zoom levels suited to its size. Zoom presets extend to **800%**.
+- **Zoom and pan:** use the mouse wheel, toolbar, or enter a percentage. Press **Space** or click the image to cycle through two or three zoom levels suited to its size. All zoom controls share an **800%** ceiling. Once the original image has loaded, images with a longest edge of **64px or less**, including tiny SVG icons, have an extra **1600%** preset. Pinch zoom is continuous within the same ceiling. Fit is capped at 100%.
 - **Inspect details:** drag an enlarged image or navigate with the minimap.
 - **Rotate and flip:** the toolbar keeps clockwise rotation; use `R` / `Shift+R` to rotate clockwise / counter-clockwise. Mirror buttons are hidden by default. Enable **Settings → General → Show mirror buttons** in the gallery, or VS Code's `imageViewer.showMirrorButtons` setting, to show both horizontal and vertical mirror controls in all previews. These operations do not change the original file.
 - **Navigate:** browse other images in the same folder with toolbar buttons, side arrows, or keyboard controls. The order follows Explorer's sorting settings.
-- **Unobstructed viewing:** controls fade when idle. Clicking the background does not close the single-image editor; use its close button or `Esc`. Images outside the workspace can also be opened.
+- **Unobstructed viewing:** the preview has an opaque black background and controls fade when idle. Clicking the background does not close the single-image editor; use its close button or `Esc`. Images outside the workspace can also be opened.
+
+### Filmstrip and adjacent-image loading
+
+Use the filmstrip button in the preview toolbar to show or hide thumbnails. The single-image editor and gallery remember their switches independently; both default to off. The single-image strip contains only images directly in the current image's folder, excluding subfolders. Gallery strips follow the filtered and sorted sequence captured when the preview opens.
+
+Large raster images use **200px long-edge thumbnails**, requested for the visible strip window with a shared limit of **six generation tasks** across galleries and previews. Compressed file size does not bypass this rule. SVG and browser-renderable rasters already at most 200px use their original files and may scale up in the strip. Formats requiring conversion, such as TIFF, still use generation; failures show a placeholder rather than loading the original into the strip. Unselected thumbnails retain their brightness.
+
+Adjacent-image preloading is enabled in both preview entries, independently of the filmstrip switch. It warms the previous and next image and uses up to two display slots with the component's default 600ms settle delay. Browser memory reclamation can still require decoding again, so preloading does not guarantee instant navigation.
 
 ### Make it the default
 
@@ -44,40 +52,6 @@ Run **Image Viewer: Use as Default Image Editor** to open supported image files 
 [![Use as Default Image Editor in the VS Code Command Palette](https://public-img-1253867148.cos.ap-singapore.myqcloud.com/img-in-docs/vscode-image-viewer/set-default-image-editor-command.webp)](https://public-img-1253867148.cos.ap-singapore.myqcloud.com/img-in-docs/vscode-image-viewer/set-default-image-editor-command.webp)
 
 To remove these associations, run **Image Viewer: Restore VS Code's Default Image Editor** before uninstalling. This does not restore earlier custom associations overwritten by setup. [More about editor associations](./docs/usage-notes.md#default-editor-associations).
-
-## Keyboard shortcuts
-
-Inside the single-image viewer or gallery preview, click the **circled question-mark button (View keyboard shortcuts)** in the toolbar,
-or press **`?`**, to open the read-only reference. Bindings are fixed; no customization settings are provided.
-Text fields keep normal editing keys, and IME composition does not trigger image actions.
-
-| Keys | Action |
-| --- | --- |
-| `←` / `Q`, `→` / `E` | Previous / next image; hold for continuous browsing |
-| `Home` / `End` | First / last image |
-| `↑` / `+` / `=` / Numpad `+` | Zoom in one stop |
-| `↓` / `-` / Numpad `-` | Zoom out one stop |
-| `Space` / Numpad `0` | Adaptive observation zoom cycle, matching primary click |
-| Main keyboard `0` / `1` | Fit / actual size (100%) |
-| `R` / `Shift+R` | Rotate 90° clockwise / counter-clockwise |
-| `W` / Numpad `8` | Reveal up |
-| `S` / Numpad `2` / Numpad `5` | Reveal down |
-| `A` / Numpad `4` | Reveal left |
-| `D` / Numpad `6` | Reveal right |
-| Numpad `7` | Reveal upper-left |
-| Numpad `9` | Reveal upper-right |
-| Numpad `1` | Reveal lower-left |
-| Numpad `3` | Reveal lower-right |
-| `F` | Toggle VS Code window fullscreen |
-| `?` | Open / close shortcut reference |
-| `Esc` | Close the shortcut reference first; otherwise close the preview or single-image editor |
-
-Pan only works when the zoomed image overflows the viewport. Ctrl/⌘/Shift + arrow keys are left to the host.
-Numpad keys retain physical identity with NumLock off. Unless listed above, Ctrl/⌘/Alt combinations
-remain available to the host; Ctrl/⌘+Space does not run the zoom cycle. Esc does not exit VS Code window
-fullscreen: use F, the fullscreen button, or the native host shortcut.
-No video, deletion, EXIF, or selection shortcuts are added to entries without those features; filmstrip
-and flip controls keep their buttons without invented bindings.
 
 ## Workspace gallery
 
@@ -130,11 +104,10 @@ Explorer entries in the same project reuse one gallery tab; different workspace 
 
 - **Image folders:** browse image-containing directories and their ancestors, see image counts, and expand or collapse branches. Hide or resize the sidebar.
 - **Return from search to a folder:** right-click an image → **Reveal in Image folders**. The gallery selects and centers its containing folder, temporarily clears image search, and highlights the original image among its neighbors. Use **Restore filters** to recover the search; Types and Include subfolders remain in effect.
-- **Sorting:** keep each folder's images together, or sort the whole collection by name, modified time, size, or format. In folder-first mode, dragging the scrollbar highlights the visible folders in the tree.
+- **Sorting:** keep each folder's images together, or sort the whole collection by name, modified time, size, or format. In folder-first mode, dragging the scrollbar highlights the visible folders in the tree. A preview spanning multiple folders also shows group navigation; ordinary previous/next controls and the filmstrip keep the same flat sequence. Global sorting and single-image editors do not show folder-group controls.
 - **File actions:** reveal files, copy paths, names, or Base64, and move images to Trash after confirmation. Right-click folders to reveal, copy paths, or exclude them.
 - **Settings and feedback:** use the bottom-right gear for settings, bug reports, and feature requests.
-- **Language:** choose Follow VS Code, English, 简体中文, or 繁體中文 in **Settings → General → Language**. All open gallery and single-image panels update immediately while preserving browsing and preview state.
-- **Language:** Settings → General → Language offers Follow VS Code, English, 简体中文, and 繁體中文. Unsupported editor languages default to English. Switching updates open panels while preserving your browsing state.
+- **Language:** choose Follow VS Code, English, 简体中文, or 繁體中文 in **Settings → General → Language**. Unsupported editor languages default to English. All open gallery and single-image panels update immediately while preserving browsing and preview state.
 
 ### Folder search and Include/Exclude
 
@@ -159,7 +132,7 @@ Use **Image folders → Include subfolders** to choose whether the wall shows th
 
 | Item | Details |
 | --- | --- |
-| Zoom presets | Up to **800%** |
+| Zoom ceiling | **800%**; **1600%** for loaded originals whose longest edge is at most **64px** |
 | Image wall density | **1–20 columns** in Grid/Fill |
 | Large-collection validation | **100,000 images and about 10,000 directory nodes**, using simulated data |
 | Gallery browsing | Load thumbnails at the current position first, without generating the entire collection in advance |
@@ -182,6 +155,41 @@ The gallery and image-editor entry recognize these extensions:
 | GIF, APNG | Original-image animation depends on the host; generated thumbnails use a static first frame |
 | AVIF | Display and thumbnail availability depend on the host version and platform decoder |
 | TIF / TIFF | Gallery thumbnails can be generated for decodable files; a visible thumbnail does not guarantee large-image preview |
+
+## Keyboard shortcuts
+
+Inside the single-image viewer or gallery preview, click the **circled question-mark button (View keyboard shortcuts)** in the toolbar,
+or press **`?`**, to open the read-only reference. Bindings are fixed; no customization settings are provided.
+Text fields keep normal editing keys, and IME composition does not trigger image actions.
+
+| Keys | Action |
+| --- | --- |
+| `←` / `Q`, `→` / `E` | Previous / next image; hold for continuous browsing |
+| `Home` / `End` | First / last image |
+| `PageUp` / `PageDown` | Previous / next folder group, when the gallery preview contains multiple groups in folder-first sorting |
+| `↑` / `+` / `=` / Numpad `+` | Zoom in one stop |
+| `↓` / `-` / Numpad `-` | Zoom out one stop |
+| `Space` / Numpad `0` | Adaptive observation zoom cycle, matching primary click |
+| Main keyboard `0` / `1` | Fit / actual size (100%) |
+| `R` / `Shift+R` | Rotate 90° clockwise / counter-clockwise |
+| `W` / Numpad `8` | Reveal up |
+| `S` / Numpad `2` / Numpad `5` | Reveal down |
+| `A` / Numpad `4` | Reveal left |
+| `D` / Numpad `6` | Reveal right |
+| Numpad `7` | Reveal upper-left |
+| Numpad `9` | Reveal upper-right |
+| Numpad `1` | Reveal lower-left |
+| Numpad `3` | Reveal lower-right |
+| `F` | Toggle VS Code window fullscreen |
+| `?` | Open / close shortcut reference |
+| `Esc` | Close the shortcut reference first; otherwise close the preview or single-image editor |
+
+Pan only works when the zoomed image overflows the viewport. Ctrl/⌘/Shift + arrow keys are left to the host.
+Numpad keys retain physical identity with NumLock off. Unless listed above, Ctrl/⌘/Alt combinations
+remain available to the host; Ctrl/⌘+Space does not run the zoom cycle. Esc does not exit VS Code window
+fullscreen: use F, the fullscreen button, or the native host shortcut.
+No video, deletion, EXIF, or selection shortcuts are added to entries without those features; filmstrip
+and flip controls keep their buttons without invented bindings.
 
 ## Feedback
 

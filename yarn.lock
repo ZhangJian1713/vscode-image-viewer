@@ -11491,9 +11491,10 @@ rfdc@^1.3.0:
   resolved "https://registry.npmmirror.com/rfdc/-/rfdc-1.3.0.tgz#d0b7c441ab2720d05dc4cf26e01c89631d9da08b"
   integrity sha512-V2hovdzFbOi77/WajaSMXk2OLm+xNIeQdMMuB7icj7bk6zi2F8GGAxigcnDFpJHbNyNcgyJDiP+8nOrY5cZGrA==
 
-"right-image-preview@link:../../../jsws/right-image-preview":
-  version "0.0.0"
-  uid ""
+right-image-preview@0.9.0:
+  version "0.9.0"
+  resolved "https://registry.npmjs.org/right-image-preview/-/right-image-preview-0.9.0.tgz#7183b71f719768b1083356f28d03384945a3342a"
+  integrity sha512-GWkKb1vughD/5RqYy8m1tB+/v0yrAb3Q9KafrxDsB+pOJN1xt1yhRZtPv2+hv2YfyS2/XOKJC91Udy9EK+p9YA==
 
 rimraf@2, rimraf@^2.6.3:
   version "2.7.1"

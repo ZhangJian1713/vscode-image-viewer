@@ -413,7 +413,7 @@ const PreviewImages: React.FC = () => {
 
   return (
     <div className='iv-gallery-app'>
-      <AnnouncementBar hostUiLanguage={language} />
+      <AnnouncementBar />
       <div className='iv-gallery-body'>
         {config.gallerySidebarVisible && payload.rootPath && (
           <FolderSidebar
