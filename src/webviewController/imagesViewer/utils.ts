@@ -2,7 +2,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { Webview, Uri } from 'vscode'
 import { utils } from '@easy_vscode/core'
-import imageSize from 'image-size'
+import { readImageDimensions } from './imageDimensions'
 import { readLocalConfigFile } from './config'
 import { compileFolderFilters } from '../../folderFilterRules'
 
@@ -212,12 +212,10 @@ export const getImageBase64 = (filePath: string): string => {
   return imgBase64
 }
 
-export const getImageSize = (filePath: string): { width: number; height: number } => {
-  let dimensions = { width: 0, height: 0 }
-  try {
-    dimensions = imageSize(filePath)
-  } catch {
-    // Unsupported/corrupt headers are displayed as unknown dimensions, without per-file logs.
-  }
-  return dimensions
+export const getImageSize = async (filePath: string): Promise<{ width: number; height: number }> => {
+  const dimensions = await readImageDimensions(filePath)
+  return dimensions && Number.isFinite(dimensions.width) && Number.isFinite(dimensions.height)
+    && dimensions.width > 0 && dimensions.height > 0
+    ? { width: dimensions.width, height: dimensions.height }
+    : { width: 0, height: 0 }
 }

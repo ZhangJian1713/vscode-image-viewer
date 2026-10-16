@@ -229,7 +229,7 @@ const messageHandlers = new Map([
     MESSAGE_CMD.GET_IMAGE_SIZE,
     async (message: IMessage, w: Webview) => {
       const { target } = await assertProjectResource(panelRoot(w), message.data?.filePath, true)
-      const dimensions = getImageSize(target)
+      const dimensions = await getImageSize(target)
       invokeCallback(viewType, message, dimensions, w)
     }
   ],

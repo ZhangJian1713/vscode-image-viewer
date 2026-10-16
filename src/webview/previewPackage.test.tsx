@@ -4,7 +4,7 @@ import ReactDOM from 'react-dom'
 import { act } from 'react-dom/test-utils'
 import { ImagePreview, resolveStrings } from 'right-image-preview'
 import type { ImagePreviewProps, ImagePreviewRef } from 'right-image-preview'
-import { PREVIEW_ZOOM_STOPS } from './previewZoomStops'
+import { PREVIEW_SMALL_IMAGE_ZOOM, PREVIEW_ZOOM_STOPS } from './previewZoomStops'
 
 let root: HTMLDivElement
 let ref: React.RefObject<ImagePreviewRef>
@@ -32,7 +32,7 @@ afterEach(() => {
 function renderPreview(language = 'en', props: Partial<ImagePreviewProps> = {}) {
   act(() => { ReactDOM.render(<ImagePreview ref={ref} images={images} visible
     progressiveMain={false} preloadRadius={0} preloadDisplaySlots={0}
-    stops={PREVIEW_ZOOM_STOPS} fitMaxNativePercent={100}
+    stops={PREVIEW_ZOOM_STOPS} smallImageZoom={PREVIEW_SMALL_IMAGE_ZOOM} fitMaxNativePercent={100}
     clickZoomEnabled doubleClickEnabled={false} language={language} {...props} />, root) })
 }
 
@@ -87,6 +87,28 @@ test('small-image Fit and wheel boundaries use the component package implementat
   expect(ref.current!.getState().nativePercent).toBe(75)
   act(() => { ref.current!.setNative(800); ref.current!.zoomIn() })
   expect(ref.current!.getState().nativePercent).toBe(800)
+})
+
+test.each([[16, 1600], [64, 1600], [65, 800]])('React 17 applies the finite ceiling for a %spx original', async (edge, maximum) => {
+  await readyImage(edge, edge)
+  act(() => { ref.current!.setNative(800) })
+  act(() => { (root.querySelector('[aria-label="Zoom in"]') as HTMLButtonElement).click() })
+  expect(ref.current!.getState().nativePercent).toBe(maximum)
+  expect((root.querySelector('[aria-label="Zoom in"]') as HTMLButtonElement).disabled).toBe(true)
+  act(() => { ref.current!.setNative(9999) })
+  expect(ref.current!.getState().nativePercent).toBe(maximum)
+  const dialog = root.querySelector('[role="dialog"]')!
+  const touch = (type: string, id: number, x: number) => {
+    const event = new MouseEvent(type, { bubbles: true, clientX: x, clientY: 300 })
+    Object.defineProperties(event, { pointerId: { value: id }, pointerType: { value: 'touch' } })
+    act(() => { dialog.dispatchEvent(event) })
+  }
+  for (let repeat = 0; repeat < 2; repeat++) {
+    touch('pointerdown', 1, 350); touch('pointerdown', 2, 450)
+    touch('pointermove', 2, 2000)
+    touch('pointerup', 1, 350); touch('pointerup', 2, 2000)
+    expect(ref.current!.getState().nativePercent).toBe(maximum)
+  }
 })
 
 function mousePointer(target: Element | Window, type: string, x: number, y: number) {
@@ -190,4 +212,29 @@ test('React 17 keeps the last painted frame while skipping an unloaded image', a
   incoming.decode = () => Promise.resolve()
   await act(async () => { incoming.dispatchEvent(new Event('load')); await new Promise((resolve) => window.setTimeout(resolve, 30)) })
   expect(root.querySelector('[data-rip-stage-layer="outgoing"]')).toBeNull()
+})
+
+test('flat single-editor data hides group controls while folder data enables real group jumps', () => {
+  const items = [...images, { src: 'test:second' }, { src: 'test:third' }, { src: 'test:fourth' }]
+  const onIndexChange = jest.fn()
+  renderPreview('en', { images: items, arrows: 'both', onIndexChange })
+  expect(root.querySelector('[aria-label="Previous group"]')).toBeNull()
+  expect(root.querySelector('[aria-label="Next group"]')).toBeNull()
+  expect(root.querySelector('[aria-label="Previous"]')).not.toBeNull()
+  expect(root.querySelector('[aria-label="Next"]')).not.toBeNull()
+  // Start a new session at the second image of the second folder.
+  act(() => { ReactDOM.unmountComponentAtNode(root) })
+  renderPreview('en', { groupedImages: [
+    { name: 'a', images: items.slice(0, 2) }, { name: 'b', images: items.slice(2) }
+  ], defaultIndex: 3, thumbnailsScope: 'flat', onIndexChange })
+  const previous = root.querySelector<HTMLButtonElement>('[aria-label="Previous group"]')!
+  const next = root.querySelector<HTMLButtonElement>('[aria-label="Next group"]')!
+  expect(previous.disabled).toBe(false)
+  expect(next.disabled).toBe(true)
+  act(() => { previous.click() })
+  expect(onIndexChange).toHaveBeenLastCalledWith(0)
+  expect(previous.disabled).toBe(true)
+  expect(next.disabled).toBe(false)
+  act(() => { next.click() })
+  expect(onIndexChange).toHaveBeenLastCalledWith(2)
 })

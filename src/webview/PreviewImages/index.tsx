@@ -31,7 +31,7 @@ import {
   SunOutlined
 } from '@ant-design/icons'
 import { PREVIEW_ZOOM_STOPS } from '../previewZoomStops'
-import type { ImageItem } from 'right-image-preview'
+import type { ImageGroup, ImageItem } from 'right-image-preview'
 import type { IConfig } from '../../types'
 import { commandArgToFsPath, GalleryEntry, GalleryScanResult, galleryEntryFromArg } from '../../galleryEntry'
 import { GalleryNavigationResolution, GalleryRevealRequest, galleryNavigationFilters, includeGalleryEntryImage, nearestGalleryFolder } from './galleryNavigation'
@@ -99,6 +99,7 @@ interface GalleryPayload {
 interface PreviewSession {
   id: number
   items: ImageItem[]
+  groups?: ImageGroup[]
   index: number
 }
 
@@ -282,19 +283,35 @@ const PreviewImages: React.FC = () => {
       const position = index ?? 0
       setImageReveal(previewOnly ? undefined : { id: ++imageRevealSequence.current, path: image.fullPath })
       setPreviewIndex(position)
-      setSession({
-        id: ++previewSequence.current,
-        index: position,
-        items: (previewOnly ? [image] : visibleImages).map((item) => ({
+      const groups: ImageGroup[] = []
+      let previousFolder: string | undefined
+      const items = (previewOnly ? [image] : visibleImages).map((item) => {
+        const preview = {
           id: item.fullPath,
           src: item.vscodePath,
           minimapSrc: item.fullPath === image.fullPath && thumbnail !== item.vscodePath ? thumbnail : undefined,
           name: item.fileName,
           alt: item.fileName
-        }))
+        }
+        // Folder sorting already makes each directory contiguous. Preserve the exact flat sequence.
+        if (config.galleryGroupByFolder) {
+          const folder = imageFolder(item)
+          if (folder !== previousFolder) {
+            groups.push({ name: galleryRelativePath(folder, payload.projectPath) || folder.split('/').pop() || '/', images: [] })
+            previousFolder = folder
+          }
+          groups[groups.length - 1].images.push(preview)
+        }
+        return preview
+      })
+      setSession({
+        id: ++previewSequence.current,
+        index: position,
+        items,
+        groups: groups.length > 1 ? groups : undefined
       })
     },
-    [visibleImages, visibleIndexes]
+    [visibleImages, visibleIndexes, config.galleryGroupByFolder, payload.projectPath]
   )
   const locateEntry = useCallback((resolution: GalleryNavigationResolution) => {
     setFilterOverride(galleryNavigationFilters(resolution, payload.images, currentConfig.current))
@@ -695,7 +712,9 @@ const PreviewImages: React.FC = () => {
           key={session.id}
           language={language}
           images={session.items}
+          groupedImages={session.groups}
           defaultIndex={session.index}
+          thumbnailsScope='flat'
           visible
           stops={PREVIEW_ZOOM_STOPS}
           fitMaxNativePercent={100}

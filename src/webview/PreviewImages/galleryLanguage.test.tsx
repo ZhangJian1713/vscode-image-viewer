@@ -223,3 +223,44 @@ test('general settings persist mirror visibility and update the open preview wit
   act(() => { toggle.click() })
   expect(mockPreviewProps.showFlip).toBe(false)
 })
+
+test('preview keeps folder groups, selection and flat filmstrip order only for folder sorting', () => {
+  const snapshot = [
+    { path: '/photos/a/image1.jpg', vscodePath: 'image:a1', size: 100 },
+    { path: '/photos/a/image2.jpg', vscodePath: 'image:a2', size: 100 },
+    { path: '/photos/b/image3.jpg', vscodePath: 'image:b3', size: 100 },
+    { path: '/photos/b/image4.jpg', vscodePath: 'image:b4', size: 100 }
+  ]
+  const priorHost = host.getMockImplementation()!
+  host.mockImplementation((request, callback) => {
+    if (request.cmd === MESSAGE_CMD.GET_ALL_IMGS) {
+      callback({ imgs: snapshot, projectPath: '/project', complete: true, requestId: request.data.requestId })
+    } else { priorHost(request, callback) }
+  })
+  act(() => { window.dispatchEvent(new MessageEvent('message', { data: {
+    cmd: MESSAGE_CMD.GALLERY_FILES_CHANGED, data: { projectPath: '/project', requestId: 1 }
+  } })) })
+  const open = () => act(() => { root.querySelector<HTMLElement>('[data-image-id="/project/photos/b/image3.jpg"]')!.click() })
+  open()
+  expect(mockPreviewProps.images.map((image) => image.src)).toEqual(['image:a2', 'image:a1', 'image:b4', 'image:b3'])
+  expect(mockPreviewProps.defaultIndex).toBe(3)
+  expect(mockPreviewProps.groupedImages.map((group) => group.name)).toEqual(['photos/a', 'photos/b'])
+  expect(mockPreviewProps.groupedImages.flatMap((group) => group.images.map((image) => image.id)))
+    .toEqual(mockPreviewProps.images.map((image) => image.id))
+  expect(mockPreviewProps.thumbnailsScope).toBe('flat')
+  const groups = mockPreviewProps.groupedImages
+  const sort = root.querySelector<HTMLSelectElement>('select[aria-label="Sort images"]')!
+  change(sort, 'nameDesc')
+  expect(mockPreviewProps.groupedImages).toBe(groups) // An open session keeps its snapshot.
+  act(() => { mockPreviewProps.onClose() })
+  open()
+  expect(mockPreviewProps.groupedImages).toBeUndefined()
+  expect(mockPreviewProps.images.map((image) => image.src)).toEqual(['image:b4', 'image:b3', 'image:a2', 'image:a1'])
+  expect(mockPreviewProps.defaultIndex).toBe(1)
+  act(() => { mockPreviewProps.onClose() })
+  change(sort, 'folder:nameDesc')
+  change(root.querySelector<HTMLInputElement>('input[aria-label="Search images"]')!, 'image3')
+  open()
+  expect(mockPreviewProps.groupedImages).toBeUndefined()
+  expect(mockPreviewProps.images.map((image) => image.src)).toEqual(['image:b3'])
+})

@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 import { createHash } from 'crypto'
 import * as fs from 'fs'
-import imageSize from 'image-size'
+import { readImageDimensions } from './imageDimensions'
 import * as path from 'path'
 import { setTimeout, setInterval, clearTimeout, clearInterval } from 'timers'
 import { utils } from '@easy_vscode/core'
@@ -439,13 +439,10 @@ export async function resolveThumbForGrid(
 
 /** Read bounded image headers asynchronously; unknown dimensions never authorize direct raster display. */
 async function isSmallFilmstripImage(filePath: string): Promise<boolean> {
-  return new Promise((resolve) => {
-    imageSize(filePath, (error, dimensions) => {
-      const sizes = dimensions?.images?.length ? dimensions.images : [dimensions]
-      resolve(!error && dimensions?.type !== 'tiff' && sizes.every((size) => size && Number.isFinite(size.width) && Number.isFinite(size.height)
-        && size.width > 0 && size.height > 0 && size.width <= 200 && size.height <= 200))
-    })
-  })
+  const dimensions = await readImageDimensions(filePath)
+  const sizes = dimensions?.images?.length ? dimensions.images : [dimensions]
+  return !!dimensions && dimensions.type !== 'tiff' && sizes.every((size) => size && Number.isFinite(size.width) && Number.isFinite(size.height)
+    && size.width > 0 && size.height > 0 && size.width <= 200 && size.height <= 200)
 }
 
 /** Caller authorizes the file. Original is an explicit SVG/small-pixel choice, never a decode-failure fallback. */

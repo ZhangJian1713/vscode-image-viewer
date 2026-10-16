@@ -8,8 +8,9 @@ import { useI18n } from '../i18n/react'
 import { FullscreenErrorNotice, useHostFullscreen } from './useHostFullscreen'
 import './HostImagePreview.css'
 import { usePreviewPreferences } from './usePreviewPreferences'
+import { PREVIEW_SMALL_IMAGE_ZOOM } from './previewZoomStops'
 
-type Props = Omit<ImagePreviewProps, 'fullscreen' | 'onFullscreenError'> & { transport: GalleryTransport; filmstripScope: 'single' | 'gallery' }
+type Props = Omit<ImagePreviewProps, 'fullscreen' | 'onFullscreenError' | 'smallImageZoom'> & { transport: GalleryTransport; filmstripScope: 'single' | 'gallery' }
 
 /** The adapter and pending RPCs live exactly as long as this preview instance. */
 export function HostImagePreview({ transport, filmstripScope, ...props }: Props) {
@@ -55,6 +56,7 @@ export function HostImagePreview({ transport, filmstripScope, ...props }: Props)
   const { t } = useI18n()
   return <>
     <ImagePreview {...props} {...data} onIndexChange={onIndexChange}
+      smallImageZoom={PREVIEW_SMALL_IMAGE_ZOOM}
       showFlip={preferences.showMirrorButtons} showRotateCCW={false}
       overlayStyle={{ ...props.overlayStyle, background: '#000', backdropFilter: 'none', WebkitBackdropFilter: 'none' }}
       keyboardEnabled={props.keyboardEnabled !== false && !shortcutsOpen} onShowShortcuts={openShortcuts}

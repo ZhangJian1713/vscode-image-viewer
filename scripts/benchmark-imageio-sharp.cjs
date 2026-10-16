@@ -3,7 +3,8 @@ const fs = require('fs')
 const path = require('path')
 const os = require('os')
 const { spawn } = require('child_process')
-const imageSize = require('image-size')
+const { imageSize } = require('image-size')
+const { imageSizeFromFile } = require('image-size/fromFile')
 
 const root = path.resolve(__dirname, '..')
 const args = Object.fromEntries(process.argv.slice(2).map(value => {
@@ -90,8 +91,8 @@ async function main() {
   const files = JSON.parse(fs.readFileSync(args.manifest, 'utf8'))
   const report = { environment: { node: process.version, platform: process.platform, arch: process.arch,
     cpu: os.cpus()[0].model, logicalCpus: os.cpus().length, ramGiB: os.totalmem() / 1024 ** 3,
-    os: os.release(), uvPool: 4 }, files: files.map(file => ({ name: path.basename(file),
-      bytes: fs.statSync(file).size, ...imageSize(file) })), cases: [] }
+    os: os.release(), uvPool: 4 }, files: await Promise.all(files.map(async file => ({ name: path.basename(file),
+      bytes: fs.statSync(file).size, ...await imageSizeFromFile(file) }))), cases: [] }
   for (const edge of [200, 400, 800]) {
     // Alternate the backend order across output sizes to reduce temporal bias.
     const modes = edge === 400 ? ['sharp', 'imageio'] : ['imageio', 'sharp']

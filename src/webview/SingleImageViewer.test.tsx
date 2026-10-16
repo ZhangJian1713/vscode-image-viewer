@@ -27,15 +27,20 @@ test('single-editor language broadcasts retain the sibling dataset and active re
   ], currentIndex: 1 }]
   try {
     act(() => { ReactDOM.render(<LanguageProvider transport={transport}><SingleImageViewer /></LanguageProvider>, root) })
-    const groups = mockPreviewProps.groupedImages
+    const images = mockPreviewProps.images
+    expect(mockPreviewProps.groupedImages).toBeUndefined()
+    expect(mockPreviewProps.defaultIndex).toBe(1)
+    expect(mockPreviewProps.arrows).toBe('both')
     expect(mockPreviewProps.closeOnMaskClick).toBe(false)
+    expect(mockPreviewProps.smallImageZoom).toEqual({ maxEdge: 64, maxNativePercent: 1600 })
     act(() => { mockPreviewProps.onIndexChange(2) })
     for (const [index, language] of ['zh-CN', 'zh-TW', 'en'].entries()) {
       act(() => { window.dispatchEvent(new MessageEvent('message', { data: {
         cmd: MESSAGE_CMD.UI_LANGUAGE_CHANGED, data: { preference: language, language, revision: index + 1 }
       } })) })
       expect(mockPreviewProps.language).toBe(language)
-      expect(mockPreviewProps.groupedImages).toBe(groups)
+      expect(mockPreviewProps.images).toBe(images)
+      expect(mockPreviewProps.groupedImages).toBeUndefined()
       expect(useResourceCacheSlot).toHaveBeenLastCalledWith('single-editor-main-image', 'image:c')
     }
   } finally {

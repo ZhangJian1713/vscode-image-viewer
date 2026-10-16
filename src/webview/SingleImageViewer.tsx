@@ -1,7 +1,6 @@
 import { HostImagePreview } from './HostImagePreview'
 import React, { useMemo, useState } from 'react'
 import { PREVIEW_ZOOM_STOPS } from './previewZoomStops'
-import type { ImageGroup } from 'right-image-preview'
 import { callVscode } from '@easy_vscode/webview'
 import { MESSAGE_CMD } from '../constants'
 import { useResourceCacheSlot } from './resourceCache/ResourceCacheBoundary'
@@ -54,23 +53,13 @@ const SingleImageViewer: React.FC = () => {
     }
     return [{ id: src, src, name: name || '' }]
   }, [images, src, name])
-  const groupedImages = useMemo<ImageGroup[] | undefined>(() => {
-    if (resolvedImages.length === 0) {
-      return undefined
-    }
-    return [
-      {
-        name: '',
-        images: resolvedImages.map((image) => ({ ...image, alt: image.name }))
-      }
-    ]
-  }, [resolvedImages])
+  const previewImages = useMemo(() => resolvedImages.map((image) => ({ ...image, alt: image.name })), [resolvedImages])
 
   const initialIndex = Math.min(Math.max(currentIndex ?? 0, 0), Math.max(resolvedImages.length - 1, 0))
   const [activeIndex, setActiveIndex] = useState(initialIndex)
   useResourceCacheSlot('single-editor-main-image', resolvedImages[activeIndex]?.src)
 
-  if (!groupedImages) {
+  if (!previewImages.length) {
     return <div style={{ padding: 20, color: 'var(--vscode-errorForeground)' }}>{t('single.openFailed')}</div>
   }
 
@@ -79,9 +68,9 @@ const SingleImageViewer: React.FC = () => {
       filmstripScope='single'
       transport={callVscode}
       language={language}
-      groupedImages={groupedImages}
+      images={previewImages}
       visible
-      defaultGroupedSelection={{ defaultGroupIndex: 0, defaultIndexInGroup: initialIndex }}
+      defaultIndex={initialIndex}
       stops={PREVIEW_ZOOM_STOPS}
       fitMaxNativePercent={100}
       preloadRadius={1}
@@ -91,7 +80,7 @@ const SingleImageViewer: React.FC = () => {
       clickZoomEnabled
       doubleClickEnabled={false}
       closeOnMaskClick={false}
-      arrows='side'
+      arrows='both'
       progressiveMain={false}
       errorFallback={() => <div role='alert'>{t('preview.loadFailed')}</div>}
       onIndexChange={setActiveIndex}
